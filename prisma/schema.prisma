@@ -1,0 +1,42 @@
+datasource db {
+  provider     = "mysql"
+  url          = env("APP_DB_URL")
+  relationMode = "prisma"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// generator nexusPrisma {
+  // provider = "nexus-prisma"
+// }
+
+model User {
+  id        String      @id @default(uuid())
+  name      String?
+  email     String?  @unique
+  image     String?
+  role      Role     @default(USER)
+  password  String
+  bookmarks Link[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Link {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  url         String
+  imageUrl    String
+  category    String
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
