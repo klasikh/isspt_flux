@@ -18,9 +18,9 @@ import {
   Cog6ToothIcon,
   PencilIcon,
 } from "@heroicons/react/24/solid";
-import { Link } from "react-router-dom";
-import { ProfileInfoCard, MessageCard } from "@/widgets/cards";
-import { platformSettingsData, conversationsData, projectsData } from "@/data";
+import Link from "next/link";
+import { ProfileInfoCard, MessageCard } from "../../components/Layout/widgets/cards";
+import { platformSettingsData, conversationsData, projectsData } from "../../data";
 
 export function Profile() {
   return (
@@ -185,7 +185,7 @@ export function Profile() {
                       </Typography>
                     </CardBody>
                     <CardFooter className="mt-6 flex items-center justify-between py-0 px-1">
-                      <Link to={route}>
+                      <Link href={route}>
                         <Button variant="outlined" size="sm">
                           view project
                         </Button>

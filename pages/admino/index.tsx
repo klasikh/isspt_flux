@@ -4,7 +4,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form'
 import { gql, useMutation } from '@apollo/client'
 import toast, { Toaster } from 'react-hot-toast'
 import type { GetServerSideProps } from 'next'
-import { getSession } from "next-auth/react"
+import { getSession } from '@auth0/nextjs-auth0'
 
 type FormValues = {
   title: string;
@@ -125,7 +125,7 @@ const Admin = () => {
         <label className="block">
           <span className="text-gray-700">Upload a .png or .jpg image (max 1MB).</span>
           <input
-            {...register('image', { required: false })}
+            {...register('image', { required: true })}
             onChange={uploadPhoto}
             type="file"
             accept="image/png, image/jpeg"
@@ -161,9 +161,9 @@ const Admin = () => {
 
 export default Admin
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = await getSession(ctx);
-  // console.log(session)
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
+  const session = await getSession(req, res);
+
   if (!session) {
     return {
       redirect: {
@@ -180,7 +180,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       role: true,
     },
     where: {
-      email: session.user?.email,
+      email: session.user.email,
     },
   });
 

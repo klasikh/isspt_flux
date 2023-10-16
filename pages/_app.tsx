@@ -1,7 +1,8 @@
 // pages/_app.tsx
 import '../styles/tailwind.css'
 // import { UserProvider } from '@auth0/nextjs-auth0/client'
-import AppProvider from "../components/AppProvider"
+// import AppProvider from "../components/AppProvider"
+import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@material-tailwind/react";
 import { MaterialTailwindControllerProvider } from "../components/context";
 import Layout from '../components/Layout'
@@ -14,7 +15,7 @@ function MyApp({
   pageProps: { session, ...pageProps },
 } : AppProps) {
   return (
-    <AppProvider session={session}>
+    <SessionProvider session={pageProps.session}>
       <ThemeProvider>
         <MaterialTailwindControllerProvider>
           <ApolloProvider client={apolloClient}>
@@ -24,7 +25,7 @@ function MyApp({
           </ApolloProvider>
         </MaterialTailwindControllerProvider>
       </ThemeProvider>
-    </AppProvider>
+    </SessionProvider>
   )
 }
 

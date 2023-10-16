@@ -29,7 +29,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
           sidenavType === "dark" ? "border-white/20" : "border-blue-gray-50"
         }`}
       >
-        <Link to="/" className="flex items-center gap-4 py-6 px-8">
+        <Link href="/" className="flex items-center gap-4 py-6 px-8">
           <Avatar src={brandImg} size="sm" />
           <Typography
             variant="h6"
@@ -63,10 +63,11 @@ export function Sidenav({ brandImg, brandName, routes }) {
                 </Typography>
               </li>
             )}
-            {pages.map(({ icon, name, path }) => (
+            {pages && pages.map(({ icon, name, path }) => (
               <li key={name}>
+                <Link href={`/dashboard/profile`}>Profil</Link>
                 <Link href={`/${layout}${path}`}>
-                  {({ isActive }) => (
+                  { ({ isActive }) => (
                     <Button
                       variant={isActive ? "gradient" : "text"}
                       color={
@@ -100,7 +101,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
 
 Sidenav.defaultProps = {
   brandImg: "/img/logo-ct.png",
-  brandName: "Material Tailwind React",
+  brandName: "Flux ISSPT",
 };
 
 Sidenav.propTypes = {
@@ -109,6 +110,6 @@ Sidenav.propTypes = {
   routes: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
-Sidenav.displayName = "/src/widgets/layout/sidnave.jsx";
+Sidenav.displayName = "./sidnave.tsx";
 
 export default Sidenav;

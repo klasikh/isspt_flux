@@ -1,16 +1,18 @@
 import React from "react";
+import { useSession } from "next-auth/react"
 import Header from "./Header";
 import Dashboard from "./Dashboard";
 
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../pages/api/auth/[...nextauth]";
+// import { getServerSession } from "next-auth/next";
+// import { authOptions } from "../../pages/api/auth/[...nextauth]";
 
 interface Props {
-  children: React.ReactNode | undefined
+  children: React.ReactNode | React.ReactNode[]
 }
-const Layout: React.FC<Props> = async ({ children }) => {
+const Layout: React.FC<Props> = ({ children }) => {
 
-  const session = await getServerSession(authOptions);
+  // const session = await getServerSession(authOptions);
+  const { data: session, status } = useSession()
 
   return (
     <div>

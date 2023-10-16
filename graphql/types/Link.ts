@@ -48,10 +48,11 @@ builder.mutationField('createLink', (t) =>
       title: t.arg.string({ required: true }),
       description: t.arg.string({ required: true }),
       url: t.arg.string({ required: true }),
-      imageUrl: t.arg.string({ required: true }),
+      imageUrl: t.arg.string({ required: false }),
       category: t.arg.string({ required: true }),
     },
     resolve: async (query, _parent, args, ctx) => {
+      
       const { title, description, url, imageUrl, category } = args
 
       if (!(await ctx).user) {

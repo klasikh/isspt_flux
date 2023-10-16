@@ -1,6 +1,7 @@
 import prisma from "../../../lib/prisma";
 import NextAuth from "next-auth"
 import { Account, AuthOptions, Profile, Session, User } from "next-auth/next";
+// import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -15,7 +16,6 @@ export const authOptions: AuthOptions = {
                 email: {
                     label: "Email",
                     type: "text",
-                    placeholder: "toto@mail.com"
                 },
                 password: {
                     label: "00000000",
@@ -26,7 +26,7 @@ export const authOptions: AuthOptions = {
                 if(!credentials) {
                     return null;
                 }
-
+                
                 const { email, password } = credentials;
 
                 const user = await prisma.user.findUnique({
@@ -36,7 +36,8 @@ export const authOptions: AuthOptions = {
                 });
 
                 if(!user) {
-                    return null;
+                    throw new Error("Aucun utilisateur ne correspond à cette adresse email")
+                    // return null;
                 }
 
                 const userPassword = user.password;
@@ -44,7 +45,8 @@ export const authOptions: AuthOptions = {
                 const isValidPassword = bcrypt.compareSync(password, userPassword);
 
                 if(!isValidPassword) {
-                    return null;
+                    throw new Error("Mot de passe incorrect")
+                    // return null;
                 }
 
                 return user;
@@ -105,6 +107,6 @@ export const authOptions: AuthOptions = {
     }
 }
 
-const handler = NextAuth(authOptions);
+export default NextAuth(authOptions);
 
-export { handler as GET, handler as POST };
+// export { handler as GET, handler as POST };

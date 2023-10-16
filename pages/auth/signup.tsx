@@ -14,7 +14,7 @@ import {
   Typography,
 } from "@material-tailwind/react";
 
-import { signUp } from "../api/auth/signup";
+// import { signUp } from "../api/auth/signup";
 
 const SignUp = () => {
 
@@ -26,8 +26,8 @@ const SignUp = () => {
 
   const handleSubmit = async () => {
     setMessage("Inscription en cours...");
-    const signUpMessage = await signUp(name, email, password);
-    setMessage(signUpMessage);
+    // const signUpMessage = await signUp(name, email, password);
+    // setMessage(signUpMessage);
   }
 
   return (
