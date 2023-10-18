@@ -40,7 +40,7 @@ const SignIn = () => {
                 password,
                 redirect: false,
             });
-            console.log(signInResponse)
+            // console.log(signInResponse)
 
             if(!signInResponse || signInResponse.ok !== true) {
                 setMessage('Coordonnées de connexion incorrects');
@@ -61,7 +61,7 @@ const SignIn = () => {
 
     useEffect(() => {
         if(status === "authenticated") {
-            router.refresh();
+            // router.refresh();
             router.push('/dashboard');
         }
     }, [status])

@@ -63,18 +63,19 @@ export function DashboardNavbar () {
     >
       <div className="flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center">
         <div className="capitalize">
-          <Breadcrumbs
+          {/* <Breadcrumbs
             className={`bg-transparent p-0 transition-all ${
               fixedNavbar ? "mt-1" : ""
             }`}
           >
-            <Link href={`/${layout}`}>
+            <Link href={`/${page}`}>
               <Typography
+
                 variant="small"
                 color="blue-gray"
                 className="font-normal opacity-50 transition-all hover:text-blue-500 hover:opacity-100"
               >
-                {layout}
+                {page}
               </Typography>
             </Link>
             <Typography
@@ -82,16 +83,16 @@ export function DashboardNavbar () {
               color="blue-gray"
               className="font-normal"
             >
-              {/* page */}
+              { page }
             </Typography>
-          </Breadcrumbs>
+          </Breadcrumbs> */}
           <Typography variant="h6" color="blue-gray">
             {/* page */}
           </Typography>
         </div>
         <div className="flex items-center">
           <div className="mr-auto md:mr-4 md:w-56">
-            <Input label="Type here" />
+            {/* <Input label="Type here" /> */}
           </div>
           <IconButton
             variant="text"
@@ -101,13 +102,13 @@ export function DashboardNavbar () {
           >
             <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
           </IconButton>
-          {/* <IconButton
+          <IconButton
             variant="text"
             color="blue-gray"
             onClick={() => setOpenConfigurator(dispatch, true)}
           >
             <Cog6ToothIcon className="h-5 w-5 text-blue-gray-500" />
-          </IconButton> */}
+          </IconButton>
           <Menu>
             <MenuHandler>
               <IconButton variant="text" color="blue-gray">

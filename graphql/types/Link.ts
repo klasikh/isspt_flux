@@ -1,5 +1,7 @@
 // /graphql/types/Link.ts
 import { builder } from "../builder";
+import type { GetServerSideProps } from 'next'
+import { getSession } from "next-auth/react"
 
 builder.prismaObject('Link', {
   fields: (t) => ({
@@ -54,7 +56,7 @@ builder.mutationField('createLink', (t) =>
     resolve: async (query, _parent, args, ctx) => {
       
       const { title, description, url, imageUrl, category } = args
-
+/*
       if (!(await ctx).user) {
         throw new Error("You have to be logged in to perform this action")
       }
@@ -65,8 +67,41 @@ builder.mutationField('createLink', (t) =>
         }
       })
 
-      if (!user || user.role !== "ADMIN") {
+      if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
         throw new Error("You don have permission ot perform this action")
+      }*/
+
+      const getServerSideProps: GetServerSideProps = async (context) => {
+
+        let session;
+        session = await getSession(context);
+
+        if (!session.user) {
+          throw new Error("You have to be logged in to perform this action");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            email: session.user?.email,
+          }
+        })
+
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+          throw new Error("You don't have permission to perform this action");
+          // return 'toto est Ok'
+        }
+
+        // return {
+        //   props: {},
+        // };
+      };
+
+      try {
+        const getSess = await getServerSideProps(ctx);
+
+      } catch (error) {
+        console.log(error)
+        return error;
       }
 
       return await prisma.link.create({

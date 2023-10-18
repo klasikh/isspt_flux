@@ -15,7 +15,6 @@ const HomePage = () => {
 
     useEffect(() => {
         if(status === "authenticated") {
-            router.refresh();
             router.push('/dashboard');
         } else {
             router.push('/auth/signin')

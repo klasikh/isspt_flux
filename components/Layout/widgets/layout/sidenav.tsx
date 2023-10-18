@@ -1,5 +1,8 @@
 import PropTypes from "prop-types";
 import Link from "next/link";
+// import prisma from '../../../../lib/prisma';
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
+import { getSession, useSession } from "next-auth/react"
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
   Avatar,
@@ -9,7 +12,7 @@ import {
 } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "../../../context";
 
-export function Sidenav({ brandImg, brandName, routes }) {
+export function Sidenav({ brandImg, brandName, routes, user }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavColor, sidenavType, openSidenav } = controller;
   const sidenavTypes = {
@@ -22,7 +25,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
     <aside
       className={`${sidenavTypes[sidenavType]} ${
         openSidenav ? "translate-x-0" : "-translate-x-80"
-      } fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0`}
+      } fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0 overflow-y-scroll`}
     >
       <div
         className={`relative border-b ${
@@ -30,7 +33,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
         }`}
       >
         <Link href="/" className="flex items-center gap-4 py-6 px-8">
-          <Avatar src={brandImg} size="sm" />
+          <img src={brandImg} alt="" className="h-12 rounded" />
           <Typography
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
@@ -63,12 +66,11 @@ export function Sidenav({ brandImg, brandName, routes }) {
                 </Typography>
               </li>
             )}
-            {pages && pages.map(({ icon, name, path }) => (
+            {pages && pages.map(({ icon, name, path, role }) => (
               <li key={name}>
-                <Link href={`/dashboard/profile`}>Profil</Link>
-                <Link href={`/${layout}${path}`}>
-                  { ({ isActive }) => (
-                    <Button
+                <Link href={`${path}`}>
+                  {/* { ({ isActive }) => ( */}
+                    {/* <Button
                       variant={isActive ? "gradient" : "text"}
                       color={
                         isActive
@@ -79,6 +81,13 @@ export function Sidenav({ brandImg, brandName, routes }) {
                       }
                       className="flex items-center gap-4 px-4 capitalize"
                       fullWidth
+                    > */}
+
+                    <Button
+                      variant="gradient"
+                      color="blue"
+                      className="flex items-center gap-4 px-4 mb-2"
+                      fullWidth
                     >
                       {icon}
                       <Typography
@@ -88,7 +97,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
                         {name}
                       </Typography>
                     </Button>
-                  )}
+                  {/* )} */}
                 </Link>
               </li>
             ))}
@@ -100,7 +109,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
 }
 
 Sidenav.defaultProps = {
-  brandImg: "/img/logo-ct.png",
+  brandImg: "/images/logo.png",
   brandName: "Flux ISSPT",
 };
 
@@ -113,3 +122,44 @@ Sidenav.propTypes = {
 Sidenav.displayName = "./sidnave.tsx";
 
 export default Sidenav;
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const session = await getSession(ctx);
+
+  if (!session) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/api/auth/login',
+      },
+      props: {},
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    select: {
+      name: true,
+      email: true,
+      role: true,
+    },
+    where: {
+      email: session.user?.email,
+    },
+  });
+
+  if (!user) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/404',
+      },
+      props: {},
+    };
+  }
+  console.log(user)
+  return {
+    props: {
+      user,
+    },
+  };
+};

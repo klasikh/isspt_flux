@@ -3,7 +3,7 @@ import { getServerSession, useSession } from "next-auth/next"
 
 
 export default async function createContext(req, res) {
-  const session = await getServerSession(req, res, authOptions)
+  const session = await getServerSession(authOptions)
   const { data: sess, status }  = useSession()
   console.log(sess)
 

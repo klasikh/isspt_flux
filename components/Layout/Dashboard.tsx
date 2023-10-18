@@ -1,4 +1,5 @@
 import { useRouter } from "next/navigation"
+import { getSession, useSession } from "next-auth/react"
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
 import {
@@ -9,7 +10,6 @@ import {
 } from "./widgets/layout";
 import { useMaterialTailwindController, setOpenConfigurator } from "../context";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 
 import routes from "../../protected/links";
 
@@ -28,12 +28,12 @@ export function Dashboard ({
             <Sidenav
                 routes={routes}
                 brandImg={
-                    sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"
+                    sidenavType === "dark" ? "/images/logo.png" : "/images/logo.png"
                 }
             />
-            <div className="p-4 xl:ml-80">
+            <div className="flex flex-col h-screen justify-between p-4 xl:ml-80">
                 <DashboardNavbar />
-                {/* <Configurator /> */}
+                <Configurator />
                 {/* <IconButton
                     size="lg"
                     color="white"
@@ -46,7 +46,7 @@ export function Dashboard ({
                 <div>
                     {children}
                 </div>
-                <div className="text-blue-gray-600">
+                <div className="text-blue-gray-600 mt-12 my-8" >
                     <Footer />
                 </div>
             </div>

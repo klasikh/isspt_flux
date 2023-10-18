@@ -14,10 +14,8 @@ import {
   Progress,
 } from "@material-tailwind/react";
 import {
-  ClockIcon,
-  CheckIcon,
-  EllipsisVerticalIcon,
-  ArrowUpIcon,
+  BellAlertIcon,
+  PlusSmallIcon,
 } from "@heroicons/react/24/outline";
 import { StatisticsCard } from "../../components/Layout/widgets/cards";
 // import { StatisticsChart } from "../../components/Layout/widgets/charts";
@@ -29,10 +27,33 @@ import {
 } from "../../data";
 
 export function Dashboard() {
+
+  const dashboardMenu = [
+    {
+      color: "pink",
+      icon: BellAlertIcon,
+      title: "Liste des paiements",
+      path: "/payments/list",
+      value: "24",
+      footer:"",
+    },
+    {
+      color: "blue",
+      icon: PlusSmallIcon,
+      title: "Ajouter un paiement",
+      path: "/payments/add",
+      value: "",
+      footer: {
+        color: "text-green-500",
+        value: "+55%",
+        label: "than last week",
+      },
+    },
+  ]
   return (
     <div className="mt-12">
-      <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
-        { statisticsCardsData.map(({ icon, title, footer, ...rest }) => (
+      <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-2">
+        { dashboardMenu.map(({ icon, title, footer, ...rest }) => (
           <StatisticsCard
             key={title}
             {...rest}

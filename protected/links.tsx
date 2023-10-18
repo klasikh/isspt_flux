@@ -2,6 +2,8 @@
 import {
   HomeIcon,
   UserCircleIcon,
+  BellAlertIcon,
+  PlusSmallIcon,
   TableCellsIcon,
   BellIcon,
   ArrowRightOnRectangleIcon,
@@ -9,6 +11,20 @@ import {
 } from "@heroicons/react/24/solid";
 import { Home, } from "../pages/dashboard/home";
 import { Dashboard, } from "../pages/dashboard";
+import { Profile, } from "../pages/profile";
+import UsersList from "../pages/users/list";
+import UserAdd from "../pages/users/add";
+import GradesList from "../pages/grades/list";
+import GradeAdd from "../pages/grades/add";
+import ModulesList from "../pages/modules/list";
+import ModuleAdd from "../pages/modules/add";
+import FilieresList from "../pages/filieres/list";
+import FiliereAdd from "../pages/filieres/add";
+import MotifsList from "../pages/motifs/list";
+import MotifAdd from "../pages/motifs/add";
+import PaymentsList from "../pages/payments/list";
+import PaymentAdd from "../pages/payments/add";
+
 // import { Home, Profile, Tables, Notifications } from "../pages/dashboard";
 
 const icon = {
@@ -21,7 +37,7 @@ export const routes = [
     pages: [
       {
         icon: <HomeIcon {...icon} />,
-        name: "dashboard",
+        name: "Tableau de bord",
         path: "/dashboard",
         element: <Dashboard />,
       },
@@ -31,24 +47,96 @@ export const routes = [
       //   path: "/dashboard/home",
       //   element: <Home />,
       // },
-      {/*
+      {
+        icon: <BellAlertIcon {...icon} />,
+        name: "Liste des grades",
+        path: "/grades/list",
+        element: <GradesList />,
+        role: "ADMIN"
+      },
+      {
+        icon: <PlusSmallIcon {...icon} />,
+        name: "Ajouter un grade",
+        path: "/grades/add",
+        element: <GradeAdd />,
+        role: "ADMIN"
+      },
+      {
+        icon: <BellAlertIcon {...icon} />,
+        name: "Liste des modules",
+        path: "/modules/list",
+        element: <ModulesList />,
+        role: "ADMIN"
+      },
+      {
+        icon: <PlusSmallIcon {...icon} />,
+        name: "Ajouter un module",
+        path: "/modules/add",
+        element: <ModuleAdd />,
+        role: "ADMIN"
+      },
+      {
         icon: <UserCircleIcon {...icon} />,
-        name: "profile",
+        name: "Liste des utilisateurs",
+        path: "/users/list",
+        element: <UsersList />,
+        role: "ADMIN"
+      },
+      {
+        icon: <PlusSmallIcon {...icon} />,
+        name: "Ajouter un utilisateur",
+        path: "/users/add",
+        element: <UserAdd />,
+        role: "ADMIN"
+      },
+      {
+        icon: <UserCircleIcon {...icon} />,
+        name: "Liste des filières",
+        path: "/filieres/list",
+        element: <FilieresList />,
+        role: "ADMIN"
+      },
+      {
+        icon: <PlusSmallIcon {...icon} />,
+        name: "Ajouter une filière",
+        path: "/filieres/add",
+        element: <FiliereAdd />,
+        role: "ADMIN"
+      },
+      {
+        icon: <UserCircleIcon {...icon} />,
+        name: "Liste des motifs",
+        path: "/motifs/list",
+        element: <MotifsList />,
+        role: "ADMIN"
+      },
+      {
+        icon: <PlusSmallIcon {...icon} />,
+        name: "Ajouter un motif",
+        path: "/motifs/add",
+        element: <MotifAdd />,
+        role: "ADMIN"
+      },
+      {
+        icon: <BellAlertIcon {...icon} />,
+        name: "Liste des paiements",
+        path: "/payments/list",
+        element: <PaymentsList />,
+        role: "USER"
+      },
+      {
+        icon: <PlusSmallIcon {...icon} />,
+        name: "Ajouter un paiement",
+        path: "/payments/add",
+        element: <PaymentAdd />,
+        role: "USER"
+      },
+      {
+        icon: <UserCircleIcon {...icon} />,
+        name: "Profile",
         path: "/profile",
-        element: <Profile />,
+        element: <Profile />
       },
-      {
-        icon: <TableCellsIcon {...icon} />,
-        name: "tables",
-        path: "/tables",
-        element: <Tables />,
-      },
-      {
-        icon: <BellIcon {...icon} />,
-        name: "notifactions",
-        path: "/notifactions",
-        element: <Notifications />,
-      */},
     ],
   },
   {/*
