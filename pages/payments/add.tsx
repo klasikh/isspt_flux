@@ -5,7 +5,7 @@ import { gql, useQuery, useMutation } from '@apollo/client'
 import toast, { Toaster } from 'react-hot-toast'
 import { useRouter } from "next/navigation"
 import type { GetServerSideProps } from 'next'
-import { getSession } from "next-auth/react"
+import { getSession, useSession } from "next-auth/react"
 
 type FormValues = {
   title: string;
@@ -17,6 +17,7 @@ type FormValues = {
   step: string;
   filePath: FileList;
   createdYear: string;
+  addedBy: string;
 }
 
 const AllMotifsQuery = gql`
@@ -58,8 +59,8 @@ const AllFilieresQuery = gql`
 `;
 
 const CreatePaymentMutation = gql`
-  mutation($title: String!, $description: String!, $name: String!, $motifId: String!, $filiereId: String!, $step: String!, $amount: String!, $createdYear: String!) {
-    createPayment(title: $title, description: $description, name: $name, motifId: $motifId, filiereId: $filiereId, amount: $amount, step: $step, createdYear: $createdYear) {
+  mutation($title: String!, $description: String!, $name: String!, $motifId: String!, $filiereId: String!, $step: String!, $amount: String!, $createdYear: String!, $addedBy: String!) {
+    createPayment(title: $title, description: $description, name: $name, motifId: $motifId, filiereId: $filiereId, amount: $amount, step: $step, createdYear: $createdYear, addedBy: $addedBy) {
       id
       title
       description
@@ -70,6 +71,7 @@ const CreatePaymentMutation = gql`
       step
       filePath
       createdYear
+      addedBy
     }
   }
 `
@@ -77,6 +79,8 @@ const CreatePaymentMutation = gql`
 const PaymentAdd = () => {
 
   const router = useRouter();
+
+  const {data:session}=useSession()
 
   const { data: allMotifs } = useQuery(AllMotifsQuery);
 
@@ -119,7 +123,7 @@ const PaymentAdd = () => {
   }
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    const { title, description, name, motifId, filiereId, amount, step, createdYear } = data
+    const { title, description, name, motifId, filiereId, amount, step, createdYear, addedBy } = data
 
     // const filePath = `https://${process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${image[0]?.name}`
 
@@ -127,7 +131,7 @@ const PaymentAdd = () => {
     const year = new Date().getFullYear();
     const yearToString = year.toString()
     // const variables = { title, description, name, motifId, filiereId, amount, theStep, filePath, createdYear, }
-    const variables = { title, description, name, motifId, filiereId, amount, step: theStep, createdYear: yearToString, }
+    const variables = { title, description, name, motifId, filiereId, amount, step: theStep, createdYear: yearToString, addedBy: session?.user.id }
     try {
       const theAddedPayment = await toast.promise(createPayment({ variables }), {
         loading: 'Opération en cours..',
@@ -181,7 +185,7 @@ const PaymentAdd = () => {
             <select id="motifs" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="motifId" {...register('motifId', { required: true })}>
               <option value="" selected disabled>Motif</option>
               { allMotifs?.motifs.edges.map(({ node }: { node: Node }) => (
-                <option value={node.id}>{node.name}</option>
+                  <option value={node.id}>{node.name}</option>
                 )
               )}
             </select>
@@ -191,7 +195,7 @@ const PaymentAdd = () => {
             <select id="filieres" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="filiereId" {...register('filiereId', { required: true })}>
               <option value="" selected disabled>Filière</option>
               { allFilieres?.filieres.edges.map(({ node }: { node: Node }) => (
-                <option value={node.id}>{node.name}</option>
+                  <option value={node.id}>{node.name}</option>
                 )
               )}
             </select>
@@ -248,7 +252,7 @@ export default PaymentAdd;
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const session = await getSession(ctx);
-  // console.log(session)
+
   if (!session) {
     return {
       redirect: {
@@ -269,9 +273,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     },
   });
 
-//   console.log(user)
-
-  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+  if (!user || (user.role !== "USER" && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
     return {
       redirect: {
         permanent: false,

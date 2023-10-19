@@ -99,14 +99,34 @@ builder.mutationField('createUserModulePriority', (t) =>
         return error;
       }
 
-      return await prisma.userModulePriority.create({
+      const addedModule = await prisma.userModulePriority.create({
         ...query,
         data: {
           userId,
           moduleId,
           priority,
         }
+      });
+
+      //  const concernedUser = await prisma.user.findUnique({
+      //   where: {
+      //     id: userId,
+      //   }
+      // })
+
+       const updateUserModule = await prisma.user.update({
+        ...query,
+        where: {
+          id: userId
+        },
+        data: {
+          userModulesPriorities: {
+            connect: [{ id: args.userId }]
+          }
+        }
       })
+
+       return addedModule;
     }
   })
 )

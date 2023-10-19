@@ -6,7 +6,6 @@ import type { Link as Node } from "@prisma/client";
 import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
 import Link from "next/link";
-// import { useUser } from "@auth0/nextjs-auth0/client";
 
 const AllLinksQuery = gql`
   query allLinksQuery($first: Int, $after: ID) {
@@ -128,7 +127,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     },
   });
 
-  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+  if (!user || (user.role !== "USER" && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
     return {
       redirect: {
         permanent: false,

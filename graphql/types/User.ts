@@ -20,9 +20,10 @@ builder.prismaObject('User', {
 
       }),
     }),
-    image: t.exposeString('image', { nullable: true, }),
-    role: t.expose('role', { type: Role, }),
-    bookmarks: t.relation('bookmarks'),
+  image: t.exposeString('image', { nullable: true, }),
+  role: t.expose('role', { type: Role, }),
+  bookmarks: t.relation('bookmarks'),
+  payments: t.relation('payments'),
   })
 })
 

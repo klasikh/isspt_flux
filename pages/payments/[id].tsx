@@ -1,63 +1,491 @@
-import React from 'react';
+import React, { Fragment, useRef, useState } from 'react'
+import { type SubmitHandler, useForm } from 'react-hook-form'
+import { Dialog, Transition } from '@headlessui/react'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import prisma from '../../lib/prisma';
-import { useState } from 'react';
 import { gql, useMutation } from '@apollo/client';
+import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
+import { useRouter } from "next/navigation";
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 
-const BookmarkLinkMutation = gql`
-  mutation ($id: ID!) {
-    bookmarkLink(id: $id) {
+type FormValues = {
+  id: string;
+  rejectMotif: string;
+  userId: string;
+  status: string;
+  step: string;
+}
+
+const SendPaymentMutation = gql`
+  mutation ($id: ID!, $userId: ID!) {
+    sendPayment(id: $id, userId: $userId) {
       title
-      url
-      imageUrl
-      category
       description
+      name
+      motifId
+      filiereId
     }
   }
 `;
 
-const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [createBookmark] = useMutation(BookmarkLinkMutation);
+const RejectPaymentMutation = gql`
+  mutation($id: ID!, $rejectMotif: String!, $userId: ID!, $status: String!, $step: String!) {
+    rejectPayment(id: $id, rejectMotif: $rejectMotif, userId: $userId, status: $status, step: $step,) {
+      id
+      title
+      description
+      name
+      motifId
+      filiereId
+      amount
+      step
+      filePath
+      createdYear
+      addedBy
+    }
+  }
+`
 
-  const bookmark = async () => {
-    setIsLoading(true);
-    toast.promise(createBookmark({ variables: { id: link.id } }), {
-      loading: 'working on it',
-      success: 'Saved successfully! 🎉',
-      error: `Something went wrong 😥 Please try again`,
+const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+
+  const router = useRouter();
+
+  const [isSendLoading, setIsSendLoading] = useState(false);
+  const [isEditLoading, setIsEditLoading] = useState(false);
+  const [isValidateLoading, setIsValidateLoading] = useState(false);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+
+  const [openRejectModal, setOpenRejectModal] = useState(false)
+  const [openDeletionModal, setOpenDeletionModal] = useState(false)
+
+  const cancelRejectButtonRef = useRef(null)
+  const cancelDeletionButtonRef = useRef(null)
+
+  const {data:session}=useSession()
+  const theUserSession = session;
+
+  const [sendPayment] = useMutation(SendPaymentMutation);
+
+  const [rejectPayment, { data, loading, error }] = useMutation(RejectPaymentMutation)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FormValues>({ mode: 'onBlur' });
+
+  const sendTPayment = async () => {
+    setIsSendLoading(true);
+    const sendThePay = await toast.promise(sendPayment({ variables: { id: payment.id, userId: theUserSession?.user.id } }), {
+      loading: 'Envoi en cours',
+      success: 'Envoyé avec succès! 🎉',
+      error: `Désolé, une erreur s'est produite 😥`,
     });
-    setIsLoading(false);
+
+    if(sentThePay?.data.sendPayment) {
+      router.push(`/payments/list`);
+      setIsSendLoading(false);
+    }
+    setIsSendLoading(false);
   };
+
+  const editPayment = () => {
+    setIsEditLoading(true);
+    router.push(`/payments/edit/${payment.id}`)
+  }
+
+  const deletePayment = () => {
+    setOpenDeletionModal(true)
+  }
+
+  const rejectClickPayment = () => {
+    setOpenRejectModal(true)
+  }
+
+  const onRejectSubmit: SubmitHandler<FormValues> = async (data) => {
+    const { id, rejectMotif, userId, status, step, } = data
+
+    const theStep = "0";
+    const theStatus = "REJECTED";
+
+    const variables = { id: payment.id, rejectMotif, userId: session?.user.id, status: theStatus, step: theStep }
+    try {
+      const theRejectedPayment = await toast.promise(rejectPayment({ variables }), {
+        loading: 'Opération en cours..',
+        success: 'Paiement rejeté avec succès!🎉',
+        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
+      })
+
+      if(theRejectedPayment.data.rejectPayment) {
+        setOpenRejectModal(false)
+        router.push(`/payments/list`)
+      }
+
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const onValidateSubmit: SubmitHandler<FormValues> = async (data) => {
+    const { id, userId, status, step, } = data
+
+    const theStep = "0";
+    const theStatus = "APPROVED";
+
+    const variables = { id: payment.id, userId: session?.user.id, status: theStatus, step: theStep }
+    try {
+      const theRejectedPayment = await toast.promise(rejectPayment({ variables }), {
+        loading: 'Opération en cours..',
+        success: 'Paiement rejeté avec succès!🎉',
+        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
+      })
+
+      if(theRejectedPayment.data.rejectPayment) {
+        setOpenRejectModal(false)
+        router.push(`/payments/list`)
+      }
+
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
 
   return (
     <div>
-      <div className="prose container mx-auto px-8">
+      <div className="container mx-auto px-8 mt-10">
         <Toaster />
-        <button
-          onClick={() => bookmark()}
-          className="my-4 capitalize bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600"
-        >
-          {isLoading ? (
-            <span className="flex items-center justify-center">
-              <svg
-                className="w-6 h-6 animate-spin mr-1"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
-              </svg>
-              Saving...
+        <h1 className="text-2xl font-bold mb-3">Informations du paiement</h1>
+        <div className="w-full bg-white rounded overflow-hidden shadow-lg">
+          <div className="px-6 py-4">
+            <div className="font-bold text-xl mb-4 block bg-gray-600 p-1 text-white">Titre: {payment.title}</div>
+            <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Description</div>
+            <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
+              <span>{payment.description}</span>
+            </div>
+            <div className="flex gap-x-4">
+              <div className="md:w-1/2 sm:w-full sm:block">
+                <div className="font-bold text-xl bg-gray-600 p-1 text-white">Nom et prénoms de l&apos;étudiant</div>
+                <div className="text-gray-700 mb-4 text-base bg-gray-300 p-2">
+                  <span>{payment.name}</span>
+                </div>
+              </div>
+              <div className="md:w-1/2 sm:w-full sm:block">
+                <div className="font-bold text-xl bg-gray-600 p-1 text-white">Filière</div>
+                <div className="text-gray-700 mb-4 text-base bg-gray-300 p-2">
+                  <span>{payment.filiereId}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-x-4">
+              <div className="md:w-1/2 sm:w-full sm:block">
+                <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Motif de paiement</div>
+                <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
+                  <span>{payment.motifId}</span>
+                </div>
+             </div>
+              <div className="md:w-1/2 sm:w-full sm:block">
+                <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Montant payé</div>
+                <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
+                  <span>{payment.amount}</span>
+                </div>
+               </div>
+            </div>
+          </div>
+          <div className="px-6 pt-2 pb-6">
+            <span className="font-bold">Statut: </span>
+            <span className={
+                    payment.status === "CREATED"
+                    ? "inline-block bg-gray-400 rounded-full px-3 py-1 text-sm font-semibold text-gray-900 mr-2 mb-2"
+                    : payment.status === "CANCELED"
+                    ? "inline-block bg-black rounded-full px-3 py-1 text-sm font-semibold text-white mr-2 mb-2"
+                    : payment.status === "ONPROCESS"
+                    ? "inline-block bg-yellow-500 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                    : payment.status === "APPROVED"
+                    ? "inline-block bg-green-500 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                    : payment.status === "REJECTED"
+                    ? "inline-block bg-red-500 rounded-full px-3 py-1 text-sm font-semibold text-white mr-2 mb-2"
+                    : ""
+              }
+            >
+              {
+                payment.status === "CREATED"
+                ? "En attente"
+                : payment.status === "CANCELED"
+                ? "Annuler"
+                : payment.status === "ONPROCESS"
+                ? "Traitement en cours"
+                : payment.status === "APPROVED"
+                ? "Approuvé"
+                : payment.status === "REJECTED"
+                ? "Rejeté"
+                : ""
+              }
             </span>
-          ) : (
-            <span>Bookmark</span>
-          )}
-        </button>
-        <h1>{payment.title}</h1>
+            <div className="float-right">
+             {
+                (payment.step === "0")
+                ? ( <button
+                      onClick={() => sendTPayment()}
+                      className="capitalize bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600"
+                    >
+                      {isSendLoading ? (
+                        <span className="flex items-center justify-center">
+                          <svg
+                            className="w-6 h-6 animate-spin mr-1"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                          </svg>
+                          Envoi...
+                        </span>
+                      ) : (
+                        <span className="font-bold">Envoyer</span>
+                      )}
+                    </button>)
 
-        <p>{payment.description}</p>
+                : (payment.step === "1")
+
+                ? ( <span>
+                      <button
+                        onClick={() => validatePayment()}
+                        className="bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600 mx-4"
+                      >
+                        {isValidateLoading ? (
+                          <span className="flex items-center justify-center">
+                            <svg
+                              className="w-6 h-6 animate-spin mr-1"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                            </svg>
+                            En cours...
+                          </span>
+                        ) : (
+                          <span className="font-bold">Valider</span>
+                        )}
+                      </button>
+                      <button
+                          onClick={() => rejectClickPayment()}
+                          className="bg-red-500 text-white font-medium px-4 py-2 rounded-md hover:bg-red-600 mx-4"
+                        >
+                          {isValidateLoading ? (
+                            <span className="flex items-center justify-center">
+                              <svg
+                                className="w-6 h-6 animate-spin mr-1"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                              </svg>
+                              En cours...
+                            </span>
+                          ) : (
+                            <span className="font-bold">Rejeter</span>
+                          )}
+                        </button>
+                    </span> )
+                : ""
+              }
+              {
+                ((payment.step === "0" && payment.addedBy === theUserSession?.user?.id) || theUserSession?.user?.role === "ADMIN")
+                ? ( <span>
+                      <button
+                        onClick={() => editPayment()}
+                        className="bg-blue-500 text-white font-medium px-4 py-2 rounded-md hover:bg-blue-600 mx-4"
+                      >
+                        {isEditLoading ? (
+                          <span className="flex items-center justify-center">
+                            <svg
+                              className="w-6 h-6 animate-spin mr-1"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                            </svg>
+                            En cours...
+                          </span>
+                        ) : (
+                          <span className="font-bold">Modifier</span>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => deletePayment()}
+                        className="bg-red-500 text-white font-medium px-4 py-2 rounded-md hover:bg-red-600"
+                      >
+                        {isDeleteLoading ? (
+                          <span className="flex items-center justify-center">
+                            <svg
+                              className="w-6 h-6 animate-spin mr-1"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                            </svg>
+                            Suppression...
+                          </span>
+                        ) : (
+                          <span className="font-bold">Supprimer</span>
+                        )}
+                      </button>
+                    </span> )
+                  : ""
+                }
+            </div>
+          </div>
+        </div>
+
+
+        <Transition.Root show={openDeletionModal} as={Fragment}>
+          <Dialog as="div" className="relative z-10" initialFocus={cancelDeletionButtonRef} onClose={setOpenDeletionModal}>
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+            </Transition.Child>
+
+            <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+              <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                  enterTo="opacity-100 translate-y-0 sm:scale-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                  leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                >
+                  <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                    <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                      <div className="sm:flex sm:items-start">
+                        <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                          <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
+                        </div>
+                        <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                          <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                            Suppression
+                          </Dialog.Title>
+                          <div className="mt-2">
+                            <p className="text-sm text-gray-500">
+                              Êtes-vous sûr(e) de vouloir supprimer ce paiement ?
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                      <button
+                        type="button"
+                        className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                        onClick={() => setOpenDeletionModal(false)}
+                      >
+                        Confirmer la suppression
+                      </button>
+                      <button
+                        type="button"
+                        className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                        onClick={() => setOpenDeletionModal(false)}
+                        ref={cancelDeletionButtonRef}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </Dialog.Panel>
+                </Transition.Child>
+              </div>
+            </div>
+          </Dialog>
+        </Transition.Root>
+
+
+        <Transition.Root show={openRejectModal} as={Fragment}>
+          <Dialog as="div" className="relative z-10" initialFocus={cancelRejectButtonRef} onClose={setOpenRejectModal}>
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+            </Transition.Child>
+
+            <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+              <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                  enterTo="opacity-100 translate-y-0 sm:scale-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                  leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                >
+                  <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                    <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                      <div className="sm:flex sm:items-start">
+                        <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                          <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
+                        </div>
+                        <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                          <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                            Rejet
+                          </Dialog.Title>
+                          <div className="mt-2">
+                            <p className="text-sm text-gray-500">
+                              Veuillez renseigner la(les) raison(s) de votre rejet.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <form className="grid grid-cols-1 gap-y-2 bg-white shadow-lg p-4 rounded-lg" onSubmit={handleSubmit(onRejectSubmit)}>
+                      <label for="rejectMotif" class="block mx-7">
+                        <span className="text-gray-700">Raison(s) du rejet</span>
+                        <textarea id="rejectMotif" rows="4" {...register('rejectMotif', { required: true })} className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description du paiement" name="rejectMotif"></textarea>
+                      </label>
+                      <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button
+                          type="submit"
+                          className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                        >
+                          Valider
+                        </button>
+                        <button
+                          type="button"
+                          className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                          onClick={() => setOpenRejectModal(false)}
+                          ref={cancelRejectButtonRef}
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </form>
+                  </Dialog.Panel>
+                </Transition.Child>
+              </div>
+            </div>
+          </Dialog>
+        </Transition.Root>
+
+
       </div>
     </div>
   );
@@ -66,6 +494,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
 export default Payment;
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+
   const id = params?.id;
   const payment = await prisma.payment.findUnique({
     where: {
@@ -84,6 +513,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       filePath: true,
       isNotified: true,
       createdYear: true,
+      addedBy: true,
       fromId: true,
       toId: true,
     },
