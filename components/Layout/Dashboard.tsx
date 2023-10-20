@@ -19,8 +19,8 @@ export function Dashboard ({
     children: React.ReactNode
   }) {
     const router = useRouter();
-    const [...[controller, dispatch]] = useMaterialTailwindController();
-    const { sidenavType } = controller;
+    const {controller, dispatch} = useMaterialTailwindController();
+    const sidenavType = controller;
     const { data: session, status } = useSession()
 
     return (
