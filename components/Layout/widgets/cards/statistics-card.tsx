@@ -8,7 +8,7 @@ import {
 import Link from "next/link";
 import PropTypes from "prop-types";
 
-export function StatisticsCard({ color, icon, title, path, value, footer }) {
+export function StatisticsCard({ color: any, icon, title, path, value, footer }) {
   return (
     <Card>
       <Link href={path}>
