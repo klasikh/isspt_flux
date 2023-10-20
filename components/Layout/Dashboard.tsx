@@ -5,7 +5,7 @@ import { IconButton } from "@material-tailwind/react";
 import {
   Sidenav,
   DashboardNavbar,
-  Configurator,
+//   Configurator,
   Footer,
 } from "./widgets/layout";
 import { useMaterialTailwindController, setOpenConfigurator } from "../context";
@@ -33,7 +33,7 @@ export function Dashboard ({
             />
             <div className="flex flex-col h-screen justify-between p-4 xl:ml-80">
                 <DashboardNavbar />
-                <Configurator />
+                {/* <Configurator /> */}
                 {/* <IconButton
                     size="lg"
                     color="white"
