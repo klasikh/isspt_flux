@@ -15,7 +15,7 @@ import {
   setFixedNavbar,
 } from "../../../context";
 
-function formatNumber(number, decPlaces) {
+function formatNumber(number: any, decPlaces: any) {
   decPlaces = Math.pow(10, decPlaces);
 
   const abbrev = ["K", "M", "B", "T"];
