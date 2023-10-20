@@ -3,6 +3,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form'
 import { Dialog, Transition } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import prisma from '../../lib/prisma';
+import Link from "next/link";
 import { gql, useMutation } from '@apollo/client';
 import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
@@ -98,6 +99,11 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
 
   const deletePayment = () => {
     setOpenDeletionModal(true)
+  }
+
+  const validatePayment = () => {
+    setIsValidateLoading(true);
+    router.push(`/payments/validate/${payment.id}`)
   }
 
   const rejectClickPayment = () => {
@@ -251,9 +257,11 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                 : (payment.step === "1")
 
                 ? ( <span>
-                      <button
+                      <Link
                         onClick={() => validatePayment()}
+                        href="https://sirah.isspt-edu.org"
                         className="bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600 mx-4"
+                        target="_blank"
                       >
                         {isValidateLoading ? (
                           <span className="flex items-center justify-center">
@@ -270,7 +278,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                         ) : (
                           <span className="font-bold">Valider</span>
                         )}
-                      </button>
+                      </Link>
                       <button
                           onClick={() => rejectClickPayment()}
                           className="bg-red-500 text-white font-medium px-4 py-2 rounded-md hover:bg-red-600 mx-4"

@@ -6,10 +6,24 @@ import type { Link as Node } from "@prisma/client";
 import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
 import Link from "next/link";
+// import { useUser } from "@auth0/nextjs-auth0/client";
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardBody,
+  Typography,
+  Avatar,
+  Chip,
+  IconButton,
+  Tooltip,
+  Progress,
+} from "@material-tailwind/react";
+import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon, } from "@heroicons/react/24/outline";
 
-const AllLinksQuery = gql`
-  query allLinksQuery($first: Int, $after: ID) {
-    links(first: $first, after: $after) {
+const AllPaymentsQuery = gql`
+  query allPaymentsQuery($first: Int, $after: ID) {
+    payments(first: $first, after: $after) {
       pageInfo {
         endCursor
         hasNextPage
@@ -17,22 +31,24 @@ const AllLinksQuery = gql`
       edges {
         cursor
         node {
-          imageUrl
-          url
-          title
-          category
-          description
           id
+          title
+          description
+          name
+          filiereId
+          motifId
+          amount
+          status
         }
       }
     }
   }
 `;
 
-function NotificationsList() {
+function PaymentsList() {
 //   const { user } = useUser()
-  const { data, loading, error, fetchMore } = useQuery(AllLinksQuery, {
-    variables: { first: 3 },
+  const { data, loading, error, fetchMore } = useQuery(AllPaymentsQuery, {
+    variables: { first: 10 },
   });
 
   {/* if (!user) {
@@ -46,63 +62,173 @@ function NotificationsList() {
     );
   } */}
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p>Chargement...</p>;
   if (error) return <p>Oh no... {error.message}</p>;
 
-  const { endCursor, hasNextPage } = data?.links.pageInfo;
+  const { endCursor, hasNextPage } = data?.payments.pageInfo;
 
   return (
     <div>
       <Head>
-        <title>Liste des paiements</title>
+        <title>Liste des payments</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="container mx-auto max-w-5xl my-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {data?.links.edges.map(({ node }: { node: Node }) => (
-            <Link href={`/link/${node.id}`}>
-              <AwesomeLink
-                key={node.id}
-                title={node.title}
-                category={node.category}
-                url={node.url}
-                id={node.id}
-                description={node.description}
-                imageUrl={node.imageUrl}
-              />
-            </Link>
-          ))}
+      <div className="container mx-auto max-w-5xl mt-7">
+        <div className="mb-12">
+          <Link href="/payments/add">
+            <Button variant="outlined" size="sm" className="bg-blue-500 hover:text-white">
+              Ajouter un paiement
+            </Button>
+          </Link>
         </div>
-        {hasNextPage ? (
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded my-10"
-            onClick={() => {
-              fetchMore({
-                variables: { after: endCursor },
-                updateQuery: (prevResult, { fetchMoreResult }) => {
-                  fetchMoreResult.links.edges = [
-                    ...prevResult.links.edges,
-                    ...fetchMoreResult.links.edges,
-                  ];
-                  return fetchMoreResult;
-                },
-              });
-            }}
-          >
-            more
-          </button>
-        ) : (
-          <p className="my-10 text-center font-medium">
-            You've reached the end!{" "}
-          </p>
-        )}
+        <div className="mt-12">
+          <Card>
+            <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
+              <Typography variant="h6" color="white">
+                Liste des paiements ({data?.payments.edges.length})
+              </Typography>
+            </CardHeader>
+            <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
+              <table className="w-full min-w-[640px] table-auto">
+                <thead>
+                  <tr>
+                    {["titre", "nom de l'étudiant", "motif", "montant", "status", "action",].map(
+                      (el) => (
+                        <th
+                          key={el}
+                          className="border-b border-blue-gray-50 py-3 px-5 text-left"
+                        >
+                          <Typography
+                            variant="small"
+                            className="text-[11px] font-bold uppercase text-blue-gray-400"
+                          >
+                            {el}
+                          </Typography>
+                        </th>
+                      )
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  { data?.payments.edges.map(({ node }: { node: Node }) => (
+                        <tr key={node.id}>
+                          <td className={`py-3 px-5`}>
+                            <div className="flex items-center gap-4">
+                              <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="text-xs font-medium text-blue-gray-600"
+                              >
+                                {node.title}
+                              </Typography>
+                            </div>
+                          </td>
+                          <td className={`py-3 px-5`}>
+                            <div className="flex items-center gap-4">
+                              <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-bold"
+                              >
+                                {node.name}
+                              </Typography>
+                            </div>
+                          </td>
+                          <td className={`py-3 px-5`}>
+                            <div className="flex items-center gap-4">
+                              <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-bold"
+                              >
+                                {node.motifId}
+                              </Typography>
+                            </div>
+                          </td>
+                          <td className={`py-3 px-5`}>
+                            <div className="flex items-center gap-4">
+                              <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-bold"
+                              >
+                                {node.amount}
+                              </Typography>
+                            </div>
+                          </td>
+                          <td className={`py-3 px-5`}>
+                            <div className="flex items-center gap-4">
+                              <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="text-xs font-medium text-blue-gray-600"
+                              >
+                                <span className={
+                                    node.status === "CREATED"
+                                    ? "inline-block bg-gray-400 rounded-full px-3 py-1 text-xs font-semibold text-gray-900 mr-2 mb-2"
+                                    : node.status === "CANCELED"
+                                    ? "inline-block bg-black rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
+                                    : node.status === "ONPROCESS"
+                                    ? "inline-block bg-yellow-500 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 mr-2 mb-2"
+                                    : node.status === "APPROVED"
+                                    ? "inline-block bg-green-500 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 mr-2 mb-2"
+                                    : node.status === "REJECTED"
+                                    ? "inline-block bg-red-500 rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
+                                    : ""
+                                  }
+                                >
+                                  {
+                                    node.status === "CREATED"
+                                    ? "En attente"
+                                    : node.status === "CANCELED"
+                                    ? "Annuler"
+                                    : node.status === "ONPROCESS"
+                                    ? "Traitement..."
+                                    : node.status === "APPROVED"
+                                    ? "Approuvé"
+                                    : node.status === "REJECTED"
+                                    ? "Rejeté"
+                                    : ""
+                                  }
+                                </span>
+                              </Typography>
+                            </div>
+                          </td>
+                          <td className={`py-3 px-5`}>
+                             <Typography
+                              className="text-xs font-semibold text-blue-gray-600"
+                            >
+                              <Link href={`/payments/${node.id}`}>
+                                <IconButton variant="text" color="white" className="text-sm bg-gray-600 hover:bg-gray-400">
+                                  <EyeIcon className="h-5 w-5 text-white-500" />
+                                </IconButton>
+                              </Link>
+                              <Link href={`/payments/edit/${node.id}`}>
+                                <IconButton variant="text" color="white" className="text-sm bg-blue-600 hover:bg-blue-400 mx-3">
+                                  <PencilIcon className="h-5 w-5 text-white-500" />
+                                </IconButton>
+                              </Link>
+                              <Link href={`/payments/delete/${node.id}`}>
+                                <IconButton variant="text" color="white" className="text-sm bg-red-600 hover:bg-red-400">
+                                  <TrashIcon className="h-5 w-5 text-white-500" />
+                                </IconButton>
+                              </Link>
+                            </Typography>
+                          </td>
+                        </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
+            </CardBody>
+          </Card>
+        </div>
       </div>
     </div>
   );
 }
 
-export default NotificationsList;
-
+export default PaymentsList;
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const session = await getSession(ctx);

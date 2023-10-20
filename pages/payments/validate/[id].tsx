@@ -172,7 +172,7 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
     <div>
       <div className="container mx-auto px-8 mt-10">
         <Toaster />
-        <h1 className="text-3xl font-medium mb-5">Editer un paiement</h1>
+        <h1 className="text-2xl font-medium mb-5">Valider un paiement <span className="text-sm">(Veuillez attacher le fichier de la quittance au formulaire)</span></h1>
         <form className="grid grid-cols-1 gap-y-4 bg-white shadow-lg p-8 rounded-lg" onSubmit={handleSubmit(onSubmit)}>
           <label className="block">
             <span className="text-gray-700">Titre</span>
@@ -181,12 +181,13 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
               {...register('title', { required: true })}
               name="title"
               type="text"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              disabled
             />
           </label>
           <label for="description" class="block">
             <span className="text-gray-700">Description</span>
-            <textarea id="description" rows="4" {...register('description', { required: true })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description du paiement" name="description"></textarea>
+            <textarea id="description" rows="4" {...register('description', { required: true })} className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description du paiement" name="description" disabled></textarea>
           </label>
           <label className="block">
             <span className="text-gray-700">Nom de l&apos;étudiant</span>
@@ -195,13 +196,14 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
               {...register('name', { required: true })}
               name="name"
               type="text"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              disabled
             />
           </label>
           <div className="flex gap-x-4 w-full">
             <label className="block w-full">
               <span className="text-gray-700">Motif de paiement</span>
-              <select id="motifs" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="motifId" {...register('motifId', { required: true })}>
+              <select id="motifs" className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="motifId" {...register('motifId', { required: true })} disabled>
                 <option value="" disabled>Motif</option>
                 { allMotifs?.motifs.edges.map(({ node }: { node: Node }) => (
                     <option value={node.id} >{node.name}</option>
@@ -211,7 +213,7 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
             </label>
             <label className="block w-full">
               <span className="text-gray-700">Filière de l&apos;étudiant</span>
-              <select id="filieres" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="filiereId" {...register('filiereId', { required: true })}>
+              <select id="filieres" className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="filiereId" {...register('filiereId', { required: true })} disabled>
                 <option value="" disabled>Filière</option>
                 { allFilieres?.filieres.edges.map(({ node }: { node: Node }) => (
                     <option value={node.id} >{node.name}</option>
@@ -227,7 +229,8 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
               {...register('amount', { required: true })}
               name="amount"
               type="number"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              disabled
             />
           </label>
           {/* <label className="block">
@@ -259,7 +262,7 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
                 En cours...
               </span>
             ) : (
-              <span>Valider</span>
+              <span>Traiter</span>
             )}
           </button>
         </form>

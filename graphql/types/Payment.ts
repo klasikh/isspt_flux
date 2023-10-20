@@ -275,7 +275,14 @@ builder.mutationField('sendPayment', (t) =>
         },
         data: {
           payments: {
-            connect: [{ id: args.userId }]
+            connectOrCreate: {
+              where: {
+                id: args.id,
+              },
+              create: {
+                id: args.id,
+              },
+            },
           }
         }
       })
