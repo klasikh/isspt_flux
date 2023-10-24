@@ -24,6 +24,7 @@ builder.prismaObject('User', {
   role: t.expose('role', { type: Role, }),
   bookmarks: t.relation('bookmarks'),
   payments: t.relation('payments'),
+  spents: t.relation('spents'),
   })
 })
 

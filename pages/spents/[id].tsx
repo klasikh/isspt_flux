@@ -18,45 +18,70 @@ type FormValues = {
   step: string;
 }
 
-const SendPaymentMutation = gql`
-  mutation ($id: ID!, $userId: ID!, $title: String!, $name: String!, $motifId: ID!, $filiereId: ID!, $amount: String!, $createdYear: String!,) {
-    sendPayment(id: $id, userId: $userId, title: $title, name: $name, motifId: $motifId, filiereId: $filiereId, amount: $amount, createdYear: $createdYear,) {
+const SendSpentMutation = gql`
+  mutation ($id: ID!, $userId: ID!, $title: String!, $name: String!, $motif: String!, $nature: String!, $amount: String!, $createdYear: String!,) {
+    sendSpent(id: $id, userId: $userId, title: $title, name: $name, motif: $motif, nature: $nature, amount: $amount, createdYear: $createdYear,) {
       title
       description
       name
-      motifId
-      filiereId
+      motif
+      nature
       amount
-      step
+      createdYear
     }
   }
 `;
 
-const RejectPaymentMutation = gql`
+const RejectSpentMutation = gql`
   mutation($id: ID!, $rejectMotif: String!, $userId: ID!, $status: String!, $step: String!) {
-    rejectPayment(id: $id, rejectMotif: $rejectMotif, userId: $userId, status: $status, step: $step,) {
+    rejectSpent(id: $id, rejectMotif: $rejectMotif, userId: $userId, status: $status, step: $step,) {
       id
       title
       description
       name
-      motifId
-      filiereId
+      motif
+      nature
       amount
       step
-      filePath
       createdYear
       addedBy
     }
   }
 `
 
-const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const ValidSpentMutation = gql`
+  mutation($id: ID!, $userId: ID!, $status: String!, $step: String!) {
+    validSpent(id: $id, userId: $userId, status: $status, step: $step,) {
+      id
+      title
+      description
+      name
+      motif
+      nature
+      amount
+      step
+      createdYear
+      addedBy
+    }
+  }
+`
+
+const DeleteSpentMutation = gql`
+  mutation($id: ID!, $userId: ID!,) {
+    deleteSpent(id: $id, userId: $userId,) {
+      id
+    }
+  }
+`
+
+const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
   const router = useRouter();
 
   const [isSendLoading, setIsSendLoading] = useState(false);
   const [isEditLoading, setIsEditLoading] = useState(false);
   const [isValidateLoading, setIsValidateLoading] = useState(false);
+  const [isRejectLoading, setIsRejectLoading] = useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
   const [openRejectModal, setOpenRejectModal] = useState(false)
@@ -68,9 +93,13 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
   const {data:session}=useSession()
   const theUserSession = session;
 
-  const [sendPayment] = useMutation(SendPaymentMutation);
+  const [sendSpent] = useMutation(SendSpentMutation);
 
-  const [rejectPayment, { data, loading, error }] = useMutation(RejectPaymentMutation)
+  const [rejectSpent, { data, loading, error }] = useMutation(RejectSpentMutation)
+
+  const [validSpent, { data: dataValSpent, loading: loadValSpent, error: errorValSpent }] = useMutation(ValidSpentMutation)
+
+  const [deleteSpent, { data: dataDelSpent, loading: loadDelSpent, error: errorDelSpent }] = useMutation(DeleteSpentMutation)
 
   const {
     register,
@@ -79,36 +108,31 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
     reset,
   } = useForm<FormValues>({ mode: 'onBlur' });
 
-  const sendTPayment = async () => {
+  const sendTSpent = async () => {
     setIsSendLoading(true);
-    const sendThePay = await toast.promise(sendPayment({ variables: { id: payment.id, userId: theUserSession?.user.id, title: payment.title, name: payment.name, motifId: payment.motifId, filiereId: payment.filiereId, amount: payment.amount, createdYear: payment.createdYear } }), {
+    const sendTheSpent = await toast.promise(sendSpent({ variables: { id: spent.id, userId: theUserSession?.user.id, title: spent.title, name: spent.name, motif: spent.motif, nature: spent.nature, amount: spent.amount, createdYear: spent.createdYear } }), {
       loading: 'Envoi en cours',
-      success: 'Envoyé avec succès! 🎉',
+      success: 'Envoyée avec succès! 🎉',
       error: `Désolé, une erreur s'est produite 😥`,
     });
 
-    if(sendThePay?.data.sendPayment) {
-      router.push(`/payments/list`);
+    if(sendTheSpent?.data.sendSpent) {
+      router.push(`/spents/list`);
       setIsSendLoading(false);
     }
     setIsSendLoading(false);
   };
 
-  const editPayment = () => {
+  const editSpent = () => {
     setIsEditLoading(true);
-    router.push(`/payments/edit/${payment.id}`)
+    router.push(`/spents/edit/${spent.id}`)
   }
 
-  const deletePayment = () => {
+  const deleteClickSpent = () => {
     setOpenDeletionModal(true)
   }
 
-  const validatePayment = () => {
-    setIsValidateLoading(true);
-    router.push(`/payments/validate/${payment.id}`)
-  }
-
-  const rejectClickPayment = () => {
+  const rejectClickSpent = () => {
     setOpenRejectModal(true)
   }
 
@@ -118,17 +142,17 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
     const theStep = "0";
     const theStatus = "REJECTED";
 
-    const variables = { id: payment.id, rejectMotif, userId: session?.user.id, status: theStatus, step: theStep }
+    const variables = { id: spent.id, rejectMotif, userId: session?.user.id, status: theStatus, step: theStep }
     try {
-      const theRejectedPayment = await toast.promise(rejectPayment({ variables }), {
+      const theRejectedSpent = await toast.promise(rejectSpent({ variables }), {
         loading: 'Opération en cours..',
-        success: 'Paiement rejeté avec succès!🎉',
+        success: 'Dépense rejetée avec succès!🎉',
         error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
       })
 
-      if(theRejectedPayment.data.rejectPayment) {
+      if(theRejectedSpent.data.rejectSpent) {
         setOpenRejectModal(false)
-        router.push(`/payments/list`)
+        router.push(`/spents/list`)
       }
 
     } catch (error) {
@@ -136,24 +160,47 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
     }
   }
 
-  const onValidateSubmit: SubmitHandler<FormValues> = async (data) => {
-    const { id, userId, status, step, } = data
-
+  const validateSpent = async () => {
+    setIsValidateLoading(true);
     const theStep = "2";
     const theStatus = "APPROVED";
 
-    const variables = { id: payment.id, userId: session?.user.id, status: theStatus, step: theStep }
+    const variables = { id: spent.id, userId: session?.user.id, status: theStatus, step: theStep }
     try {
-      const theRejectedPayment = await toast.promise(rejectPayment({ variables }), {
+      const theValidatedSpent = await toast.promise(validSpent({ variables }), {
         loading: 'Opération en cours..',
-        success: 'Paiement rejeté avec succès!🎉',
+        success: 'Dépense approuvée avec succès!🎉',
         error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
       })
 
-      if(theRejectedPayment.data.rejectPayment) {
-        setOpenRejectModal(false)
-        router.push(`/payments/list`)
+      if(theValidatedSpent.data.validSpent) {
+        router.push(`/spents/list`)
+        setIsValidateLoading(false);
       }
+      setIsValidateLoading(false);
+
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const delSpent = async () => {
+    setIsDeleteLoading(true);
+    const variables = { id: spent.id, userId: session?.user.id, }
+    try {
+      const theValidatedSpent = await toast.promise(deleteSpent({ variables }), {
+        loading: 'Opération en cours..',
+        success: 'Dépense approuvée avec succès!🎉',
+        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
+      })
+
+      if(theValidatedSpent.data.validSpent) {
+        router.push(`/spents/list`)
+        setIsDeleteLoading(false);
+        setOpenDeletionModal(false)
+      }
+      setIsDeleteLoading(false);
+      setOpenDeletionModal(false);
 
     } catch (error) {
       console.error(error)
@@ -165,48 +212,48 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
     <div>
       <div className="container mx-auto px-8 mt-10">
         <Toaster />
-        <h1 className="text-2xl font-bold mb-3">Informations du paiement</h1>
+        <h1 className="text-2xl font-bold mb-3">Informations de la dépense</h1>
         <div className="w-full bg-white rounded overflow-hidden shadow-lg">
           <div className="px-6 py-4">
-            <div className="font-bold text-xl mb-4 block bg-gray-600 p-1 text-white">Titre: {payment.title}</div>
+            <div className="font-bold text-xl mb-4 block bg-gray-600 p-1 text-white">Titre: {spent.title}</div>
             <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Description</div>
             <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
-              <span>{payment.description}</span>
+              <span>{spent.description}</span>
             </div>
             <div className="flex gap-x-4">
               <div className="md:w-1/2 sm:w-full sm:block">
-                <div className="font-bold text-xl bg-gray-600 p-1 text-white">Nom et prénoms de l&apos;étudiant</div>
+                <div className="font-bold text-xl bg-gray-600 p-1 text-white">Nom du matériel</div>
                 <div className="text-gray-700 mb-4 text-base bg-gray-300 p-2">
-                  <span>{payment.name}</span>
+                  <span>{spent.name}</span>
                 </div>
               </div>
               <div className="md:w-1/2 sm:w-full sm:block">
-                <div className="font-bold text-xl bg-gray-600 p-1 text-white">Filière</div>
+                <div className="font-bold text-xl bg-gray-600 p-1 text-white">Nature de la dépense</div>
                 <div className="text-gray-700 mb-4 text-base bg-gray-300 p-2">
-                  <span>{payment.filiereId}</span>
+                  <span>{spent.nature}</span>
                 </div>
               </div>
             </div>
             <div className="flex gap-x-4">
               <div className="md:w-1/2 sm:w-full sm:block">
-                <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Motif de paiement</div>
+                <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Motif de la dépense</div>
                 <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
-                  <span>{payment.motifId}</span>
+                  <span>{spent.motif}</span>
                 </div>
              </div>
               <div className="md:w-1/2 sm:w-full sm:block">
-                <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Montant payé</div>
+                <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Montant à dépenser</div>
                 <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
-                  <span>{payment.amount}</span>
+                  <span>{spent.amount}</span>
                 </div>
                </div>
             </div>
           </div>
 
-          { payment.status === "REJECTED"
+          { spent.status === "REJECTED"
             ? <div className="mx-4 my-2 p-4 bg-gray-300 shadow rounded-md">
                   <h4 className="font-bold text-md">Motif(s) du rejet:</h4>
-                  <span className="text-sm text-gray-700">{ payment.rejectMotif }</span>
+                  <span className="text-sm text-gray-700">{ spent.rejectMotif }</span>
                 </div>
             : ""
           }
@@ -214,38 +261,38 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
           <div className="px-6 pt-2 pb-6">
             <span className="font-bold">Statut: </span>
             <span className={
-                    payment.status === "CREATED"
+                    spent.status === "CREATED"
                     ? "inline-block bg-gray-400 rounded-full px-3 py-1 text-sm font-semibold text-gray-900 mr-2 mb-2"
-                    : payment.status === "CANCELED"
+                    : spent.status === "CANCELED"
                     ? "inline-block bg-black rounded-full px-3 py-1 text-sm font-semibold text-white mr-2 mb-2"
-                    : payment.status === "ONPROCESS"
+                    : spent.status === "ONPROCESS"
                     ? "inline-block bg-yellow-500 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
-                    : payment.status === "APPROVED"
+                    : spent.status === "APPROVED"
                     ? "inline-block bg-green-500 rounded-full px-3 py-1 text-sm font-semibold text-white mr-2 mb-2"
-                    : payment.status === "REJECTED"
+                    : spent.status === "REJECTED"
                     ? "inline-block bg-red-500 rounded-full px-3 py-1 text-sm font-semibold text-white mr-2 mb-2"
                     : ""
               }
             >
               {
-                payment.status === "CREATED"
+                spent.status === "CREATED"
                 ? "En attente"
-                : payment.status === "CANCELED"
+                : spent.status === "CANCELED"
                 ? "Annuler"
-                : payment.status === "ONPROCESS"
+                : spent.status === "ONPROCESS"
                 ? "Traitement en cours"
-                : payment.status === "APPROVED"
-                ? "Approuvé"
-                : payment.status === "REJECTED"
-                ? "Rejeté"
+                : spent.status === "APPROVED"
+                ? "Approuvée"
+                : spent.status === "REJECTED"
+                ? "Rejetée"
                 : ""
               }
             </span>
             <div className="float-right">
              {
-                (payment.step === "0")
+                (spent.step === "0")
                 ? ( <button
-                      onClick={() => sendTPayment()}
+                      onClick={() => sendTSpent()}
                       className="capitalize bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600"
                     >
                       {isSendLoading ? (
@@ -265,14 +312,12 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                       )}
                     </button>)
 
-                : (payment.step === "1")
+                : (spent.step === "1")
 
                 ? ( <span>
-                      <Link
-                        onClick={() => validatePayment()}
-                        href="https://sirah.isspt-edu.org"
-                        className="bg-green-500 text-white font-medium px-4 py-3 rounded-md hover:bg-green-600 mx-4"
-                        target="_blank"
+                      <button
+                        onClick={() => validateSpent()}
+                        className="bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600 mx-4"
                       >
                         {isValidateLoading ? (
                           <span className="flex items-center justify-center">
@@ -287,14 +332,14 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                             En cours...
                           </span>
                         ) : (
-                          <span className="font-bold">Valider</span>
+                          <span className="font-bold">Approuver</span>
                         )}
-                      </Link>
+                      </button>
                       <button
-                          onClick={() => rejectClickPayment()}
+                          onClick={() => rejectClickSpent()}
                           className="bg-red-500 text-white font-medium px-4 py-2 rounded-md hover:bg-red-600 mx-4"
                         >
-                          {isValidateLoading ? (
+                          {isRejectLoading ? (
                             <span className="flex items-center justify-center">
                               <svg
                                 className="w-6 h-6 animate-spin mr-1"
@@ -314,10 +359,10 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                 : ""
               }
               {
-                ((payment.step === "0" && payment.addedBy === theUserSession?.user?.id) || theUserSession?.user?.role === "ADMIN")
+                ((spent.step === "0" && spent.addedBy === theUserSession?.user?.id) || theUserSession?.user?.role === "ADMIN")
                 ? ( <span>
                       <button
-                        onClick={() => editPayment()}
+                        onClick={() => editSpent()}
                         className="bg-blue-500 text-white font-medium px-4 py-2 rounded-md hover:bg-blue-600 mx-4"
                       >
                         {isEditLoading ? (
@@ -337,7 +382,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                         )}
                       </button>
                       <button
-                        onClick={() => deletePayment()}
+                        onClick={() => deleteClickSpent()}
                         className="bg-red-500 text-white font-medium px-4 py-2 rounded-md hover:bg-red-600"
                       >
                         {isDeleteLoading ? (
@@ -357,6 +402,30 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                         )}
                       </button>
                     </span> )
+                  : ""
+                }
+
+                { (spent.step === "2" && (theUserSession?.user?.role === "ADMIN" || theUserSession?.user?.role === "SUPER_ADMIN"))
+                ? ( <button
+                      onClick={() => deleteClickSpent()}
+                      className="bg-red-500 text-white font-medium px-4 py-2 rounded-md hover:bg-red-600"
+                    >
+                      {isDeleteLoading ? (
+                        <span className="flex items-center justify-center">
+                          <svg
+                            className="w-6 h-6 animate-spin mr-1"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                          </svg>
+                          Suppression...
+                        </span>
+                      ) : (
+                        <span className="font-bold">Supprimer</span>
+                      )}
+                    </button> )
                   : ""
                 }
             </div>
@@ -401,7 +470,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                           </Dialog.Title>
                           <div className="mt-2">
                             <p className="text-sm text-gray-500">
-                              Êtes-vous sûr(e) de vouloir supprimer ce paiement ?
+                              Êtes-vous sûr(e) de vouloir supprimer cette dépense ?
                             </p>
                           </div>
                         </div>
@@ -411,7 +480,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                       <button
                         type="button"
                         className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
-                        onClick={() => setOpenDeletionModal(false)}
+                        onClick={() => delSpent()}
                       >
                         Confirmer la suppression
                       </button>
@@ -510,12 +579,12 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
   );
 };
 
-export default Payment;
+export default Spent;
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
   const id = params?.id;
-  const payment = await prisma.payment.findUnique({
+  const spent = await prisma.spent.findUnique({
     where: {
       id: id
     },
@@ -524,12 +593,11 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       title: true,
       description: true,
       name: true,
-      filiereId: true,
-      motifId: true,
+      nature: true,
+      motif: true,
       amount: true,
       step: true,
       status: true,
-      filePath: true,
       rejectMotif: true,
       isNotified: true,
       createdYear: true,
@@ -539,13 +607,13 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     },
   });
 
-  if (!payment) return {
+  if (!spent) return {
     notFound: true
   }
 
   return {
     props: {
-      payment,
+      spent,
     },
   };
 };

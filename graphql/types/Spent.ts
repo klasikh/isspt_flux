@@ -1,5 +1,7 @@
 // /graphql/types/Link.ts
 import { builder } from "../builder";
+import type { GetServerSideProps } from 'next'
+import { getSession } from "next-auth/react"
 
 builder.prismaObject('Spent', {
   fields: (t) => ({
@@ -10,11 +12,14 @@ builder.prismaObject('Spent', {
     nature: t.exposeString('nature'),
     motif: t.exposeString('motif'),
     amount: t.exposeString('amount'),
+    step: t.exposeString('step'),
     status: t.exposeString('status'),
     createdYear: t.exposeString('createdYear'),
-    isNotified: t.exposeString('isNotified'),
-    fromId: t.exposeString('fromId'),
-    toId: t.exposeString('toId'),
+    addedBy: t.exposeString('addedBy'),
+    rejectMotif: t.exposeString('rejectMotif'),
+    isNotified: t.boolean(),
+    fromId: t.exposeString('fromId', { nullable: true, }),
+    toId: t.exposeString('toId', { nullable: true, }),
   }),
 })
 
@@ -39,7 +44,7 @@ builder.queryField('spent', (t) =>
       prisma.spent.findUnique({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id,
         }
       })
   })
@@ -53,32 +58,66 @@ builder.mutationField('createSpent', (t) =>
       title: t.arg.string({ required: true }),
       name: t.arg.string({ required: true }),
       description: t.arg.string({ required: false }),
-      nature: t.arg.string({ required: true }),
       motif: t.arg.string({ required: true }),
+      nature: t.arg.string({ required: true }),
       amount: t.arg.string({ required: true }),
-      status: t.arg.string({ required: true }),
+      status: t.arg.string({ required: false }),
+      step: t.arg.string({ required: true }),
       createdYear: t.arg.string({ required: true }),
+      addedBy: t.arg.id({ required: true }),
       isNotified: t.arg.string({ required: false }),
       fromId: t.arg.string({ required: false }),
       toId: t.arg.string({ required: false }),
     },
     resolve: async (query, _parent, args, ctx) => {
       
-      const { title, name, description, nature, motif, amount, status, createdYear, isNotified, fromId, toId,  } = args
+      const { title, name, description, motif, nature, amount, step, createdYear, addedBy,  } = args
 
-      if (!(await ctx).user) {
-        throw new Error("You have to be logged in to perform this action")
-      }
 
-      const user = await prisma.user.findUnique({
-        where: {
-          email: (await ctx).user?.email,
+      const getServerSideProps: GetServerSideProps = async (context) => {
+
+        let session;
+        session = await getSession(context);
+
+        if (!session.user) {
+          throw new Error("Vous devez être connectés pour effectuer cette action");
         }
-      })
 
-      if (!user || user.role !== "USER") {
-        throw new Error("You don have permission ot perform this action")
+        const user = await prisma.user.findUnique({
+          where: {
+            email: session.user?.email,
+          }
+        })
+
+        if (!user || (user.role !== "USER" && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+          throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
+          // return 'toto est Ok'
+        }
+
+        const getUserPriorities = await prisma.userModulePriority.findMany({
+          select: {
+            userId: true,
+            moduleId: true,
+            priority: true
+          },
+          where: {
+            userId: user.id
+          }
+        })
+
+        // return {
+        //   props: {},
+        // };
+      };
+
+      try {
+        const getSess = await getServerSideProps(ctx);
+
+      } catch (error) {
+        console.log(error)
+        return error;
       }
+
 
       return await prisma.spent.create({
         ...query,
@@ -86,14 +125,12 @@ builder.mutationField('createSpent', (t) =>
           title, 
           name, 
           description, 
-          nature, 
           motif, 
+          nature,
           amount, 
-          status, 
+          step,
           createdYear, 
-          isNotified, 
-          fromId, 
-          toId,
+          addedBy,
         }
       })
     }
@@ -111,17 +148,15 @@ builder.mutationField('updateSpent', (t) =>
       nature: t.arg.string(),
       motif: t.arg.string(),
       amount: t.arg.string(),
-      status: t.arg.string(),
+      step: t.arg.string(),
       createdYear: t.arg.string(),
-      isNotified: t.arg.string(),
-      fromId: t.arg.string(),
-      toId: t.arg.string(),
+      addedBy: t.arg.id(),
     },
     resolve: async (query, _parent, args, _ctx) =>
       prisma.spent.update({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id,
         },
         data: {
           title: args.title ? args.title : undefined,
@@ -130,11 +165,141 @@ builder.mutationField('updateSpent', (t) =>
           nature: args.nature ? args.nature : undefined,
           motif: args.motif ? args.motif : undefined,
           amount: args.amount ? args.amount : undefined,
-          status: args.status ? args.status : undefined,
+          step: args.step ? args.step : undefined,
           createdYear: args.createdYear ? args.createdYear : undefined,
-          isNotified: args.isNotified ? args.isNotified : undefined,
-          fromId: args.fromId ? args.fromId : undefined,
-          toId: args.toId ? args.toId : undefined,
+          addedBy: args.addedBy ? args.addedBy : undefined,
+        }
+      })
+  })
+)
+
+builder.mutationField('sendSpent', (t) =>
+  t.prismaField({
+    type: 'Spent',
+    args: {
+      id: t.arg.id({ required: true }),
+      userId: t.arg.id({ required: true }),
+      title: t.arg.string(),
+      name: t.arg.string(),
+      motif: t.arg.string(),
+      nature: t.arg.string(),
+      amount: t.arg.string(),
+      createdYear: t.arg.string(),
+    },
+    resolve: async (query, _parent, args, ctx) => {
+
+      const getServerSideProps: GetServerSideProps = async (context) => {
+
+        let session;
+        session = await getSession(context);
+
+        if (!session.user) {
+          throw new Error("Vous devez être connectés pour effectuer cette action");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            email: session.user?.email,
+          }
+        })
+
+        if (!user || (user.role !== "USER" && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+          throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
+          // return 'toto est Ok'
+        }
+
+        // return {
+        //   props: {},
+        // };
+      };
+
+      const spent = await prisma.spent.update({
+        ...query,
+        where: {
+          id: args.id
+        },
+        data: {
+          step: "1",
+          status: "ONPROCESS",
+          rejectMotif: "",
+        }
+      })
+
+      const updateUserPayments = await prisma.user.update({
+        ...query,
+        where: {
+          id: args.userId
+        },
+        data: {
+          spents: {
+            connectOrCreate: {
+              where: {
+                id: args.id,
+              },
+              create: {
+                id: args.id,
+                title: args.title ? args.title : undefined,
+                name: args.name ? args.name : undefined,
+                motif: args.motif ? args.motif : undefined,
+                nature: args.nature ? args.nature : undefined,
+                amount: args.amount ? args.amount : undefined,
+                step: "1",
+                createdYear: args.createdYear ? args.createdYear : undefined,
+                rejectMotif: "",
+              },
+            },
+          }
+        }
+      })
+
+      return spent;
+    }
+  })
+)
+
+builder.mutationField('rejectSpent', (t) =>
+  t.prismaField({
+    type: 'Spent',
+    args: {
+      id: t.arg.id({ required: true }),
+      rejectMotif: t.arg.string(),
+      userId: t.arg.id(),
+      status: t.arg.string(),
+      step: t.arg.string(),
+    },
+    resolve: async (query, _parent, args, _ctx) =>
+      prisma.spent.update({
+        ...query,
+        where: {
+          id: args.id,
+        },
+        data: {
+          rejectMotif: args.rejectMotif ? args.rejectMotif : undefined,
+          status: args.status ? args.status : undefined,
+          step: args.step ? args.step : undefined,
+        }
+      })
+  })
+)
+
+builder.mutationField('validSpent', (t) =>
+  t.prismaField({
+    type: 'Spent',
+    args: {
+      id: t.arg.id({ required: true }),
+      userId: t.arg.id(),
+      status: t.arg.string(),
+      step: t.arg.string(),
+    },
+    resolve: async (query, _parent, args, _ctx) =>
+      prisma.spent.update({
+        ...query,
+        where: {
+          id: args.id,
+        },
+        data: {
+          status: args.status ? args.status : undefined,
+          step: args.step ? args.step : undefined,
         }
       })
   })
@@ -144,14 +309,56 @@ builder.mutationField('deleteSpent', (t) =>
   t.prismaField({
     type: 'Spent',
     args: {
-      id: t.arg.id({ required: true })
+      id: t.arg.id({ required: true }),
+      userId: t.arg.id({ required: true }),
     },
-    resolve: async (query, _parent, args, _ctx) =>
+    resolve: async (query, _parent, args, _ctx) => {
+
+
+      const getServerSideProps: GetServerSideProps = async (context) => {
+
+        let session;
+        session = await getSession(context);
+
+        if (!session.user) {
+          throw new Error("Vous devez être connectés pour effectuer cette action");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            email: session.user?.email,
+          }
+        })
+
+        if (!user || (user.role !== "USER" && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+          throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
+          // return 'toto est Ok'
+        }
+
+        // CHECK
+        const checkedSpent = prisma.spent.findUnique({
+          ...query,
+          where: {
+            id: args.id,
+          }
+        });
+
+        if(user.role === "USER") {
+          if(checkedSpent.addedBy !== userId) {
+            throw new Error("Désolé, vous n'êtes pas l'utilisateur qui a ajouté cette dépense");
+          }
+        }
+      };
+
       prisma.spent.delete({
         ...query,
         where: {
-          id: Number(args.id)
-        }
-      })
+          id: args.id
+        },
+      });
+
+      return args.id
+
+    }
   })
 )

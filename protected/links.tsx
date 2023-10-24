@@ -24,6 +24,8 @@ import MotifsList from "../pages/motifs/list";
 import MotifAdd from "../pages/motifs/add";
 import PaymentsList from "../pages/payments/list";
 import PaymentAdd from "../pages/payments/add";
+import SpentsList from "../pages/spents/list";
+import SpentAdd from "../pages/spents/add";
 
 // import { Home, Profile, Tables, Notifications } from "../pages/dashboard";
 
@@ -129,6 +131,20 @@ export const routes = [
         name: "Ajouter un paiement",
         path: "/payments/add",
         element: <PaymentAdd />,
+        role: "USER"
+      },
+            {
+        icon: <BellAlertIcon {...icon} />,
+        name: "Liste des dépenses",
+        path: "/spents/list",
+        element: <SpentsList />,
+        role: "USER"
+      },
+      {
+        icon: <PlusSmallIcon {...icon} />,
+        name: "Ajouter une dépense",
+        path: "/spents/add",
+        element: <spentAdd />,
         role: "USER"
       },
       {

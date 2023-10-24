@@ -59,7 +59,7 @@ const AllFilieresQuery = gql`
 `;
 
 const CreatePaymentMutation = gql`
-  mutation($title: String!, $description: String!, $name: String!, $motifId: String!, $filiereId: String!, $step: String!, $amount: String!, $createdYear: String!, $addedBy: String!) {
+  mutation($title: String!, $description: String!, $name: String!, $motifId: ID!, $filiereId: ID!, $step: String!, $amount: String!, $createdYear: String!, $addedBy: String!) {
     createPayment(title: $title, description: $description, name: $name, motifId: $motifId, filiereId: $filiereId, amount: $amount, step: $step, createdYear: $createdYear, addedBy: $addedBy) {
       id
       title

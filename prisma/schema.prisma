@@ -22,6 +22,7 @@ model User {
   password  String
   bookmarks Link[]
   payments Payment[]
+  spents Spent[]
   userModulesPriorities UserModulePriority[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -150,18 +151,21 @@ model Payment {
 model Spent {
   id           String      @id @default(uuid())
   title        String
-  description  String
+  description  String?
   nature         String?
   name    String?
   motif      String
   amount        String
+  step         String
   status       Status @default(CREATED)
   createdYear        String
+  addedBy      String
+  rejectMotif      String?
   isNotified    Boolean @default(false)
-  fromId         String 
-  toId           String 
+  fromId         String?
+  toId           String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // user User @relation(fields: [fromId, toId], references: [id, id])
+  user User @relation(fields: [addedBy], references: [id])
 }
