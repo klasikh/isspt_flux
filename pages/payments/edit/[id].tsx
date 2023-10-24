@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form'
 import prisma from '../../../lib/prisma';
 import { gql, useQuery, useMutation } from '@apollo/client';
+import { ExclamationTriangleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
@@ -172,7 +173,15 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
     <div>
       <div className="container mx-auto px-8 mt-10">
         <Toaster />
-        <h1 className="text-3xl font-medium mb-5">Editer un paiement</h1>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="bg-gray-500 text-white font-bold px-4 py-2 mb-6 rounded-md hover:bg-gray-600 flex"
+        >
+          <ArrowLeftIcon className="h-6 w-6 text-white font-bold mr-2" aria-hidden="true" />
+          Retour
+        </button>
+        <h1 className="text-3xl font-medium mb-5 uppercase text-center">Editer un paiement</h1>
         <form className="grid grid-cols-1 gap-y-4 bg-white shadow-lg p-8 rounded-lg" onSubmit={handleSubmit(onSubmit)}>
           <label className="block">
             <span className="text-gray-700">Titre</span>
@@ -259,7 +268,7 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
                 En cours...
               </span>
             ) : (
-              <span>Valider</span>
+              <span>Modifier</span>
             )}
           </button>
         </form>

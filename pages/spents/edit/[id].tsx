@@ -95,7 +95,7 @@ const EditSpent = ({ spent }: InferGetServerSidePropsType<typeof getServerSidePr
     <div>
       <div className="container mx-auto px-8 mt-10">
         <Toaster />
-        <h1 className="text-3xl font-medium mb-5">Editer une dépense</h1>
+        <h1 className="text-3xl font-medium mb-5 uppercase text-center">Editer une dépense</h1>
          <form className="grid grid-cols-1 gap-y-4 bg-white shadow-lg p-8 rounded-lg" onSubmit={handleSubmit(onSubmit)}>
         <label className="block">
           <span className="text-gray-700">Titre</span>
@@ -172,7 +172,7 @@ const EditSpent = ({ spent }: InferGetServerSidePropsType<typeof getServerSidePr
               En cours...
             </span>
           ) : (
-            <span>Valider</span>
+            <span>Modifier</span>
           )}
         </button>
       </form>

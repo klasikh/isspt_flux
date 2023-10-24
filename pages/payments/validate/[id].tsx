@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form'
 import prisma from '../../../lib/prisma';
 import { gql, useQuery, useMutation } from '@apollo/client';
+import { ExclamationTriangleIcon, ArrowLeftIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline'
 import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
@@ -59,9 +60,9 @@ const AllFilieresQuery = gql`
   }
 `;
 
-const EditPaymentMutation = gql`
-  mutation($id: ID!, $title: String!, $description: String!, $name: String!, $motifId: String!, $filiereId: String!, $step: String!, $amount: String!, $createdYear: String!, $addedBy: String!) {
-    updatePayment(id: $id, title: $title, description: $description, name: $name, motifId: $motifId, filiereId: $filiereId, amount: $amount, step: $step, createdYear: $createdYear, addedBy: $addedBy) {
+const ValidPaymentMutation = gql`
+  mutation($id: ID!, $userId: ID!, $status: String!, $step: String!, $filePath: String!) {
+    validPayment(id: $id, userId: $userId, status: $status, step: $step, filePath: $filePath) {
       id
       title
       description
@@ -77,7 +78,7 @@ const EditPaymentMutation = gql`
   }
 `
 
-const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -89,7 +90,7 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
 
   const { data: allFilieres } = useQuery(AllFilieresQuery);
 
-  const [editPayment, { data, loading, error }] = useMutation(EditPaymentMutation)
+  const [validPayment, { data, loading, error }] = useMutation(ValidPaymentMutation)
 
   const {
     register,
@@ -103,7 +104,7 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
     if (!e.target.files || e.target.files.length <= 0) return
     const file = e.target.files[0]
     const filename = encodeURIComponent(file.name)
-    const res = await fetch(`/api/upload-image?file=${filename}`)
+    const res = await fetch(`/api/upload-file?file=${filename}`)
     const data = await res.json()
     const formData = new FormData()
 
@@ -141,26 +142,21 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
 }, [payment]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    const { id, title, description, name, motifId, filiereId, amount, step, createdYear, addedBy } = data
+    const theStep = "2";
+    const theStatus = "APPROVED";
 
-    // const filePath = `https://${process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${image[0]?.name}`
-
-    const theStep = "0";
-    const year = new Date().getFullYear();
-    const yearToString = year.toString()
-    // const variables = { title, description, name, motifId, filiereId, amount, theStep, filePath, createdYear, }
-    const variables = { id: payment.id, title, description, name, motifId, filiereId, amount, step: theStep, createdYear: yearToString, addedBy: session?.user.id }
+    const variables = { id: payment.id, userId: session?.user.id, status: theStatus, step: theStep, }
     try {
-      const theEditedPayment = await toast.promise(editPayment({ variables }), {
+      const theValidatedPayment = await toast.promise(editPayment({ variables }), {
         loading: 'Opération en cours..',
-        success: 'Paiement mis a jour avec succès!🎉',
+        success: 'Paiement traité avec succès!🎉',
         error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
       })
 
       // console.log(theEditedPayment)
 
-      if(theEditedPayment.data.updatePayment) {
-        router.push(`/payments/${theEditedPayment.data.updatePayment.id}`)
+      if(theValidatedPayment.data.validPayment) {
+        router.push(`/payments/${theValidatedPayment.data.validPayment.id}`)
       }
 
     } catch (error) {
@@ -172,6 +168,14 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
     <div>
       <div className="container mx-auto px-8 mt-10">
         <Toaster />
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="bg-gray-500 text-white font-bold px-4 py-2 mb-6 rounded-md hover:bg-gray-600 flex"
+        >
+          <ArrowLeftIcon className="h-6 w-6 text-white font-bold mr-2" aria-hidden="true" />
+          Retour
+        </button>
         <h1 className="text-2xl font-medium mb-5">Valider un paiement <span className="text-sm">(Veuillez attacher le fichier de la quittance au formulaire)</span></h1>
         <form className="grid grid-cols-1 gap-y-4 bg-white shadow-lg p-8 rounded-lg" onSubmit={handleSubmit(onSubmit)}>
           <label className="block">
@@ -233,16 +237,20 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
               disabled
             />
           </label>
-          {/* <label className="block">
-            <span className="text-gray-700">Upload a .png or .jpg image (max 1MB).</span>
+          <div className="text-center justify-center flex">
+          <label className="block p-3 bg-gray-200 w-1/3 h-18 rounded">
+            <span className="text-gray-700">Cliquez ou glissez déposer pour charger un document .docx ou .pdf (max 2MB)</span>
+            <div className="justify-center my-2 flex"><ArrowUpTrayIcon className="h-10 w-10 text-blue-600 font-bold" aria-hidden="true" /></div>
             <input
-              {...register('image', { required: false })}
+              {...register('filePath', { required: false })}
               onChange={uploadPhoto}
               type="file"
-              accept="image/png, image/jpeg"
-              name="image"
+              accept="application/docx, application/pdf"
+              name="filePath"
+              className="text-none w-1/2"
             />
-          </label> */}
+          </label>
+          </div>
 
           <button
             disabled={loading}
@@ -271,7 +279,7 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
   );
 };
 
-export default EditPayment;
+export default ValidateAPayment;
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const id = params?.id;

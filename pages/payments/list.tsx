@@ -3,8 +3,10 @@ import Head from "next/head";
 import { gql, useQuery, useMutation } from "@apollo/client";
 import { AwesomeLink } from "../../components/AwesomeLink";
 import type { Link as Node } from "@prisma/client";
-import type { GetServerSideProps } from 'next'
-import { getSession } from "next-auth/react"
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
+import { getSession, useSession } from "next-auth/react";
+import toast, { Toaster } from 'react-hot-toast';
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 // import { useUser } from "@auth0/nextjs-auth0/client";
 import {
@@ -21,51 +23,8 @@ import {
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon, } from "@heroicons/react/24/outline";
 
-const AllPaymentsQuery = gql`
-  query allPaymentsQuery($first: Int, $after: ID) {
-    payments(first: $first, after: $after) {
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-      edges {
-        cursor
-        node {
-          id
-          title
-          description
-          name
-          filiereId
-          motifId
-          amount
-          status
-        }
-      }
-    }
-  }
-`;
-
-function PaymentsList() {
-//   const { user } = useUser()
-  const { data, loading, error, fetchMore } = useQuery(AllPaymentsQuery, {
-    variables: { first: 10 },
-  });
-
-  {/* if (!user) {
-    return (
-      <div className="flex items-center justify-center">
-        To view the awesome links you need to{' '}
-        <Link href="/api/auth/login" className=" block bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0">
-          Login
-        </Link>
-      </div>
-    );
-  } */}
-
-  if (loading) return <p>Chargement...</p>;
-  if (error) return <p>Oh no... {error.message}</p>;
-
-  const { endCursor, hasNextPage } = data?.payments.pageInfo;
+const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const router = useRouter();
 
   return (
     <div>
@@ -85,7 +44,7 @@ function PaymentsList() {
           <Card>
             <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
               <Typography variant="h6" color="white">
-                Liste des paiements ({data?.payments.edges.length})
+                Liste des paiements ({payments.length})
               </Typography>
             </CardHeader>
             <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
@@ -110,7 +69,7 @@ function PaymentsList() {
                   </tr>
                 </thead>
                 <tbody>
-                  { data?.payments.edges.map(({ node }: { node: Node }) => (
+                  { payments.map((node) => (
                         <tr key={node.id}>
                           <td className={`py-3 px-5`}>
                             <div className="flex items-center gap-4">
@@ -263,7 +222,33 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     };
   }
 
+  const payments = await prisma.payment.findMany({
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      name: true,
+      motifId: true,
+      filiereId: true,
+      amount: true,
+      step: true,
+      status: true,
+      rejectMotif: true,
+      isNotified: true,
+      createdYear: true,
+      addedBy: true,
+      fromId: true,
+      toId: true,
+    },
+  });
+
+  if (!payments) return {
+    notFound: true
+  }
+
   return {
-    props: {},
+    props: {
+      payments,
+    },
   };
 };

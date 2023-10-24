@@ -290,6 +290,7 @@ builder.mutationField('validPayment', (t) =>
       userId: t.arg.id(),
       status: t.arg.string(),
       step: t.arg.string(),
+      filePath: t.arg.string(),
     },
     resolve: async (query, _parent, args, _ctx) =>
       prisma.payment.update({
@@ -300,6 +301,7 @@ builder.mutationField('validPayment', (t) =>
         data: {
           status: args.status ? args.status : undefined,
           step: args.step ? args.step : undefined,
+          filePath: args.filePath ? args.filePath : undefined,
         }
       })
   })

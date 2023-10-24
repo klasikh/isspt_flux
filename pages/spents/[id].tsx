@@ -1,7 +1,7 @@
 import React, { Fragment, useRef, useState } from 'react'
 import { type SubmitHandler, useForm } from 'react-hook-form'
 import { Dialog, Transition } from '@headlessui/react'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon, ArrowLeftIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/outline'
 import prisma from '../../lib/prisma';
 import Link from "next/link";
 import { gql, useMutation } from '@apollo/client';
@@ -212,7 +212,15 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
     <div>
       <div className="container mx-auto px-8 mt-10">
         <Toaster />
-        <h1 className="text-2xl font-bold mb-3">Informations de la dépense</h1>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="bg-gray-500 text-white font-bold px-4 py-2 mb-6 rounded-md hover:bg-gray-600 flex"
+        >
+          <ArrowLeftIcon className="h-6 w-6 text-white font-bold mr-2" aria-hidden="true" />
+          Retour
+        </button>
+        <h1 className="text-2xl font-bold mb-3 uppercase text-center">Informations de la dépense</h1>
         <div className="w-full bg-white rounded overflow-hidden shadow-lg">
           <div className="px-6 py-4">
             <div className="font-bold text-xl mb-4 block bg-gray-600 p-1 text-white">Titre: {spent.title}</div>

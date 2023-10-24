@@ -4,10 +4,11 @@ import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
 import {
   Sidenav,
-  DashboardNavbar,
+//   DashboardNavbar,
 //   Configurator,
   Footer,
 } from "./widgets/layout";
+import DashboardNavbar from "./widgets/layout/dashboard-navbar"
 import { useMaterialTailwindController, setOpenConfigurator } from "../context";
 import Link from "next/link";
 
@@ -21,7 +22,7 @@ export function Dashboard ({
     const router = useRouter();
     const {controller, dispatch} = useMaterialTailwindController();
     const sidenavType = controller;
-    const { data: session, status } = useSession()
+    const { data: session, status } = useSession();
 
     return (
         <div className="min-h-screen bg-blue-gray-50/50">

@@ -1,7 +1,7 @@
-import React from "react";
+import React, { createContext, useContext } from "react";
 import PropTypes from "prop-types";
 
-export const MaterialTailwind = React.createContext(null);
+export const MaterialTailwind = createContext(null);
 MaterialTailwind.displayName = "MaterialTailwindContext";
 
 export function reducer(state, action) {
@@ -54,7 +54,7 @@ export function MaterialTailwindControllerProvider({ children }) {
 }
 
 export function useMaterialTailwindController() {
-  const context = React.useContext(MaterialTailwind);
+  const context = useContext(MaterialTailwind);
 
   if (!context) {
     throw new Error(
@@ -65,7 +65,7 @@ export function useMaterialTailwindController() {
   return context;
 }
 
-MaterialTailwindControllerProvider.displayName = "/src/context/index.jsx";
+MaterialTailwindControllerProvider.displayName = "./context.tsx";
 
 MaterialTailwindControllerProvider.propTypes = {
   children: PropTypes.node.isRequired,

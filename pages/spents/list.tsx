@@ -5,7 +5,7 @@ import { gql, useQuery, useMutation } from "@apollo/client";
 import { Dialog, Transition } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import type { Link as Node } from "@prisma/client";
-import type { GetServerSideProps } from 'next'
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
@@ -25,30 +25,6 @@ import {
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon, } from "@heroicons/react/24/outline";
 
-const AllSpentsQuery = gql`
-  query allSpentsQuery($first: Int, $after: ID) {
-    spents(first: $first, after: $after) {
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-      edges {
-        cursor
-        node {
-          id
-          title
-          description
-          name
-          nature
-          motif
-          amount
-          status
-        }
-      }
-    }
-  }
-`;
-
 const DeleteSpentMutation = gql`
   mutation($id: ID!, $userId: ID!,) {
     deleteSpent(id: $id, userId: $userId,) {
@@ -57,9 +33,9 @@ const DeleteSpentMutation = gql`
   }
 `
 
-const SpentsList = () => {
+const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
-
+/*
   const { data, loading, error, fetchMore } = useQuery(AllSpentsQuery, {
     variables: { first: 10 },
   });
@@ -67,7 +43,7 @@ const SpentsList = () => {
   if (loading) return <p>Chargement...</p>;
   if (error) return <p>Oh no... {error.message}</p>;
 
-  const { endCursor, hasNextPage } = data?.spents.pageInfo;
+  const { endCursor, hasNextPage } = data?.spents.pageInfo;*/
 
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
@@ -125,7 +101,7 @@ const SpentsList = () => {
           <Card>
             <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
               <Typography variant="h6" color="white">
-                Liste des dépenses ({data?.spents.edges.length})
+                Liste des dépenses ({spents.length})
               </Typography>
             </CardHeader>
             <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
@@ -150,7 +126,7 @@ const SpentsList = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  { data?.spents.edges.map(({ node }: { node: Node }) => (
+                  { spents.map((node) => (
                         <tr key={node.id}>
                           <td className={`py-3 px-5`}>
                             <div className="flex items-center gap-4">
@@ -248,11 +224,11 @@ const SpentsList = () => {
                                   <PencilIcon className="h-5 w-5 text-white-500" />
                                 </IconButton>
                               </Link>
-                              <button onClick={ () => deleteClickSpent(node.id)}>
+                              <Link href="#">
                                 <IconButton variant="text" color="white" className="text-sm bg-red-600 hover:bg-red-400">
                                   <TrashIcon className="h-5 w-5 text-white-500" />
                                 </IconButton>
-                              </button>
+                              </Link>
                             </Typography>
 
 
@@ -306,7 +282,34 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     };
   }
 
+  const spents = await prisma.spent.findMany({
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      name: true,
+      nature: true,
+      motif: true,
+      amount: true,
+      step: true,
+      status: true,
+      rejectMotif: true,
+      isNotified: true,
+      createdYear: true,
+      addedBy: true,
+      fromId: true,
+      toId: true,
+    },
+  });
+
+  if (!spents) return {
+    notFound: true
+  }
+
   return {
-    props: {},
+    props: {
+      spents,
+    },
   };
+
 };

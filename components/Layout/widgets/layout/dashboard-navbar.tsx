@@ -34,7 +34,10 @@ import {
 import SignOut from "../../../SignOut"
 // import { useSession } from "next-auth/react"
 
-export function DashboardNavbar () {
+export function DashboardNavbar() {
+
+//   let toto =  | undefined;
+//   const [controller, dispatch][Symbol.iterator]() = useMaterialTailwindController();
   const [controller, dispatch] = useMaterialTailwindController();
   const { fixedNavbar, openSidenav } = controller;
   const pathname = usePathname();
