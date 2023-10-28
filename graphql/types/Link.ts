@@ -4,6 +4,7 @@ import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
 
 builder.prismaObject('Link', {
+  name: 'Link',
   fields: (t) => ({
     id: t.exposeID('id'),
     title: t.exposeString('title'),

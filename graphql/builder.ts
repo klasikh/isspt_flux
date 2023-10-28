@@ -6,8 +6,8 @@ import RelayPlugin from "@pothos/plugin-relay";
 import createContext from './context'
 
 export const builder = new SchemaBuilder<{
-  PrismaTypes: PrismaTypes,
   Context: ReturnType<typeof createContext>,
+  PrismaTypes: PrismaTypes,
 }>({
   plugins: [PrismaPlugin, RelayPlugin],
   relayOptions: {},
@@ -15,7 +15,7 @@ export const builder = new SchemaBuilder<{
     client: prisma,
   }
 })
-
+/*
 builder.queryType({
   fields: (t) => ({
     ok: t.boolean({
@@ -24,4 +24,4 @@ builder.queryType({
   }),
 });
 
-builder.mutationType({})
+builder.mutationType({})*/

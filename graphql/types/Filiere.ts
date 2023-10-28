@@ -3,7 +3,15 @@ import { builder } from "../builder";
 import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
 
+type Filiere = {
+  // Définissez la structure de Filiere
+  id: string;
+  name: string;
+  description: string;
+};
+
 builder.prismaObject('Filiere', {
+  name: 'Filiere',
   fields: (t) => ({
     id: t.exposeID('id'),
     name: t.exposeString('name'),
@@ -33,7 +41,7 @@ builder.queryField('filiere', (t) =>
       prisma.filiere.findUnique({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id.toString(),
         }
       })
   })
@@ -41,14 +49,14 @@ builder.queryField('filiere', (t) =>
 
 
 builder.mutationField('createFiliere', (t) =>
-  t.prismaField({
-    type: 'Filiere',
+  t.field({
+    type: "Filiere",
     args: {
       name: t.arg.string({ required: true }),
       description: t.arg.string({ required: true }),
     },
     resolve: async (query, _parent, args, ctx) => {
-      
+
       const { name, description, } = args
 
       const getServerSideProps: GetServerSideProps = async (context) => {
@@ -96,7 +104,7 @@ builder.mutationField('createFiliere', (t) =>
 )
 
 builder.mutationField('updateFiliere', (t) =>
-  t.prismaField({
+  t.field({
     type: 'Filiere',
     args: {
       id: t.arg.id({ required: true }),
@@ -107,7 +115,7 @@ builder.mutationField('updateFiliere', (t) =>
       prisma.filiere.update({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id.toString(),
         },
         data: {
           name: args.name ? args.name : undefined,
@@ -118,7 +126,7 @@ builder.mutationField('updateFiliere', (t) =>
 )
 
 builder.mutationField('deleteFiliere', (t) =>
-  t.prismaField({
+  t.field({
     type: 'Filiere',
     args: {
       id: t.arg.id({ required: true })
@@ -127,7 +135,7 @@ builder.mutationField('deleteFiliere', (t) =>
       prisma.filiere.delete({
         ...query,
         where: {
-          id: Number(args.id)
+          id: args.id.toString(),
         }
       })
   })

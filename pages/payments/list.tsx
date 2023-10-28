@@ -206,6 +206,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     select: {
       email: true,
       role: true,
+      payments: true,
     },
     where: {
       email: session.user?.email,

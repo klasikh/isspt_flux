@@ -33,7 +33,7 @@ builder.queryField('userModulePriority', (t) =>
       prisma.link.findUnique({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id,
         }
       })
   })
@@ -144,7 +144,7 @@ builder.mutationField('updateUserModulePriority', (t) =>
       prisma.userModulePriority.update({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id,
         },
         data: {
           userId: args.userId ? args.userId : undefined,
@@ -165,7 +165,7 @@ builder.mutationField('deleteUserModulePriority', (t) =>
       prisma.userModulePriority.delete({
         ...query,
         where: {
-          id: Number(args.id)
+          id: args.id
         }
       })
   })

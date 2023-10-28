@@ -4,6 +4,10 @@ import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
 import bcrypt from "bcryptjs";
 
+const Role = builder.enumType('Role', {
+  values: ['USER', 'ADMIN'] as const,
+})
+
 builder.prismaObject('User', {
   fields: (t) => ({
     id: t.exposeID('id'),
@@ -20,11 +24,27 @@ builder.prismaObject('User', {
 
       }),
     }),
-  image: t.exposeString('image', { nullable: true, }),
-  role: t.expose('role', { type: Role, }),
-  bookmarks: t.relation('bookmarks'),
-  payments: t.relation('payments'),
-  spents: t.relation('spents'),
+    image: t.exposeString('image', { nullable: true, }),
+    role: t.expose('role', { type: Role, }),
+    bookmarks: t.relation('bookmarks'),
+    payments: t.relation('payments'),
+    spents: t.field({
+      select: (args, ctx, nestedSelection) => ({
+        spents: {
+          select: {
+            // This will look at what fields are queried on Media
+            // and automatically select uploadedBy if that relation is requested
+            spents: nestedSelection(
+              // This arument is the default query for the media relation
+              // It could be something like: `{ select: { id: true } }` instead
+              true,
+            ),
+          },
+        },
+      }),
+      type: [Spent],
+      resolve: (user) => user.spents.map(({ spent }) => spent),
+    }),
   })
 })
 
@@ -36,11 +56,6 @@ builder.queryField('users', (t) =>
       prisma.user.findMany({ ...query })
   })
 )
-
-const Role = builder.enumType('Role', {
-  values: ['USER', 'ADMIN'] as const,
-})
-
 
 builder.mutationField('createUser', (t) =>
   t.prismaField({

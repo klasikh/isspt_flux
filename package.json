@@ -19,7 +19,9 @@
     "@pothos/plugin-relay": "3.32.0",
     "@prisma/client": "^4.8.1",
     "aws-sdk": "2.1295.0",
+    "axios": "^1.5.1",
     "bcryptjs": "^2.4.3",
+    "fs-extra": "^11.1.1",
     "graphql": "16.6.0",
     "graphql-yoga": "3.3.0",
     "jsonwebtoken": "^9.0.2",
@@ -32,8 +34,10 @@
     "prop-types": "^15.8.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-dropzone": "^14.2.3",
     "react-hook-form": "7.42.1",
-    "react-hot-toast": "2.4.0"
+    "react-hot-toast": "2.4.0",
+    "tsc-silent": "^1.2.2"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",

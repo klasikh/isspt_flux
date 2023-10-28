@@ -10,7 +10,7 @@ import {
 } from "@material-tailwind/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
-export function Navbar({ brandName, routes, action }: { brandImg: any, routes: any, action: any }) {
+export function Navbar({ brandName, routes, action }: { brandName: any, routes: any, action: any }) {
   const [openNav, setOpenNav] = React.useState(false);
 
   React.useEffect(() => {
@@ -22,7 +22,7 @@ export function Navbar({ brandName, routes, action }: { brandImg: any, routes: a
 
   const navList = (
     <ul className="mb-4 mt-2 flex flex-col gap-2 lg:mb-0 lg:mt-0 lg:flex-row lg:items-center lg:gap-6">
-      {routes.map(({ name, path, icon }) => (
+      {routes.map(({ name, path, icon }: { name: any, path: any, icon: any }) => (
         <Typography
           key={name}
           as="li"
@@ -30,7 +30,7 @@ export function Navbar({ brandName, routes, action }: { brandImg: any, routes: a
           color="blue-gray"
           className="capitalize"
         >
-          <Link to={path} className="flex items-center gap-1 p-1 font-normal">
+          <Link href={path} className="flex items-center gap-1 p-1 font-normal">
             {icon &&
               React.createElement(icon, {
                 className: "w-[18px] h-[18px] opacity-50 mr-1",
@@ -45,7 +45,7 @@ export function Navbar({ brandName, routes, action }: { brandImg: any, routes: a
   return (
     <MTNavbar className="p-3">
       <div className="container mx-auto flex items-center justify-between text-blue-gray-900">
-        <Link to="/">
+        <Link href="/">
           <Typography
             variant="small"
             className="mr-4 ml-2 cursor-pointer py-1.5 font-bold"

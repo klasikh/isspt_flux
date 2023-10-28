@@ -12,6 +12,10 @@ generator client {
   // provider = "nexus-prisma"
 // }
 
+generator pothos {
+  provider = "prisma-pothos-types"
+}
+
 model User {
   id        String      @id @default(uuid())
   name      String?

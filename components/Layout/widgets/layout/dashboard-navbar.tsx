@@ -1,3 +1,4 @@
+import React, { createContext, useContext } from "react";
 import Link from "next/link";
 import { usePathname } from 'next/navigation'
 import { signOut } from "next-auth/react";
@@ -24,6 +25,7 @@ import {
   Bars3Icon,
 } from "@heroicons/react/24/solid";
 import {
+  MaterialTailwind,
   useMaterialTailwindController,
   setOpenConfigurator,
   setOpenSidenav,
@@ -34,17 +36,22 @@ import {
 import SignOut from "../../../SignOut"
 // import { useSession } from "next-auth/react"
 
+interface ControllerType {
+  fixedNavbar: boolean; // Remplacez le type par le type approprié
+  openSidenav: boolean; // Remplacez le type par le type approprié
+  // Ajoutez d'autres propriétés si nécessaire
+}
+
 export function DashboardNavbar() {
 
-//   let toto =  | undefined;
-//   const [controller, dispatch][Symbol.iterator]() = useMaterialTailwindController();
-  const [controller, dispatch] = useMaterialTailwindController();
+  const [controller, dispatch] = useMaterialTailwindController() as any;
+
   const { fixedNavbar, openSidenav } = controller;
   const pathname = usePathname();
   const [layout, page] = pathname.split("/").filter((el) => el !== "");
   // const session = await getServerSession(authOptions);
   // const { data: session, status } = useSession()
-  
+
   const signOutHandler = async () => {
     signOut({
       callbackUrl: '/',

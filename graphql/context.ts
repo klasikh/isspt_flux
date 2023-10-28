@@ -1,11 +1,9 @@
 import { authOptions } from '../pages/api/auth/[...nextauth]'
-import { getServerSession, useSession } from "next-auth/next"
+import { useSession } from "next-auth/react"
 
 
-export default async function createContext(req, res) {
-  const session = await getServerSession(authOptions)
-  const { data: sess, status }  = useSession()
-  console.log(sess)
+export default async function createContext(req: any, res: any) {
+  const { data:session }=useSession()
 
   if (!session) {
     res.status(401).json({ message: "You must be logged in." });
@@ -15,11 +13,11 @@ export default async function createContext(req, res) {
    // if the user is not logged in, return null
    if (!session || typeof session === 'undefined') return {}
    
-   const { user, accessToken } = session
+   const { user, expires } = session
  
    return {
      user,
-     accessToken,
+     expires,
    }
 
 }

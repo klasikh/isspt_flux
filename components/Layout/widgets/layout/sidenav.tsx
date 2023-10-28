@@ -10,8 +10,17 @@ import {
 } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "../../../context";
 
+interface ControllerType {
+  sidenavColor: string; // Remplacez le type par le type approprié
+  sidenavType: object; // Remplacez le type par le type approprié
+  openSidenav: boolean; // Remplacez le type par le type approprié
+  // Ajoutez d'autres propriétés si nécessaire
+}
+
 export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandName: any, routes: any }) {
-  const [controller, dispatch] = useMaterialTailwindController();
+
+  const [controller, dispatch] = useMaterialTailwindController() as any;
+
   const { sidenavColor, sidenavType, openSidenav } = controller;
   const sidenavTypes = {
     dark: "bg-gradient-to-br from-blue-gray-800 to-blue-gray-900",
@@ -24,7 +33,7 @@ export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandN
 
   return (
     <aside
-      className={`${sidenavTypes[sidenavType]} ${
+      className={`bg-gradient-to-br from-blue-gray-800 to-blue-gray-900 ${
         openSidenav ? "translate-x-0" : "-translate-x-80"
       } fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0 overflow-y-scroll`}
     >
@@ -54,7 +63,7 @@ export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandN
         </IconButton>
       </div>
       <div className="m-4">
-        {routes.map(({ layout, title, pages }, key) => (
+        {routes.map(({ layout, title, pages }: { layout: any, title: any, pages: any }, key: any) => (
           <ul key={key} className="mb-4 flex flex-col gap-1">
             {title && (
               <li className="mx-3.5 mt-4 mb-2">
@@ -67,9 +76,9 @@ export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandN
                 </Typography>
               </li>
             )}
-            {pages && pages.map(({ icon, name, path, role }) => (
+            {pages && pages.map(({ icon, name, path, role }: { icon: any, name: any, path: any, role: any }) => (
 
-              (theUserSession?.user?.role === role)
+              (role && theUserSession?.user?.role === role)
                 ? ( <li key={name}>
                     <Link href={`${path}`}>
                       {/* { ({ isActive }) => ( */}

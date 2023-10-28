@@ -33,7 +33,7 @@ builder.queryField('module', (t) =>
       prisma.module.findUnique({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id,
         }
       })
   })
@@ -107,7 +107,7 @@ builder.mutationField('updateModule', (t) =>
       prisma.module.update({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id,
         },
         data: {
           name: args.name ? args.name : undefined,
@@ -127,7 +127,7 @@ builder.mutationField('deleteModule', (t) =>
       prisma.module.delete({
         ...query,
         where: {
-          id: Number(args.id)
+          id: args.id
         }
       })
   })

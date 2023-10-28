@@ -31,6 +31,7 @@ export function Dashboard ({
                 brandImg={
                     sidenavType === "dark" ? "/images/logo.png" : "/images/logo.png"
                 }
+                brandName="ISSPT"
             />
             <div className="flex flex-col h-screen justify-between p-4 xl:ml-80">
                 <DashboardNavbar />

@@ -1,13 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form'
 import prisma from '../../../lib/prisma';
 import { gql, useQuery, useMutation } from '@apollo/client';
-import { ExclamationTriangleIcon, ArrowLeftIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import axios from "axios";
 
 type FormValues = {
   id: string;
@@ -61,9 +60,9 @@ const AllFilieresQuery = gql`
   }
 `;
 
-const ValidPaymentMutation = gql`
-  mutation($id: ID!, $userId: ID!, $status: String!, $step: String!, $filePath: String!) {
-    validPayment(id: $id, userId: $userId, status: $status, step: $step, filePath: $filePath) {
+const EditPaymentMutation = gql`
+  mutation($id: ID!, $title: String!, $description: String!, $name: String!, $motifId: ID!, $filiereId: ID!, $step: String!, $amount: String!, $createdYear: String!, $addedBy: String!) {
+    updatePayment(id: $id, title: $title, description: $description, name: $name, motifId: $motifId, filiereId: $filiereId, amount: $amount, step: $step, createdYear: $createdYear, addedBy: $addedBy) {
       id
       title
       description
@@ -79,7 +78,7 @@ const ValidPaymentMutation = gql`
   }
 `
 
-const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -91,7 +90,7 @@ const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getSer
 
   const { data: allFilieres } = useQuery(AllFilieresQuery);
 
-  const [validPayment, { data, loading, error }] = useMutation(ValidPaymentMutation)
+  const [editPayment, { data, loading, error }] = useMutation(EditPaymentMutation)
 
   const {
     register,
@@ -100,32 +99,32 @@ const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getSer
     reset,
   } = useForm<FormValues>({ mode: 'onBlur' });
 
-  const [file, setFile] = useState<File>()
+  // Upload photo function
+  const uploadPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length <= 0) return
+    const file = e.target.files[0]
+    const filename = encodeURIComponent(file.name)
+    const res = await fetch(`/api/upload-image?file=${filename}`)
+    const data = await res.json()
+    const formData = new FormData()
 
-  const uploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // @ts-ignore
+    Object.entries({ ...data.fields, file }).forEach(([key, value]) => {
+      // @ts-ignore
+      formData.append(key, value)
+    })
 
-    setFile(e);
-
-    console.log(e)
-
-    // if (!file) return
-
-    try {
-      const data = new FormData()
-      data.set('file', e)
-
-      const res = await fetch(`/api/upload-file`, {
+    toast.promise(
+      fetch(data.url, {
         method: 'POST',
-        body: data
-      })
-
-      // console.log(res)
-      // handle the error
-      if (!res.ok) throw new Error(await res.text())
-    } catch (e: any) {
-      // Handle errors here
-      console.error(e)
-    }
+        body: formData,
+      }),
+      {
+        loading: 'Uploading...',
+        success: 'Image successfully uploaded!🎉',
+        error: `Upload failed 😥 Please try again ${error}`,
+      },
+    )
   }
 
   useEffect(() => {
@@ -140,24 +139,29 @@ const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getSer
           step: payment.step,
         });
     }
-}, [payment]);
+  }, [payment]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    const theStep = "2";
-    const theStatus = "APPROVED";
+    const { id, title, description, name, motifId, filiereId, amount, step, createdYear, addedBy } = data
 
-    const variables = { id: payment.id, userId: session?.user.id, status: theStatus, step: theStep, }
+    // const filePath = `https://${process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${image[0]?.name}`
+
+    const theStep = "0";
+    const year = new Date().getFullYear();
+    const yearToString = year.toString()
+    // const variables = { title, description, name, motifId, filiereId, amount, theStep, filePath, createdYear, }
+    const variables = { id: payment.id, title, description, name, motifId, filiereId, amount, step: theStep, createdYear: yearToString, addedBy: session?.user.id }
     try {
-      const theValidatedPayment = await toast.promise(editPayment({ variables }), {
+      const theEditedPayment = await toast.promise(editPayment({ variables }), {
         loading: 'Opération en cours..',
-        success: 'Paiement traité avec succès!🎉',
+        success: 'Paiement mis a jour avec succès!🎉',
         error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
       })
 
       // console.log(theEditedPayment)
 
-      if(theValidatedPayment.data.validPayment) {
-        router.push(`/payments/${theValidatedPayment.data.validPayment.id}`)
+      if(theEditedPayment.data.updatePayment) {
+        router.push(`/payments/${theEditedPayment.data.updatePayment.id}`)
       }
 
     } catch (error) {
@@ -177,8 +181,8 @@ const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getSer
           <ArrowLeftIcon className="h-6 w-6 text-white font-bold mr-2" aria-hidden="true" />
           Retour
         </button>
-        <h1 className="text-2xl font-medium mb-5">Valider un paiement <span className="text-sm">(Veuillez attacher le fichier de la quittance au formulaire)</span></h1>
-        <form className="grid grid-cols-1 gap-y-4 bg-white shadow-lg p-8 rounded-lg" encType="multipart/form-data" onSubmit={handleSubmit(onSubmit)}>
+        <h1 className="text-3xl font-medium mb-5 uppercase text-center">Editer un paiement</h1>
+        <form className="grid grid-cols-1 gap-y-4 bg-white shadow-lg p-8 rounded-lg" onSubmit={handleSubmit(onSubmit)}>
           <label className="block">
             <span className="text-gray-700">Titre</span>
             <input
@@ -186,13 +190,12 @@ const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getSer
               {...register('title', { required: true })}
               name="title"
               type="text"
-              className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              disabled
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </label>
           <label for="description" class="block">
             <span className="text-gray-700">Description</span>
-            <textarea id="description" rows="4" {...register('description', { required: true })} className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description du paiement" name="description" disabled></textarea>
+            <textarea id="description" rows="4" {...register('description', { required: true })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description du paiement" name="description"></textarea>
           </label>
           <label className="block">
             <span className="text-gray-700">Nom de l&apos;étudiant</span>
@@ -201,14 +204,13 @@ const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getSer
               {...register('name', { required: true })}
               name="name"
               type="text"
-              className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              disabled
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </label>
           <div className="flex gap-x-4 w-full">
             <label className="block w-full">
               <span className="text-gray-700">Motif de paiement</span>
-              <select id="motifs" className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="motifId" {...register('motifId', { required: true })} disabled>
+              <select id="motifs" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="motifId" {...register('motifId', { required: true })}>
                 <option value="" disabled>Motif</option>
                 { allMotifs?.motifs.edges.map(({ node }: { node: Node }) => (
                     <option value={node.id} >{node.name}</option>
@@ -218,7 +220,7 @@ const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getSer
             </label>
             <label className="block w-full">
               <span className="text-gray-700">Filière de l&apos;étudiant</span>
-              <select id="filieres" className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="filiereId" {...register('filiereId', { required: true })} disabled>
+              <select id="filieres" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="filiereId" {...register('filiereId', { required: true })}>
                 <option value="" disabled>Filière</option>
                 { allFilieres?.filieres.edges.map(({ node }: { node: Node }) => (
                     <option value={node.id} >{node.name}</option>
@@ -234,25 +236,19 @@ const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getSer
               {...register('amount', { required: true })}
               name="amount"
               type="number"
-              className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              disabled
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </label>
-
-          <div className="text-center justify-center flex">
-          <label className="block p-3 bg-gray-200 w-1/3 h-18 rounded">
-            <span className="text-gray-700">Cliquez ou glissez déposer pour charger un document .docx ou .pdf (max 2MB)</span>
-            <div className="justify-center my-2 flex"><ArrowUpTrayIcon className="h-10 w-10 text-blue-600 font-bold" aria-hidden="true" /></div>
+          {/* <label className="block">
+            <span className="text-gray-700">Upload a .png or .jpg image (max 1MB).</span>
             <input
-              {...register('filePath', { required: false })}
-              onChange={(e) => uploadFile(e.target.files?.[0])}
+              {...register('image', { required: false })}
+              onChange={uploadPhoto}
               type="file"
-              accept="application/docx, application/pdf"
-              name="filePath"
-              className="text-none w-1/2"
+              accept="image/png, image/jpeg"
+              name="image"
             />
-          </label>
-          </div>
+          </label> */}
 
           <button
             disabled={loading}
@@ -272,7 +268,7 @@ const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getSer
                 En cours...
               </span>
             ) : (
-              <span>Traiter</span>
+              <span>Modifier</span>
             )}
           </button>
         </form>
@@ -281,7 +277,7 @@ const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getSer
   );
 };
 
-export default ValidateAPayment;
+export default EditPayment;
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const id = params?.id;

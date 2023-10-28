@@ -90,6 +90,7 @@ export const authOptions: AuthOptions = {
                 params.session.user.name = params.token.name;
                 params.session.user.email = params.token.email;
                 params.session.user.role = params.token.role;
+                params.session.user.payments = params.token.payments;
             }
 
             return params.session;
@@ -106,6 +107,7 @@ export const authOptions: AuthOptions = {
                 params.token.name = params.user.name;
                 params.token.email = params.user.email;
                 params.token.role = params.user.role;
+                params.token.payments = params.user.payments;
             }
 
             return params.token;

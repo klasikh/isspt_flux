@@ -33,7 +33,7 @@ builder.queryField('motif', (t) =>
       prisma.motif.findUnique({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id,
         }
       })
   })
@@ -108,7 +108,7 @@ builder.mutationField('updateMotif', (t) =>
       prisma.motif.update({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id,
         },
         data: {
           name: args.name ? args.name : undefined,
@@ -128,7 +128,7 @@ builder.mutationField('deleteMotif', (t) =>
       prisma.motif.delete({
         ...query,
         where: {
-          id: Number(args.id)
+          id: args.id
         }
       })
   })

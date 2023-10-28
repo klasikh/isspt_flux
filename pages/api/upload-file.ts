@@ -1,59 +1,34 @@
-import { createRouter } from "next-connect";
-import onError from "../../common/errorMiddleware";
-import multer from "multer";
-import path from "path";
-// import { executeQuery } from "../../../config/db";
+// import { writeFile } from 'fs/promises'
+import fs from 'fs-extra'
+import { NextRequest, NextResponse } from 'next/server'
+import { NextApiRequest, NextApiResponse } from "next";
 
-// export const config = {
-//   api: {
-//     bodyParser: false,
-//   },
-// };
-import type { NextApiRequest, NextApiResponse } from 'next'
-
-
-export default async function handlerfunc(req: NextApiRequest, res: NextApiResponse) {
-    let handler = createRouter();
-
-    let storage = multer.diskStorage({
-        destination: function (req, file, cb) {
-            cb(null, "upload");
-        },
-        filename: function (req, file, cb) {
-            cb(
-                null,
-                file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-            );
-        },
-    });
-
-    let upload = multer({
-        storage: storage,
-    });
-
-    let uploadFile = upload.single("file");
-    // handler.use(uploadFile);
-    // console.log(storage.getDestination)
-    handler.post(uploadFile, async (req, res) => {
-        return 'toto';
-    })
-
-    try {
-            // console.log("req.file", req.query.file);
-            let url = "http://" + req.headers.host;
-            let filename = req.query.file;
-            // let result = await executeQuery("insert into upload(pic) values(?)", [
-            //   filename,
-            // ]);
-            // result = await executeQuery(
-            //   `select * from upload where pic_id=${result.insertId}`
-            // );
-            return res.status(200).json({
-                url: url + "/public/" + req.query.file,
-            });
-
-    } catch (error) {
-        console.log(error)
-    }
+export const config = {
+    runtime: 'edge',
+    api: {
+        bodyParser: false,
+    },
 }
 
+export default async function POST(request: NextRequest, response: NextResponse): Promise<Response> {
+
+    // console.log(request)
+    // console.log(request.query);
+    const data = await request.formData();
+    const file: File | null = data.get('file') as unknown as File;
+    if (!file) {
+        return NextResponse.json({ success: false })
+    }
+
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+
+    // With the file data in the buffer, you can do whatever you want with it.
+    // For this, we'll just write it to the filesystem in a new location
+    const path = `./public/upload/${file.name}`
+    console.log(file)
+    await fs.writeFile(path, buffer)
+    console.log(`open ${path} to see the uploaded file`)
+
+    return NextResponse.json({ success: true })
+}

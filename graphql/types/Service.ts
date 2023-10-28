@@ -30,7 +30,7 @@ builder.queryField('service', (t) =>
       prisma.service.findUnique({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id,
         }
       })
   })
@@ -85,7 +85,7 @@ builder.mutationField('updateService', (t) =>
       prisma.service.update({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id,
         },
         data: {
           name: args.name ? args.name : undefined,
@@ -105,7 +105,7 @@ builder.mutationField('deleteService', (t) =>
       prisma.service.delete({
         ...query,
         where: {
-          id: Number(args.id)
+          id: args.id
         }
       })
   })

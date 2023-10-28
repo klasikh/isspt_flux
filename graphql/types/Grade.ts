@@ -4,6 +4,7 @@ import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
 
 builder.prismaObject('Grade', {
+  name: 'Grade',
   fields: (t) => ({
     id: t.exposeID('id'),
     name: t.exposeString('name'),
@@ -33,7 +34,7 @@ builder.queryField('grade', (t) =>
       prisma.grade.findUnique({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id,
         }
       })
   })
@@ -107,7 +108,7 @@ builder.mutationField('updateGrade', (t) =>
       prisma.grade.update({
         ...query,
         where: {
-          id: Number(args.id),
+          id: args.id,
         },
         data: {
           name: args.name ? args.name : undefined,
@@ -127,7 +128,7 @@ builder.mutationField('deleteGrade', (t) =>
       prisma.grade.delete({
         ...query,
         where: {
-          id: Number(args.id)
+          id: args.id
         }
       })
   })
