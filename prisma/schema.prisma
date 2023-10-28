@@ -1,6 +1,6 @@
 datasource db {
   provider     = "mysql"
-  url          = env("mysql://wuah6941_isspt_user:00Isspt@00!Database@109.234.164.225/wuah6941_isspt_flux")
+  url          = "mysql://wuah6941_isspt_user:00Isspt@00!Database@109.234.164.225/wuah6941_isspt_flux"
   relationMode = "prisma"
 }
 
