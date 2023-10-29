@@ -57,7 +57,7 @@ export const authOptions: AuthOptions = {
         signIn: "/auth/sigin",
         signOut: "/auth/signout",
     },
-    secret: process.env.NEXT_AUTH_SEC,
+    secret: "theNextAuthSecretHashedToSecurePassw0rd",
     jwt: {
         async encode({ secret, token }) {
             if(!token) {
