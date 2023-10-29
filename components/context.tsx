@@ -73,7 +73,8 @@ export function useMaterialTailwindController() {
 MaterialTailwindControllerProvider.displayName = "./context.tsx";
 
 MaterialTailwindControllerProvider.propTypes = {
-  children: PropTypes.node.isRequired,
+  children: PropTypes.node,
+//   children: PropTypes.node.isRequired,
 };
 
 export const setOpenSidenav = (dispatch: any, value: any) =>

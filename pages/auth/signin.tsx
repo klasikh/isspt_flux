@@ -69,8 +69,9 @@ const SignIn = () => {
     return (
         <>
             <Image
-                src=""
+                src="/images/logo.png"
                 alt=""
+                className="h-12 rounded"
             />
             <div className="absolute inset-0 z-0 h-full w-full bg-black/50" />
                 <div className="container mx-auto p-4">

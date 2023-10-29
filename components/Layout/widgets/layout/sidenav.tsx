@@ -11,15 +11,15 @@ import {
 import { useMaterialTailwindController, setOpenSidenav } from "../../../context";
 
 interface ControllerType {
-  sidenavColor: string; // Remplacez le type par le type approprié
-  sidenavType: object; // Remplacez le type par le type approprié
-  openSidenav: boolean; // Remplacez le type par le type approprié
+  sidenavColor: any; // Remplacez le type par le type approprié
+  sidenavType: any; // Remplacez le type par le type approprié
+  openSidenav: any; // Remplacez le type par le type approprié
   // Ajoutez d'autres propriétés si nécessaire
 }
 
 export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandName: any, routes: any }) {
 
-  const [controller, dispatch] = useMaterialTailwindController() as any;
+  const {controller, dispatch} = useMaterialTailwindController() as any;
 
   const { sidenavColor, sidenavType, openSidenav } = controller;
   const sidenavTypes = {
@@ -131,7 +131,8 @@ Sidenav.defaultProps = {
 Sidenav.propTypes = {
   brandImg: PropTypes.string,
   brandName: PropTypes.string,
-  routes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  routes: PropTypes.arrayOf(PropTypes.object),
+//   routes: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 Sidenav.displayName = "./sidnave.tsx";

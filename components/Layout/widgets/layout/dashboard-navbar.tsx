@@ -37,14 +37,14 @@ import SignOut from "../../../SignOut"
 // import { useSession } from "next-auth/react"
 
 interface ControllerType {
-  fixedNavbar: boolean; // Remplacez le type par le type approprié
-  openSidenav: boolean; // Remplacez le type par le type approprié
+  fixedNavbar: any; // Remplacez le type par le type approprié
+  openSidenav: any; // Remplacez le type par le type approprié
   // Ajoutez d'autres propriétés si nécessaire
 }
 
 export function DashboardNavbar() {
 
-  const [controller, dispatch] = useMaterialTailwindController() as any;
+  const {controller, dispatch} = useMaterialTailwindController() as any;
 
   const { fixedNavbar, openSidenav } = controller;
   const pathname = usePathname();
