@@ -55,5 +55,10 @@
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
+  "browser": {
+    "fs": false,
+    "os": false,
+    "path": false
   }
 }

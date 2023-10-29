@@ -34,6 +34,7 @@ builder.queryField('grade', (t) =>
       prisma.grade.findUnique({
         ...query,
         where: {
+          // ! says number cant be string
           id: args.id,
         }
       })
