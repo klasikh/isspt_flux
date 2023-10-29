@@ -46,8 +46,8 @@ const SignIn = () => {
                 setMessage('Coordonnées de connexion incorrects');
             }
 
-            if(signInResponse && signInResponse.error) {
-                setMessage(signInResponse.error)
+            if(signInResponse && signInResponse?.error) {
+                setMessage(signInResponse?.error)
             } else {
                 router.push("/dashboard")
             }

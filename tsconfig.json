@@ -19,7 +19,6 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "typescript.tsserver.log": "verbose"
   },
   "include": [
     "next-env.d.ts",

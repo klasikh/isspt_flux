@@ -62,20 +62,20 @@ const Admin = () => {
     )
   }
 
-  const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    const { title, url, category, description, image } = data
-    const imageUrl = `https://${process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${image[0]?.name}`
-    const variables = { title, url, category, description, imageUrl }
-    try {
-      toast.promise(createLink({ variables }), {
-        loading: 'Creating new link..',
-        success: 'Link successfully created!🎉',
-        error: `Something went wrong 😥 Please try again -  ${error}`,
-      })
-    } catch (error) {
-      console.error(error)
-    }
-  }
+//   const onSubmit: SubmitHandler<FormValues> = async (data) => {
+//     const { title, url, category, description, image } = data
+//     const imageUrl = `https://${process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${image[0]?.name}`
+//     const variables = { title, url, category, description, imageUrl }
+//     try {
+//       toast.promise(createLink({ variables }), {
+//         loading: 'Creating new link..',
+//         success: 'Link successfully created!🎉',
+//         error: `Something went wrong 😥 Please try again -  ${error}`,
+//       })
+//     } catch (error) {
+//       console.error(error)
+//     }
+//   }
 
   return (
     <div className="container mx-auto max-w-md py-12">
@@ -180,11 +180,11 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       role: true,
     },
     where: {
-      email: session.user?.email,
+      email: session?.user?.email,
     },
   });
 
-  if (!user || user.role !== 'ADMIN') {
+  if (!user || user?.role !== 'ADMIN') {
     return {
       redirect: {
         permanent: false,

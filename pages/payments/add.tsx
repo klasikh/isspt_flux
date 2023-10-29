@@ -269,11 +269,11 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       role: true,
     },
     where: {
-      email: session.user?.email,
+      email: session?.user?.email,
     },
   });
 
-  if (!user || (user.role !== "USER" && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+  if (!user || (user?.role !== "USER" && user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN")) {
     return {
       redirect: {
         permanent: false,
