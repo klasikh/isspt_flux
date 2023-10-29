@@ -68,7 +68,7 @@ const SignIn = () => {
 
     return (
         <>
-            <Image
+            <img
                 src="/images/logo.png"
                 alt=""
                 className="h-12 rounded"
