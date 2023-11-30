@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 async function main() {
 
-  const passwordHashed = bcrypt.hashSync("00000000", 12);
+  const passwordHashed = await bcrypt.hash("00000000", 12);
 
   // GRADE SEED
   const createdGradeOne = await prisma.grade.create({
@@ -42,23 +42,23 @@ async function main() {
   const createdUserOne = await prisma.user.create({
     data: {
         name: "Toto",
-        email: 'toto@mail.com',
+        username: "toto",
         gradeId: createdGradeOne.id,
         role: 'ADMIN',
         password: passwordHashed,
       },
   });
-  
+
   const createdUserTwo = await prisma.user.create({
     data: {
         name: "AHOUANNOU Bertine",
-        email: 'bertine@mail.com',
+        username: "ahouannoubertine",
         gradeId: createdGradeTwo.id,
         role: 'USER',
         password: passwordHashed,
       },
   });
-  
+
   // USERMODULEPRIORITY SEED
   await prisma.userModulePriority.createMany({
     data: [
@@ -88,4 +88,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect()
-  })
+})

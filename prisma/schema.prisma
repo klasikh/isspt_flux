@@ -1,10 +1,10 @@
 datasource db {
   provider     = "mysql"
-  url          = "mysql://wuah6941_isspt_user:00Isspt@00!Database@109.234.164.225/wuah6941_isspt_flux"
+  url          = "mysql://wuah6941_isspt_user:00Isspt@00!Database@109.234.164.225/wuah6941_project_flux"
   relationMode = "prisma"
 }
 
-generator client {
+generator client {z
   provider = "prisma-client-js"
 }
 
@@ -16,7 +16,7 @@ generator pothos {
 model User {
   id        String      @id @default(uuid())
   name      String?
-  email     String?  @unique
+  username     String?  @unique
   image     String?
   gradeId   String
   role      Role     @default(USER)
@@ -130,7 +130,7 @@ model Payment {
   description  String?
   name         String
   filiereId    String
-  motifId      String 
+  motifId      String
   amount       String
   step         String
   status       Status @default(CREATED)

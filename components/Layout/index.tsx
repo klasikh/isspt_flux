@@ -1,6 +1,6 @@
 import React from "react";
 import { useSession } from "next-auth/react"
-import Header from "./Header";
+// import Header from "./Header";
 import Dashboard from "./Dashboard";
 
 // import { getServerSession } from "next-auth/next";
@@ -16,7 +16,18 @@ const Layout: React.FC<Props> = ({ children }) => {
 
   return (
     <div>
+    {/* <Header /> */}
+    {session && session.user?.email ? (
+      <>
+        <Dashboard>
+          {children}
+        </Dashboard>
+      </>
+    ) : (
+      <>
         {children}
+      </>
+    )}
     </div>
   );
 };

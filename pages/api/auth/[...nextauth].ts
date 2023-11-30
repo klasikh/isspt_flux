@@ -59,13 +59,13 @@ export const authOptions: AuthOptions = {
     },
     secret: "theNextAuthSecretHashedToSecurePassw0rd",
     jwt: {
-        async encode({ secret, token }) {
+        async encode({ secret, token }: { secret: any, token: any }) {
             if(!token) {
                 throw new Error("No token to encode");
             }
             return jwt.sign(token, secret);
         },
-        async decode({ secret, token }) {
+        async decode({ secret, token }: { secret: any, token: any }) {
             if(!token) {
                 throw new Error("No token to decode");
             }
