@@ -26,7 +26,7 @@ const AllUsersQuery = gql`
         node {
           id
           name
-          email
+          username
           image
         }
       }
@@ -222,11 +222,11 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   const user = await prisma.user.findUnique({
     select: {
-      email: true,
+      username: true,
       role: true,
     },
     where: {
-      email: session.user?.email,
+      username: session.user?.username,
     },
   });
 

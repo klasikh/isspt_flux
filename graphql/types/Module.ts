@@ -12,7 +12,6 @@ builder.prismaObject('Module', {
   }),
 })
 
-
 builder.queryField('modules', (t) =>
   t.prismaConnection({
     type: 'Module',

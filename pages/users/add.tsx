@@ -10,7 +10,7 @@ import { getSession } from "next-auth/react"
 
 type FormValues = {
   name: string;
-  email: string;
+  username: string;
   gradeId: string;
   role: string;
 }
@@ -35,10 +35,10 @@ const AllGradesQuery = gql`
 `;
 
 const CreateUserMutation = gql`
-  mutation($name: String!, $email: String!, $gradeId: String!, $role: String!, $image: String) {
-    createUser(name: $name, email: $email, gradeId: $gradeId, role: $role, image: $image) {
+  mutation($name: String!, $username: String!, $gradeId: String!, $role: String!, $image: String) {
+    createUser(name: $name, username: $username, gradeId: $gradeId, role: $role, image: $image) {
       name
-      email
+      username
       gradeId
       role
       image
@@ -60,8 +60,8 @@ const UserAdd = () => {
   } = useForm<FormValues>()
   
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    const { name, email, gradeId, role, } = data
-    const variables = { name, email, gradeId, role, }
+    const { name, username, gradeId, role, } = data
+    const variables = { name, username, gradeId, role, }
     try {
       const createTheUser = await toast.promise(createUser({ variables }), {
         loading: 'Opération en cours..',
@@ -99,11 +99,11 @@ const UserAdd = () => {
             />
           </label>
            <label className="block">
-            <span className="text-gray-700">Email de l&apos;utilisateur</span>
+            <span className="text-gray-700">Nom d&apos;utilisateur de l&apos;utilisateur</span>
             <input
-              placeholder="Email de l'utlisateur"
-              {...register('email', { required: true })}
-              name="email"
+              placeholder="Nom d'utilisateur de l'utlisateur"
+              {...register('username', { required: true })}
+              name="username"
               type="text"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
@@ -182,11 +182,11 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   const user = await prisma.user.findUnique({
     select: {
-      email: true,
+      username: true,
       role: true,
     },
     where: {
-      email: session.user?.email,
+      username: session.user?.username,
     },
   });
 

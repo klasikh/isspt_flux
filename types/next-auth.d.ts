@@ -6,7 +6,14 @@ declare module "next-auth" {
    */
   interface Session {
     user: {
-      role: string | undefined | null
+      name: string | undefined | null,
+      username: string | undefined,
+      role: string | undefined | null,
+      gradeId: string | undefined | null,
+      image: string | undefined | null,
+      bookmarks: string | undefined | null,
+      payments: string | undefined | null,
+      userModulesPriorities: string | undefined | null,
     } & DefaultSession["user"]
   }
 }

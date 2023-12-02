@@ -17,7 +17,7 @@ const Layout: React.FC<Props> = ({ children }) => {
   return (
     <div>
     {/* <Header /> */}
-    {session && session.user?.email ? (
+    {session && session.user?.username ? (
       <>
         <Dashboard>
           {children}

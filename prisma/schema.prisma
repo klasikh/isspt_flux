@@ -4,7 +4,7 @@ datasource db {
   relationMode = "prisma"
 }
 
-generator client {z
+generator client {
   provider = "prisma-client-js"
 }
 

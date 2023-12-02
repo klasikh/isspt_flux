@@ -34,7 +34,7 @@ const AllUsersQuery = gql`
         node {
           id
           name
-          email
+          username
           gradeId
           role
           image
@@ -48,7 +48,7 @@ const GetGradeQuery = gql`
   query getGradeQuery($id: String) {
     grade(id: $id) {
       name
-      email
+      username
       gradeId
       role
       image
@@ -115,7 +115,7 @@ function UsersList() {
               <table className="w-full min-w-[640px] table-auto">
                 <thead>
                   <tr>
-                    {["photo", "nom", "email", "grade", "role", "action",].map(
+                    {["photo", "nom", "username", "grade", "role", "action",].map(
                       (el) => (
                         <th
                           key={el}
@@ -160,7 +160,7 @@ function UsersList() {
                               variant="small"
                               className="text-xs font-medium text-blue-gray-600"
                             >
-                              {node.email}
+                              {node.username}
                             </Typography>
                           </td>
                           <td className={`py-3 px-5`}>
@@ -238,11 +238,11 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   const user = await prisma.user.findUnique({
     select: {
-      email: true,
+      username: true,
       role: true,
     },
     where: {
-      email: session.user?.email,
+      username: session.user?.username,
     },
   });
 

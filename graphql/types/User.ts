@@ -12,7 +12,7 @@ builder.prismaObject('User', {
   fields: (t) => ({
     id: t.exposeID('id'),
     name: t.exposeString('name', { nullable: true, }),
-    email: t.exposeString('email', { nullable: true, }),
+    username: t.exposeString('username', { nullable: false, }),
     gradeId: t.exposeString('gradeId',),
     grade: t.relation('grade', {
       args: {
@@ -28,23 +28,24 @@ builder.prismaObject('User', {
     role: t.expose('role', { type: Role, }),
     bookmarks: t.relation('bookmarks'),
     payments: t.relation('payments'),
-    spents: t.field({
-      select: (args, ctx, nestedSelection) => ({
-        spents: {
-          select: {
-            // This will look at what fields are queried on Media
-            // and automatically select uploadedBy if that relation is requested
-            spents: nestedSelection(
-              // This arument is the default query for the media relation
-              // It could be something like: `{ select: { id: true } }` instead
-              true,
-            ),
-          },
-        },
-      }),
-      type: [Spent],
-      resolve: (user) => user.spents.map(({ spent }) => spent),
-    }),
+    spents: t.relation('spents'),
+  //   spents: t.field({
+  //     select: (args, ctx, nestedSelection) => ({
+  //       spents: {
+  //         select: {
+  //           // This will look at what fields are queried on Media
+  //           // and automatically select uploadedBy if that relation is requested
+  //           spents: nestedSelection(
+  //             // This arument is the default query for the media relation
+  //             // It could be something like: `{ select: { id: true } }` instead
+  //             true,
+  //           ),
+  //         },
+  //       },
+  //     }),
+  //     type: [Spent],
+  //     resolve: (user) => user.spents.map(({ spent }) => spent),
+  //   }),
   })
 })
 
@@ -62,14 +63,14 @@ builder.mutationField('createUser', (t) =>
     type: 'User',
     args: {
       name: t.arg.string({ required: true }),
-      email: t.arg.string({ required: true }),
+      username: t.arg.string({ required: true }),
       gradeId: t.arg.string({ required: true }),
       role: t.arg.string({ required: true }),
       image: t.arg.string({ required: false }),
     },
     resolve: async (query, _parent, args, ctx) => {
 
-      const { name, email, gradeId, role, image } = args
+      const { name, username, gradeId, role, image } = args
 
       const passwordHashed = bcrypt.hashSync("00000000", 12);
 
@@ -84,7 +85,7 @@ builder.mutationField('createUser', (t) =>
 
         const user = await prisma.user.findUnique({
           where: {
-            email: session.user?.email,
+            username: session.user?.username,
           }
         })
 
@@ -110,7 +111,7 @@ builder.mutationField('createUser', (t) =>
         ...query,
         data: {
           name,
-          email,
+          username,
           gradeId,
           role,
           image,
@@ -132,7 +133,7 @@ builder.queryField('favorites', (t) =>
       const user = await prisma.user.findUnique({
         ...query,
         where: {
-          email: (await ctx).user?.email,
+          username: (await ctx).user?.username,
         }
       })
 

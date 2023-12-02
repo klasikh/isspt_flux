@@ -13,13 +13,13 @@ export const authOptions: AuthOptions = {
             name: "credentials",
 
             credentials: {
-                email: {
-                    label: "Email",
+                username: {
+                    label: "Username",
                     type: "text",
                 },
                 password: {
-                    label: "00000000",
-                    password: "password"
+                    label: "Password",
+                    type: "password"
                 }
             },
             authorize: async (credentials) => {
@@ -27,16 +27,16 @@ export const authOptions: AuthOptions = {
                     return null;
                 }
                 
-                const { email, password } = credentials;
+                const { username, password } = credentials;
 
                 const user = await prisma.user.findUnique({
                     where: {
-                        email
+                        username
                     }
                 });
 
                 if(!user) {
-                    throw new Error("Aucun utilisateur ne correspond à cette adresse email")
+                    throw new Error("Aucun compte ne correspond à ce nom d'utilisateur")
                     // return null;
                 }
 
@@ -88,7 +88,7 @@ export const authOptions: AuthOptions = {
             if(params.session.user) {
                 params.session.user.id = params.token.id;
                 params.session.user.name = params.token.name;
-                params.session.user.email = params.token.email;
+                params.session.user.username = params.token.username;
                 params.session.user.role = params.token.role;
                 params.session.user.payments = params.token.payments;
             }
@@ -105,7 +105,7 @@ export const authOptions: AuthOptions = {
             if(params.user) {
                 params.token.id = params.user.id;
                 params.token.name = params.user.name;
-                params.token.email = params.user.email;
+                params.token.username = params.user.username;
                 params.token.role = params.user.role;
                 params.token.payments = params.user.payments;
             }
