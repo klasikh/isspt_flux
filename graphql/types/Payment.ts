@@ -90,9 +90,13 @@ builder.mutationField('createPayment', (t) =>
             username: session.user?.username,
           },
           select: {
-            username: true
+            id: true,
+            name: true,
+            username: true,
+            role: true,
           }
         })
+        console.log(user)
 
         if (!user || (user.role !== "USER" && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
           throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
@@ -100,15 +104,17 @@ builder.mutationField('createPayment', (t) =>
         }
 
         const getUserPriorities = await prisma.userModulePriority.findMany({
+          where: {
+            userId: user.id
+          },
           select: {
             userId: true,
             moduleId: true,
             priority: true
           },
-          where: {
-            userId: user.id
-          }
         })
+
+        console.log(getUserPriorities)
 
         // return {
         //   props: {},

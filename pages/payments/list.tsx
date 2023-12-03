@@ -128,7 +128,7 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
                                     : node.status === "CANCELED"
                                     ? "inline-block bg-black rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
                                     : node.status === "ONPROCESS"
-                                    ? "inline-block bg-yellow-500 rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
+                                    ? "inline-block bg-yellow-500 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 mr-2 mb-2"
                                     : node.status === "APPROVED"
                                     ? "inline-block bg-green-500 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 mr-2 mb-2"
                                     : node.status === "REJECTED"
@@ -162,16 +162,26 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
                                   <EyeIcon className="h-5 w-5 text-white-500" />
                                 </IconButton>
                               </Link>
-                              <Link href={`/payments/edit/${node.id}`}>
-                                <IconButton variant="text" color="white" className="text-sm bg-blue-600 hover:bg-blue-400 mx-3">
-                                  <PencilIcon className="h-5 w-5 text-white-500" />
-                                </IconButton>
-                              </Link>
-                              <Link href={`/payments/delete/${node.id}`}>
-                                <IconButton variant="text" color="white" className="text-sm bg-red-600 hover:bg-red-400">
-                                  <TrashIcon className="h-5 w-5 text-white-500" />
-                                </IconButton>
-                              </Link>
+                              {
+                                (node.status === "CREATED" ||node.status === "CANCELED"|| node.status === "REJECTED")
+                                ?
+                                  (
+                                    <Link href={`/payments/edit/${node.id}`}>
+                                      <IconButton variant="text" color="white" className="text-sm bg-blue-600 hover:bg-blue-400 mx-3">
+                                        <PencilIcon className="h-5 w-5 text-white-500" />
+                                      </IconButton>
+                                    </Link>
+                                  )
+                                : (node.status === "CREATED" ||node.status === "CANCELED")
+                                ? (
+                                    <Link href="#">
+                                      <IconButton variant="text" color="white" className="text-sm bg-red-600 hover:bg-red-400">
+                                        <TrashIcon className="h-5 w-5 text-white-500" />
+                                      </IconButton>
+                                    </Link>
+                                  )
+                                : ""
+                              }
                             </Typography>
                           </td>
                         </tr>

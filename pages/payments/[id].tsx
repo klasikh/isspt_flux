@@ -191,7 +191,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
               <div className="md:w-1/2 sm:w-full sm:block">
                 <div className="font-bold text-xl bg-gray-600 p-1 text-white">Filière</div>
                 <div className="text-gray-700 mb-4 text-base bg-gray-300 p-2">
-                  <span>{payment.filiereId}</span>
+                  <span>{payment.filiere.name}</span>
                 </div>
               </div>
             </div>
@@ -199,7 +199,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
               <div className="md:w-1/2 sm:w-full sm:block">
                 <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Motif de paiement</div>
                 <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
-                  <span>{payment.motifId}</span>
+                  <span>{payment.motif.name}</span>
                 </div>
              </div>
               <div className="md:w-1/2 sm:w-full sm:block">
@@ -533,7 +533,18 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       description: true,
       name: true,
       filiereId: true,
+      filiere: {
+        select: {
+          name: true
+        },
+      },
       motifId: true,
+      motif: {
+        select: {
+          id: true,
+          name: true
+        },
+      },
       amount: true,
       step: true,
       status: true,

@@ -213,25 +213,33 @@ const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSide
                           <td className={`py-3 px-5`}>
                              <Typography
                               className="text-xs font-semibold text-blue-gray-600"
-                            >
-                              <Link href={`/spents/${node.id}`}>
+                             >
+                              <Link href={`/spents/${node.id}`} alt="Voir">
                                 <IconButton variant="text" color="white" className="text-sm bg-gray-600 hover:bg-gray-400">
                                   <EyeIcon className="h-5 w-5 text-white-500" />
                                 </IconButton>
                               </Link>
-                              <Link href={`/spents/edit/${node.id}`}>
-                                <IconButton variant="text" color="white" className="text-sm bg-blue-600 hover:bg-blue-400 mx-3">
-                                  <PencilIcon className="h-5 w-5 text-white-500" />
-                                </IconButton>
-                              </Link>
-                              <Link href="#">
-                                <IconButton variant="text" color="white" className="text-sm bg-red-600 hover:bg-red-400">
-                                  <TrashIcon className="h-5 w-5 text-white-500" />
-                                </IconButton>
-                              </Link>
+                              {
+                                (node.status === "CREATED" ||node.status === "CANCELED"|| node.status === "REJECTED")
+                                ?
+                                  (
+                                    <Link href={`/spents/edit/${node.id}`}>
+                                      <IconButton variant="text" color="white" className="text-sm bg-blue-600 hover:bg-blue-400 mx-3">
+                                        <PencilIcon className="h-5 w-5 text-white-500" />
+                                      </IconButton>
+                                    </Link>
+                                  )
+                                : (node.status === "CREATED" ||node.status === "CANCELED")
+                                ? (
+                                    <Link href="#">
+                                      <IconButton variant="text" color="white" className="text-sm bg-red-600 hover:bg-red-400">
+                                        <TrashIcon className="h-5 w-5 text-white-500" />
+                                      </IconButton>
+                                    </Link>
+                                  )
+                                : ""
+                              }
                             </Typography>
-
-
                           </td>
                         </tr>
                     )

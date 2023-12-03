@@ -85,7 +85,13 @@ builder.mutationField('createSpent', (t) =>
 
         const user = await prisma.user.findUnique({
           where: {
-            email: session.user?.email,
+            username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
           }
         })
 
@@ -95,14 +101,14 @@ builder.mutationField('createSpent', (t) =>
         }
 
         const getUserPriorities = await prisma.userModulePriority.findMany({
+          where: {
+            userId: user.id
+          },
           select: {
             userId: true,
             moduleId: true,
             priority: true
           },
-          where: {
-            userId: user.id
-          }
         })
 
         // return {
@@ -199,7 +205,13 @@ builder.mutationField('sendSpent', (t) =>
 
         const user = await prisma.user.findUnique({
           where: {
-            email: session.user?.email,
+            username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
           }
         })
 
@@ -326,7 +338,13 @@ builder.mutationField('deleteSpent', (t) =>
 
         const user = await prisma.user.findUnique({
           where: {
-            email: session.user?.email,
+            username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
           }
         })
 
