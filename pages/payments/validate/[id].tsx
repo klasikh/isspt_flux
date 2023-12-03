@@ -6,8 +6,14 @@ import { ExclamationTriangleIcon, ArrowLeftIcon, ArrowUpTrayIcon } from '@heroic
 import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
-import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
+import type { GetServerSideProps, InferGetServerSidePropsType, NextPage } from 'next';
 import axios from "axios";
+import fs from "fs/promises";
+import path from "path";
+
+interface Props {
+  dirs: string[];
+}
 
 type FormValues = {
   id: string;
@@ -79,8 +85,26 @@ const ValidPaymentMutation = gql`
   }
 `
 
-const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const ValidateAPayment: NextPage<Props> = ({ payment, dirs }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
+
+    const [uploading, setUploading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File>();
+
+  const handleUpload = async () => {
+    setUploading(true);
+    try {
+      if (!selectedFile) return;
+      const formData = new FormData();
+      formData.append("myImage", selectedFile);
+      const { data } = await axios.post("/api/upload-api", formData);
+      console.log(data);
+    } catch (error: any) {
+      console.log(error.response?.data);
+    }
+    setUploading(false);
+  };
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -114,7 +138,7 @@ const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getSer
       const data = new FormData()
       data.set('file', e)
 
-      const res = await fetch(`/api/upload-file`, {
+      const res = await fetch(`http://localhost:3000/api/upload-file`, {
         method: 'POST',
         body: data
       })
@@ -178,6 +202,43 @@ const ValidateAPayment = ({ payment }: InferGetServerSidePropsType<typeof getSer
           Retour
         </button>
         <h1 className="text-2xl font-medium mb-5">Valider un paiement <span className="text-sm">(Veuillez attacher le fichier de la quittance au formulaire)</span></h1>
+        <div className="max-w-4xl mx-auto p-20 space-y-6">
+      <label>
+        <input
+          type="file"
+          hidden
+          onChange={({ target }) => {
+            if (target.files) {
+              const file = target.files[0];
+              setSelectedImage(URL.createObjectURL(file));
+              setSelectedFile(file);
+            }
+          }}
+        />
+        <div className="w-40 aspect-video rounded flex items-center justify-center border-2 border-dashed cursor-pointer">
+          {selectedImage ? (
+            <img src={selectedImage} alt="" />
+          ) : (
+            <span>Select Image</span>
+          )}
+        </div>
+      </label>
+      <button
+        onClick={handleUpload}
+        disabled={uploading}
+        style={{ opacity: uploading ? ".5" : "1" }}
+        className="bg-red-600 p-3 w-32 text-center rounded text-white"
+      >
+        {uploading ? "Uploading.." : "Upload"}
+      </button>
+      <div className="mt-20 flex flex-col space-y-3">
+        {dirs && dirs.map((item) => (
+          <Link key={item} href={"/upload/" + item}>
+            <a className="text-blue-500 hover:underline">{item}</a>
+          </Link>
+        ))}
+      </div>
+    </div>
         <form className="grid grid-cols-1 gap-y-4 bg-white shadow-lg p-8 rounded-lg" encType="multipart/form-data" onSubmit={handleSubmit(onSubmit)}>
           <label className="block">
             <span className="text-gray-700">Titre</span>
@@ -312,9 +373,13 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     notFound: true
   }
 
+  const dirProps = { dirs: [] };
+    const dirs = await fs.readdir(path.join(process.cwd(), "./public/upload"));
+    dirProps.dirs = dirs as any;
   return {
     props: {
       payment,
+      dirProps
     },
   };
 };

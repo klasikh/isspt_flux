@@ -119,7 +119,6 @@ builder.mutationField('createSpent', (t) =>
         const getSess = await getServerSideProps(ctx);
 
       } catch (error) {
-        console.log(error)
         return error;
       }
 

@@ -96,7 +96,6 @@ builder.mutationField('createPayment', (t) =>
             role: true,
           }
         })
-        console.log(user)
 
         if (!user || (user.role !== "USER" && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
           throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
@@ -114,8 +113,6 @@ builder.mutationField('createPayment', (t) =>
           },
         })
 
-        console.log(getUserPriorities)
-
         // return {
         //   props: {},
         // };
@@ -125,7 +122,6 @@ builder.mutationField('createPayment', (t) =>
         const getSess = await getServerSideProps(ctx);
 
       } catch (error) {
-        console.log(error)
         return error;
       }
 
@@ -202,7 +198,6 @@ builder.mutationField('sendPayment', (t) =>
 
         let session;
         session = await getSession(context);
-        console.log(session)
 
         if (!session.user) {
           throw new Error("Vous devez être connectés pour effectuer cette action");
