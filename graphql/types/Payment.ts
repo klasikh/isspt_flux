@@ -87,7 +87,10 @@ builder.mutationField('createPayment', (t) =>
 
         const user = await prisma.user.findUnique({
           where: {
-            email: session.user?.email,
+            username: session.user?.username,
+          },
+          select: {
+            username: true
           }
         })
 
@@ -193,6 +196,7 @@ builder.mutationField('sendPayment', (t) =>
 
         let session;
         session = await getSession(context);
+        console.log(session)
 
         if (!session.user) {
           throw new Error("Vous devez être connectés pour effectuer cette action");
@@ -200,9 +204,13 @@ builder.mutationField('sendPayment', (t) =>
 
         const user = await prisma.user.findUnique({
           where: {
-            email: session.user?.email,
+            username: session.user?.username,
+          },
+          select: {
+            username: true
           }
         })
+
 
         if (!user || (user.role !== "USER" && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
           throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");

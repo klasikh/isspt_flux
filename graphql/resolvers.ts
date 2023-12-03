@@ -23,6 +23,9 @@ export const resolvers = {
     modules: () => {
       return prisma.module.findMany()
     },
+    allModulesQuery: () => {
+      return prisma.module.findMany()
+    },
     userModulePriorities: () => {
       return prisma.userModulePriority.findMany()
     },

@@ -88,7 +88,7 @@ const SignIn = () => {
                                 />
                             </div>
                             <Typography variant="h3" color="white">
-                                ISSPT-FLUX
+                                UNIVERGICIEL
                             </Typography>
                         </CardHeader>
                         <CardBody className="flex flex-col gap-4">

@@ -100,7 +100,7 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
                                 color="blue-gray"
                                 className="font-bold"
                               >
-                                {node.motifId}
+                                {node.motif?.name}
                               </Typography>
                             </div>
                           </td>
@@ -229,8 +229,16 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       title: true,
       description: true,
       name: true,
-      motifId: true,
-      filiereId: true,
+      motif: {
+        select: {
+          name: true
+        },
+      },
+      filiere: {
+        select: {
+          name: true
+        },
+      },
       amount: true,
       step: true,
       status: true,

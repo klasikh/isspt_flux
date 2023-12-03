@@ -1,11 +1,12 @@
 // pages/admin.tsx
-import React from 'react'
-import { type SubmitHandler, useForm } from 'react-hook-form'
-import { gql, useQuery, useMutation } from '@apollo/client'
-import toast, { Toaster } from 'react-hot-toast'
-import { useRouter } from "next/navigation"
-import type { GetServerSideProps } from 'next'
-import { getSession, useSession } from "next-auth/react"
+import React from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
+import { gql, useQuery, useMutation } from '@apollo/client';
+import toast, { Toaster } from 'react-hot-toast';
+import { useRouter } from "next/navigation";
+import type { GetServerSideProps } from 'next';
+import { getSession, useSession } from "next-auth/react";
+import axios from "axios";
 
 type FormValues = {
   title: string;
@@ -63,6 +64,16 @@ const SpentAdd = () => {
         success: 'Dépense ajoutée avec succès!🎉',
         error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
       })
+//         const theAddedSpent = await toast.promise(axios.post('http://localhost:3000/api/grphql',                                   {
+//                                       "query": CreateSpentMutation,
+//                                       "variables" : variables
+//                                   },
+//                                   { headers: { 'Content-Type': 'application/json' } }
+// ), {
+//           loading: 'Opération en cours..',
+//           success: 'Dépense ajoutée avec succès!🎉',
+//           error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
+//         })
 
       if(theAddedSpent.data.createSpent) {
         router.push(`/spents/${theAddedSpent.data.createSpent.id}`)

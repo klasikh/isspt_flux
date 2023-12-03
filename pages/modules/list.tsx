@@ -3,8 +3,9 @@ import Head from "next/head";
 import { gql, useQuery, useMutation } from "@apollo/client";
 import { AwesomeLink } from "../../components/AwesomeLink";
 import type { Link as Node } from "@prisma/client";
-import type { GetServerSideProps } from 'next'
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { getSession } from "next-auth/react"
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 // import { useUser } from "@auth0/nextjs-auth0/client";
 import {
@@ -21,47 +22,8 @@ import {
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon, } from "@heroicons/react/24/outline";
 
-const AllModulesQuery = gql`
-  query allModulesQuery($first: Int, $after: ID) {
-    modules(first: $first, after: $after) {
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-      edges {
-        cursor
-        node {
-          id
-          name
-          description
-        }
-      }
-    }
-  }
-`;
-
-function ModulesList() {
-//   const { user } = useUser()
-  const { data, loading, error, fetchMore } = useQuery(AllModulesQuery, {
-    variables: { first: 10 },
-  });
-
-  {/* if (!user) {
-    return (
-      <div className="flex items-center justify-center">
-        To view the awesome links you need to{' '}
-        <Link href="/api/auth/login" className=" block bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0">
-          Login
-        </Link>
-      </div>
-    );
-  } */}
-
-  if (loading) return <p>Chargement...</p>;
-  if (error) return <p>Oh no... {error.message}</p>;
-
-  const { endCursor, hasNextPage } = data?.modules.pageInfo;
-
+const ModulesList = ({ modules }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const router = useRouter();
   return (
     <div>
       <Head>
@@ -85,7 +47,7 @@ function ModulesList() {
           <Card>
             <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
               <Typography variant="h6" color="white">
-                Modules ({data?.modules.edges.length})
+                Modules ({modules.length})
               </Typography>
             </CardHeader>
             <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
@@ -110,7 +72,7 @@ function ModulesList() {
                   </tr>
                 </thead>
                 <tbody>
-                  { data?.modules.edges.map(({ node }: { node: Node }) => (
+                  { modules.map((node) => (
                         <tr key={node.id}>
                           <td className={`py-3 px-5`}>
                             <div className="flex items-center gap-4">
@@ -204,7 +166,21 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     };
   }
 
+  const modules = await prisma.module.findMany({
+    select: {
+      id: true,
+      name: true,
+      description: true,
+    },
+  });
+
+  if (!modules) return {
+    notFound: true
+  }
+
   return {
-    props: {},
+    props: {
+      modules,
+    },
   };
 };

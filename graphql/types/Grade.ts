@@ -1,4 +1,4 @@
-// /graphql/types/Link.ts
+// /graphql/types/Grade.ts
 import { builder } from "../builder";
 import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
@@ -12,7 +12,6 @@ builder.prismaObject('Grade', {
     users: t.relation('users')
   }),
 })
-
 
 builder.queryField('grades', (t) =>
   t.prismaConnection({
@@ -34,13 +33,11 @@ builder.queryField('grade', (t) =>
       prisma.grade.findUnique({
         ...query,
         where: {
-          // ! says number cant be string
-          id: args.id,
+          id: args.id.toString(),
         }
       })
   })
 )
-
 
 builder.mutationField('createGrade', (t) =>
   t.prismaField({
@@ -64,7 +61,7 @@ builder.mutationField('createGrade', (t) =>
   
         const user = await prisma.user.findUnique({
           where: {
-            email: session.user?.email,
+            username: session.user?.username,
           }
         })
   

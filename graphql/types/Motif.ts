@@ -63,7 +63,7 @@ builder.mutationField('createMotif', (t) =>
 
         const user = await prisma.user.findUnique({
           where: {
-            email: session.user?.email,
+            username: session.user?.username,
           }
         })
 

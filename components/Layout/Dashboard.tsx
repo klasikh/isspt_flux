@@ -49,7 +49,7 @@ export function Dashboard ({
                     {children}
                 </div>
                 <div className="text-blue-gray-600 mt-12 my-8" >
-                    <Footer />
+                    {/* <Footer /> */}
                 </div>
             </div>
         </div>

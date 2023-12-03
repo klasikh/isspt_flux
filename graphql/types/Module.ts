@@ -1,9 +1,10 @@
-// /graphql/types/Link.ts
+// /graphql/types/Module.ts
 import { builder } from "../builder";
 import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
 
 builder.prismaObject('Module', {
+  name: 'Module',
   fields: (t) => ({
     id: t.exposeID('id'),
     name: t.exposeString('name'),
@@ -38,7 +39,6 @@ builder.queryField('module', (t) =>
   })
 )
 
-
 builder.mutationField('createModule', (t) =>
   t.prismaField({
     type: 'Module',
@@ -61,7 +61,7 @@ builder.mutationField('createModule', (t) =>
 
         const user = await prisma.user.findUnique({
           where: {
-            email: session.user?.email,
+            username: session.user?.username,
           }
         })
 

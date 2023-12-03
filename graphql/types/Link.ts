@@ -64,7 +64,7 @@ builder.mutationField('createLink', (t) =>
 
       const user = await prisma.user.findUnique({
         where: {
-          email: (await ctx).user?.email,
+          username: (await ctx).user?.username,
         }
       })
 
@@ -83,7 +83,7 @@ builder.mutationField('createLink', (t) =>
 
         const user = await prisma.user.findUnique({
           where: {
-            email: session.user?.email,
+            username: session.user?.username,
           }
         })
 
@@ -160,7 +160,7 @@ builder.mutationField('bookmarkLink', (t) =>
 
       const user = await prisma.user.findUnique({
         where: {
-          email: (await ctx).user?.email,
+          username: (await ctx).user?.username,
         }
       })
 
@@ -173,7 +173,7 @@ builder.mutationField('bookmarkLink', (t) =>
         },
         data: {
           users: {
-            connect: [{ email: (await ctx).user?.email }]
+            connect: [{ username: (await ctx).user?.username }]
           }
         }
       })

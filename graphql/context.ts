@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 
 export default async function createContext(req: any, res: any) {
   const { data:session }=useSession()
+  console.log(session)
 
   if (!session) {
     res.status(401).json({ message: "You must be logged in." });
