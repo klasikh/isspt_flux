@@ -30,6 +30,7 @@ export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandN
 
   const {data:session}=useSession()
   const theUserSession = session;
+  console.log(session)
 
   return (
     <aside

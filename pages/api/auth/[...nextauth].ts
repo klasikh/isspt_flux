@@ -89,8 +89,11 @@ export const authOptions: AuthOptions = {
                 params.session.user.id = params.token.id;
                 params.session.user.name = params.token.name;
                 params.session.user.username = params.token.username;
+                params.session.user.image = params.token.image;
                 params.session.user.role = params.token.role;
+                params.session.user.bookmarks = params.token.bookmarks;
                 params.session.user.payments = params.token.payments;
+                params.session.user.userModulesPriorities = params.token.userModulesPriorities;
             }
 
             return params.session;
@@ -106,8 +109,11 @@ export const authOptions: AuthOptions = {
                 params.token.id = params.user.id;
                 params.token.name = params.user.name;
                 params.token.username = params.user.username;
+                params.token.image = params.user.image;
                 params.token.role = params.user.role;
                 params.token.payments = params.user.payments;
+                params.token.bookmarks = params.user.bookmarks;
+                params.token.userModulesPriorities = params.user.userModulesPriorities;
             }
 
             return params.token;

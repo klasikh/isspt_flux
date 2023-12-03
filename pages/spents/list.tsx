@@ -157,7 +157,7 @@ const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSide
                                 color="blue-gray"
                                 className="font-bold"
                               >
-                                {node.motifId}
+                                {node.motif}
                               </Typography>
                             </div>
                           </td>

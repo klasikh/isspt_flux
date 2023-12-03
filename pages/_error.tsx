@@ -1,10 +1,17 @@
 function Error({ statusCode }: {statusCode: any}) {
   return (
-    <p>
-      {statusCode
-        ? `An error ${statusCode} occurred on server`
-        : 'An error occurred on client'}
-    </p>
+
+    <div className="min-h-screen">
+    <div className="flex flex-col h-screen justify-between p-4">
+      <p className="text-center text-3xl">
+        {
+          statusCode
+          ? `Une erreur ${statusCode} s'est produite sur le serveur...`
+          : `Une erreur s'est produite ...`
+        }
+      </p>
+    </div>
+    </div>
   )
 }
 

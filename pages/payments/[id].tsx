@@ -9,6 +9,7 @@ import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
+import axios from "axios";
 
 type FormValues = {
   id: string;
@@ -32,7 +33,7 @@ const SendPaymentMutation = gql`
   }
 `;
 
-const RejectPaymentMutation = gql`
+const RejectPaymentMutation = `
   mutation($id: ID!, $rejectMotif: String!, $userId: ID!, $status: String!, $step: String!) {
     rejectPayment(id: $id, rejectMotif: $rejectMotif, userId: $userId, status: $status, step: $step,) {
       id
@@ -70,7 +71,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
 
   const [sendPayment] = useMutation(SendPaymentMutation);
 
-  const [rejectPayment, { data, loading, error }] = useMutation(RejectPaymentMutation)
+//   const [rejectPayment, { data, loading, error }] = useMutation(RejectPaymentMutation)
 
   const {
     register,
@@ -120,15 +121,33 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
 
     const variables = { id: payment.id, rejectMotif, userId: session?.user.id, status: theStatus, step: theStep }
     try {
-      const theRejectedPayment = await toast.promise(rejectPayment({ variables }), {
-        loading: 'Opération en cours..',
-        success: 'Paiement rejeté avec succès!🎉',
-        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
-      })
+//       const theRejectedPayment = await toast.promise(rejectPayment({ variables }), {
+//         loading: 'Opération en cours..',
+//         success: 'Paiement rejeté avec succès!🎉',
+//         error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
+//       })
+//
+//       if(theRejectedPayment.data.rejectPayment) {
+//         setOpenRejectModal(false)
+//         router.push(`/payments/list`)
+//       }
+      const theRejectedPayment = await axios.post('http://localhost:3000/api/graphql',                                   {
+                                       "query": RejectPaymentMutation,
+                                       "variables" : variables
+                                      },
+                                   { headers: { 'Content-Type': 'application/json' } }
+                                  );
 
-      if(theRejectedPayment.data.rejectPayment) {
-        setOpenRejectModal(false)
-        router.push(`/payments/list`)
+      if(theRejectedPayment?.data.errors) {
+        toast.error(`${theRejectedPayment?.data.errors[0].extensions.originalError.message}`)
+        setOpenRejectModal(false);
+      } else {
+        toast.success('Paiement rejeté avec succès!🎉');
+        if(theRejectedPayment.data.data.rejectPayment) {
+          setOpenRejectModal(false);
+          router.push(`/payments/list`)
+        }
+        setOpenRejectModal(false);
       }
 
     } catch (error) {

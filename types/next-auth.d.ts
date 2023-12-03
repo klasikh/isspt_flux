@@ -8,12 +8,11 @@ declare module "next-auth" {
     user: {
       name: string | undefined | null,
       username: string | undefined,
+      image: string | undefined,
       role: string | undefined | null,
-      gradeId: string | undefined | null,
-      image: string | undefined | null,
-      bookmarks: string | undefined | null,
-      payments: string | undefined | null,
-      userModulesPriorities: string | undefined | null,
+      bookmarks: any | undefined | null,
+      payments: any | undefined | null,
+      userModulesPriorities: any | undefined,
     } & DefaultSession["user"]
   }
 }

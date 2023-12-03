@@ -9,6 +9,7 @@ import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
+import axios from "axios";
 
 type FormValues = {
   id: string;
@@ -32,7 +33,7 @@ const SendSpentMutation = gql`
   }
 `;
 
-const RejectSpentMutation = gql`
+const RejectSpentMutation = `
   mutation($id: ID!, $rejectMotif: String!, $userId: ID!, $status: String!, $step: String!) {
     rejectSpent(id: $id, rejectMotif: $rejectMotif, userId: $userId, status: $status, step: $step,) {
       id
@@ -49,7 +50,7 @@ const RejectSpentMutation = gql`
   }
 `
 
-const ValidSpentMutation = gql`
+const ValidSpentMutation = `
   mutation($id: ID!, $userId: ID!, $status: String!, $step: String!) {
     validSpent(id: $id, userId: $userId, status: $status, step: $step,) {
       id
@@ -95,9 +96,9 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
 
   const [sendSpent] = useMutation(SendSpentMutation);
 
-  const [rejectSpent, { data, loading, error }] = useMutation(RejectSpentMutation)
+//   const [rejectSpent, { data, loading, error }] = useMutation(RejectSpentMutation)
 
-  const [validSpent, { data: dataValSpent, loading: loadValSpent, error: errorValSpent }] = useMutation(ValidSpentMutation)
+  // const [validSpent, { data: dataValSpent, loading: loadValSpent, error: errorValSpent }] = useMutation(ValidSpentMutation)
 
   const [deleteSpent, { data: dataDelSpent, loading: loadDelSpent, error: errorDelSpent }] = useMutation(DeleteSpentMutation)
 
@@ -144,15 +145,24 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
 
     const variables = { id: spent.id, rejectMotif, userId: session?.user.id, status: theStatus, step: theStep }
     try {
-      const theRejectedSpent = await toast.promise(rejectSpent({ variables }), {
-        loading: 'Opération en cours..',
-        success: 'Dépense rejetée avec succès!🎉',
-        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
-      })
 
-      if(theRejectedSpent.data.rejectSpent) {
-        setOpenRejectModal(false)
-        router.push(`/spents/list`)
+      const theRejectedSpent = await axios.post('http://localhost:3000/api/graphql',                                   {
+                                       "query": RejectSpentMutation,
+                                       "variables" : variables
+                                      },
+                                   { headers: { 'Content-Type': 'application/json' } }
+                                  );
+
+      if(theRejectedSpent?.data.errors) {
+        toast.error(`${theRejectedSpent?.data.errors[0].extensions.originalError.message}`)
+        setOpenRejectModal(false);
+      } else {
+        toast.success('Dépense rejetée avec succès!🎉');
+        if(theRejectedSpent.data.data.rejectSpent) {
+          setOpenRejectModal(false);
+          router.push(`/spents/list`)
+        }
+        setOpenRejectModal(false);
       }
 
     } catch (error) {
@@ -167,17 +177,31 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
 
     const variables = { id: spent.id, userId: session?.user.id, status: theStatus, step: theStep }
     try {
-      const theValidatedSpent = await toast.promise(validSpent({ variables }), {
-        loading: 'Opération en cours..',
-        success: 'Dépense approuvée avec succès!🎉',
-        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
-      })
 
-      if(theValidatedSpent.data.validSpent) {
-        router.push(`/spents/list`)
+      // const theValidatedSpent = await toast.promise(validSpent({ variables }), {
+      //    loading: 'Opération en cours..',
+      //    success: 'Dépense approuvée avec succès!🎉',
+      //    error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${errors}`,
+      // })
+
+      const theValidatedSpent = await axios.post('http://localhost:3000/api/graphql',                                   {
+                                       "query": ValidSpentMutation,
+                                       "variables" : variables
+                                      },
+                                   { headers: { 'Content-Type': 'application/json' } }
+                                  );
+
+      if(theValidatedSpent?.data.errors) {
+        toast.error(`${theValidatedSpent?.data.errors[0].extensions.originalError.message}`)
+        setIsValidateLoading(false);
+      } else {
+        toast.success('Dépense approuvée avec succès!🎉');
+        if(theValidatedSpent.data.data.validSpent) {
+          setIsValidateLoading(false);
+          router.push(`/spents/list`)
+        }
         setIsValidateLoading(false);
       }
-      setIsValidateLoading(false);
 
     } catch (error) {
       console.error(error)
