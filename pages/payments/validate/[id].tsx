@@ -67,7 +67,7 @@ const AllFilieresQuery = gql`
   }
 `;
 
-const ValidPaymentMutation = gql`
+const ValidPaymentMutation = `
   mutation($id: ID!, $userId: ID!, $status: String!, $step: String!, $filePath: String!) {
     validPayment(id: $id, userId: $userId, status: $status, step: $step, filePath: $filePath) {
       id
@@ -88,25 +88,10 @@ const ValidPaymentMutation = gql`
 const ValidateAPayment: NextPage<Props> = ({ payment, dirs }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
 
-    const [uploading, setUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedFile, setSelectedFile] = useState<File>();
 
-  const handleUpload = async () => {
-    setUploading(true);
-    try {
-      if (!selectedFile) return;
-      const formData = new FormData();
-      formData.append("myImage", selectedFile);
-      const { data } = await axios.post("/api/upload-api", formData);
-      console.log(data);
-    } catch (error: any) {
-      console.log(error.response?.data);
-    }
-    setUploading(false);
-  };
-
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setIsLoading] = useState(false);
 
   const {data:session}=useSession()
   const theUserSession = session;
@@ -115,7 +100,7 @@ const ValidateAPayment: NextPage<Props> = ({ payment, dirs }: InferGetServerSide
 
   const { data: allFilieres } = useQuery(AllFilieresQuery);
 
-  const [validPayment, { data, loading, error }] = useMutation(ValidPaymentMutation)
+//   const [validPayment, { data, loading, error }] = useMutation(ValidPaymentMutation)
 
   const {
     register,
@@ -123,34 +108,6 @@ const ValidateAPayment: NextPage<Props> = ({ payment, dirs }: InferGetServerSide
     formState: { errors },
     reset,
   } = useForm<FormValues>({ mode: 'onBlur' });
-
-  const [file, setFile] = useState<File>()
-
-  const uploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-
-    setFile(e);
-
-    console.log(e)
-
-    // if (!file) return
-
-    try {
-      const data = new FormData()
-      data.set('file', e)
-
-      const res = await fetch(`http://localhost:3000/api/upload-file`, {
-        method: 'POST',
-        body: data
-      })
-
-      // console.log(res)
-      // handle the error
-      if (!res.ok) throw new Error(await res.text())
-    } catch (e: any) {
-      // Handle errors here
-      console.error(e)
-    }
-  }
 
   useEffect(() => {
     if (payment) {
@@ -171,22 +128,41 @@ const ValidateAPayment: NextPage<Props> = ({ payment, dirs }: InferGetServerSide
     const theStatus = "APPROVED";
 
     const variables = { id: payment.id, userId: session?.user.id, status: theStatus, step: theStep, }
+    setIsLoading(true);
     try {
-      const theValidatedPayment = await toast.promise(editPayment({ variables }), {
-        loading: 'Opération en cours..',
-        success: 'Paiement traité avec succès!🎉',
-        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
-      })
+      if (!selectedFile) return;
+      const formData = new FormData();
+      formData.append("fileUpload", selectedFile);
+      const { data } = await axios.post("/api/upload-api", formData);
 
-      // console.log(theEditedPayment)
+//       const theValidatedPayment = await toast.promise(validPayment({ variables: { ...variables, filePath: data[0].filepath } }), {
+//         loading: 'Opération en cours..',
+//         success: 'Paiement traité avec succès!🎉',
+//         error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
+//       })
 
-      if(theValidatedPayment.data.validPayment) {
-        router.push(`/payments/${theValidatedPayment.data.validPayment.id}`)
+      const theValidatedPayment = await axios.post('/api/graphql',
+                                                  {
+                                                    "query": ValidPaymentMutation,
+                                                    "variables" : { ...variables, filePath: data[0].filepath },
+                                                  },
+                                                  { headers: { 'Content-Type': 'application/json' } }
+                                    );
+
+      if(theValidatedPayment?.data.errors) {
+        toast.error(`${theValidatedPayment?.data.errors[0].extensions.originalError.message}`);
+      } else {
+        toast.success('Paiement traité avec succès!🎉');
+        if(theValidatedPayment.data.data.validPayment) {
+          router.push(`/payments/${theValidatedPayment.data.data.validPayment.id}`)
+        }
+        setOpenRejectModal(false);
       }
 
-    } catch (error) {
-      console.error(error)
+    } catch (error: any) {
+      console.log(error);
     }
+    setIsLoading(false);
   }
 
   return (
@@ -202,43 +178,6 @@ const ValidateAPayment: NextPage<Props> = ({ payment, dirs }: InferGetServerSide
           Retour
         </button>
         <h1 className="text-2xl font-medium mb-5">Valider un paiement <span className="text-sm">(Veuillez attacher le fichier de la quittance au formulaire)</span></h1>
-        <div className="max-w-4xl mx-auto p-20 space-y-6">
-      <label>
-        <input
-          type="file"
-          hidden
-          onChange={({ target }) => {
-            if (target.files) {
-              const file = target.files[0];
-              setSelectedImage(URL.createObjectURL(file));
-              setSelectedFile(file);
-            }
-          }}
-        />
-        <div className="w-40 aspect-video rounded flex items-center justify-center border-2 border-dashed cursor-pointer">
-          {selectedImage ? (
-            <img src={selectedImage} alt="" />
-          ) : (
-            <span>Select Image</span>
-          )}
-        </div>
-      </label>
-      <button
-        onClick={handleUpload}
-        disabled={uploading}
-        style={{ opacity: uploading ? ".5" : "1" }}
-        className="bg-red-600 p-3 w-32 text-center rounded text-white"
-      >
-        {uploading ? "Uploading.." : "Upload"}
-      </button>
-      <div className="mt-20 flex flex-col space-y-3">
-        {dirs && dirs.map((item) => (
-          <Link key={item} href={"/upload/" + item}>
-            <a className="text-blue-500 hover:underline">{item}</a>
-          </Link>
-        ))}
-      </div>
-    </div>
         <form className="grid grid-cols-1 gap-y-4 bg-white shadow-lg p-8 rounded-lg" encType="multipart/form-data" onSubmit={handleSubmit(onSubmit)}>
           <label className="block">
             <span className="text-gray-700">Titre</span>
@@ -301,18 +240,31 @@ const ValidateAPayment: NextPage<Props> = ({ payment, dirs }: InferGetServerSide
           </label>
 
           <div className="text-center justify-center flex">
-          <label className="block p-3 bg-gray-200 w-1/3 h-18 rounded">
-            <span className="text-gray-700">Cliquez ou glissez déposer pour charger un document .docx ou .pdf (max 2MB)</span>
-            <div className="justify-center my-2 flex"><ArrowUpTrayIcon className="h-10 w-10 text-blue-600 font-bold" aria-hidden="true" /></div>
-            <input
-              {...register('filePath', { required: false })}
-              onChange={(e) => uploadFile(e.target.files?.[0])}
-              type="file"
-              accept="application/docx, application/pdf"
-              name="filePath"
-              className="text-none w-1/2"
-            />
-          </label>
+            <label className="block p-3 bg-gray-200 w-1/3 h-18 rounded">
+              <span className="text-gray-700">Cliquez ou glissez déposer pour charger un document .docx ou .pdf (max 2MB)</span>
+              <div className="justify-center my-2 flex"><ArrowUpTrayIcon className="h-10 w-10 text-blue-600 font-bold" aria-hidden="true" /></div>
+              <input
+                {...register('filePath', { required: false })}
+                onChange={({ target }) => {
+                  if (target.files) {
+                    const file = target.files[0];
+                    setSelectedImage(URL.createObjectURL(file));
+                    setSelectedFile(file);
+                  }
+                }}
+                type="file"
+                accept="application/docx, application/pdf"
+                name="filePath"
+                className="text-none w-1/2"
+              />
+            </label>
+            <div className="w-40 aspect-video rounded flex items-center justify-center border-2 border-dashed cursor-pointer">
+              {selectedImage ? (
+                <img src={selectedImage} alt="" />
+              ) : (
+                <span>Fichier non sélectionné</span>
+              )}
+            </div>
           </div>
 
           <button
@@ -371,6 +323,16 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
   if (!payment) return {
     notFound: true
+  }
+
+  if(payment.status === "APPROVED") {
+    return {
+      redirect: {
+        permanent: false,
+        destination: `/payments/${payment.id}`,
+      },
+      props: {},
+    };
   }
 
   const dirProps = { dirs: [] };

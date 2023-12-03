@@ -63,7 +63,13 @@ builder.mutationField('createUserModulePriority', (t) =>
 
         const user = await prisma.user.findUnique({
           where: {
-            email: session.user?.email,
+            username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
           }
         })
 
@@ -114,17 +120,17 @@ builder.mutationField('createUserModulePriority', (t) =>
       //   }
       // })
 
-       const updateUserModule = await prisma.user.update({
-        ...query,
-        where: {
-          id: userId
-        },
-        data: {
-          userModulesPriorities: {
-            connect: [{ id: args.userId }]
-          }
-        }
-      })
+      //  const updateUserModule = await prisma.user.update({
+      //   ...query,
+      //   where: {
+      //     id: userId
+      //   },
+      //   data: {
+      //     userModulesPriorities: {
+      //       connect: [{ id: args.userId }]
+      //     }
+      //   }
+      // })
 
        return addedModule;
     }

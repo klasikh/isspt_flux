@@ -36,8 +36,9 @@ const handler: NextApiHandler = async (req, res) => {
   } catch (error) {
     await fs.mkdir(path.join(process.cwd() + "/public", "/upload"));
   }
-  await readFile(req, true);
-  res.json({ done: "ok" });
+  const upload = await readFile(req, true);
+  // res.json({ done: "ok", link: Date.now().toString() + "_" + path.originalFilename });
+  res.json(upload.files.fileUpload)
 };
 
 export default handler;

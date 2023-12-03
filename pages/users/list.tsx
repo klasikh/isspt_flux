@@ -203,6 +203,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
           name: true
         },
       },
+      role: true,
     },
   });
 

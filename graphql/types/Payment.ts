@@ -414,7 +414,7 @@ builder.mutationField('validPayment', (t) =>
 
         for(let i=0; i<getUserPriorities.length; i++) {
           if(getUserPriorities[i].module?.name === "PROFORMA") {
-            if(getUserPriorities[i].priority !== "C_R_UPDATE_DELETE") {
+            if(getUserPriorities[i].priority !== "C_READ_UPDATE") {
               throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action.")
             }
           } else {

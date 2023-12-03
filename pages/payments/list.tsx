@@ -130,7 +130,7 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
                                     : node.status === "ONPROCESS"
                                     ? "inline-block bg-yellow-500 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 mr-2 mb-2"
                                     : node.status === "APPROVED"
-                                    ? "inline-block bg-green-500 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 mr-2 mb-2"
+                                    ? "inline-block bg-green-500 rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
                                     : node.status === "REJECTED"
                                     ? "inline-block bg-red-500 rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
                                     : ""

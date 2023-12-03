@@ -62,6 +62,12 @@ builder.mutationField('createModule', (t) =>
         const user = await prisma.user.findUnique({
           where: {
             username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
           }
         })
 
@@ -79,7 +85,6 @@ builder.mutationField('createModule', (t) =>
         const getSess = await getServerSideProps(ctx);
 
       } catch (error) {
-        console.log(error)
         return error;
       }
 

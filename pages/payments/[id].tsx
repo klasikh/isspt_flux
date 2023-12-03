@@ -131,7 +131,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
 //         setOpenRejectModal(false)
 //         router.push(`/payments/list`)
 //       }
-      const theRejectedPayment = await axios.post('http://localhost:3000/api/graphql',                                   {
+      const theRejectedPayment = await axios.post('http://localhost:3000/api/graphql', {
                                        "query": RejectPaymentMutation,
                                        "variables" : variables
                                       },
@@ -232,9 +232,18 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
 
           { payment.status === "REJECTED"
             ? <div className="mx-4 my-2 p-4 bg-gray-300 shadow rounded-md">
-                  <h4 className="font-bold text-md">Motif(s) du rejet:</h4>
-                  <span className="text-sm text-gray-700">{ payment.rejectMotif }</span>
-                </div>
+                <h4 className="font-bold text-md">Motif(s) du rejet:</h4>
+                <span className="text-sm text-gray-700">{ payment.rejectMotif }</span>
+              </div>
+            : ""
+          }
+
+          {
+            payment.status === "APPROVED"
+            ? <div className="w-full mx-4 my-2 p-4 bg-gray-300 shadow rounded-md">
+                <iframe src={payment?.filePath} style={{ width: "100%", minHeight: "400px" }}>
+                </iframe>
+              </div>
             : ""
           }
 

@@ -266,7 +266,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       redirect: {
         permanent: false,
-        destination: '/api/auth/login',
+        destination: '/auth/login',
       },
       props: {},
     };
@@ -290,6 +290,51 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       },
       props: {},
     };
+  }
+
+  const getUserPriorities = await prisma.userModulePriority.findMany({
+    where: {
+      userId: user.id
+    },
+    select: {
+      userId: true,
+      moduleId: true,
+      module: {
+        select: {
+          id: true,
+          name: true,
+        }
+      },
+      priority: true
+    },
+  })
+
+  for(let i=0; i<getUserPriorities.length; i++) {
+    if(getUserPriorities[i].module?.name === "PROFORMA") {
+
+      if(getUserPriorities[i].priority !== "CREATE" || getUserPriorities[i].priority !== "CREATE_READ" || getUserPriorities[i].priority !== "C_READ_UPDATE" || getUserPriorities[i].priority !== "C_READ_DELETE" || getUserPriorities[i].priority !== "C_R_UPDATE_DELETE") {
+
+        toast.error("Vous n'avez pas les permissions requises pour effectuer cette action.");
+        return {
+          redirect: {
+            permanent: false,
+            destination: '/dashboard',
+          },
+          props: {},
+        };
+      }
+
+    } else {
+
+      toast.error("Vous n'avez aucune priorité sur ce module")
+      return {
+        redirect: {
+          permanent: false,
+          destination: '/dashboard',
+        },
+        props: {},
+      };
+    }
   }
 
   return {
