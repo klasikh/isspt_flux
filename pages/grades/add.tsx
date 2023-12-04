@@ -3,6 +3,7 @@ import React from 'react'
 import Head from "next/head";
 import { type SubmitHandler, useForm } from 'react-hook-form'
 import { gql, useMutation } from '@apollo/client'
+import { ExclamationTriangleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from 'react-hot-toast'
 import type { GetServerSideProps } from 'next'
@@ -56,8 +57,16 @@ const GradeAdd = () => {
         <title>Ajouter un grade</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="container mx-auto max-w-md py-12">
+      <div className="container mx-auto max-w-lg mt-10">
         <Toaster />
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="bg-gray-500 text-white font-bold px-4 py-2 mb-6 rounded-md hover:bg-gray-600 flex"
+        >
+          <ArrowLeftIcon className="h-6 w-6 text-white font-bold mr-2" aria-hidden="true" />
+          Retour
+        </button>
         <h1 className="text-3xl font-medium my-5">Ajouter un grade</h1>
         <form className="grid grid-cols-1 gap-y-6 bg-white shadow-lg p-8 rounded-lg" onSubmit={handleSubmit(onSubmit)}>
           <label className="block">
@@ -111,20 +120,22 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       redirect: {
         permanent: false,
-        destination: '/api/auth/login',
+        destination: '/auth/signin',
       },
       props: {},
     };
   }
 
   const user = await prisma.user.findUnique({
+    where: {
+      username: session.user?.username,
+    },
     select: {
+      id: true,
+      name: true,
       username: true,
       role: true,
-    },
-    where: {
-      username: session?.user?.username,
-    },
+    }
   });
 
   if (!user || (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN")) {

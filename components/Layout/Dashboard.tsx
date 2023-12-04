@@ -12,6 +12,7 @@ import DashboardNavbar from "./widgets/layout/dashboard-navbar"
 import { useMaterialTailwindController, setOpenConfigurator } from "../context";
 import Link from "next/link";
 
+import toast, { Toaster } from 'react-hot-toast';
 import routes from "../../protected/links";
 
 export function Dashboard ({
@@ -35,6 +36,8 @@ export function Dashboard ({
             />
             <div className="flex flex-col h-screen justify-between p-4 xl:ml-80">
                 <DashboardNavbar />
+                <Toaster />
+
                 {/* <Configurator /> */}
                 {/* <IconButton
                     size="lg"

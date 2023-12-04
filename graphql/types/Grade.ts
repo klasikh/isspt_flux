@@ -120,14 +120,46 @@ builder.mutationField('deleteGrade', (t) =>
   t.prismaField({
     type: 'Grade',
     args: {
-      id: t.arg.id({ required: true })
+      id: t.arg.id({ required: true }),
+      userId: t.arg.id({ required: true }),
     },
-    resolve: async (query, _parent, args, _ctx) =>
-      prisma.grade.delete({
-        ...query,
+    resolve: async (query, _parent, args, _ctx) => {
+
+
+      const getServerSideProps: GetServerSideProps = async (context) => {
+
+        let session;
+        session = await getSession(context);
+
+        if (!session.user) {
+          throw new Error("Vous devez être connectés pour effectuer cette action");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
+          }
+        })
+
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+          throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
+        }
+      };
+
+      const deletedGrade = prisma.grade.delete({
         where: {
           id: args.id
-        }
-      })
+        },
+      });
+
+       return deletedGrade;
+
+    }
   })
 )

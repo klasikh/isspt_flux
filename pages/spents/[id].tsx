@@ -67,7 +67,7 @@ const ValidSpentMutation = `
   }
 `
 
-const DeleteSpentMutation = gql`
+const DeleteSpentMutation = `
   mutation($id: ID!, $userId: ID!,) {
     deleteSpent(id: $id, userId: $userId,) {
       id
@@ -100,7 +100,7 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
 
   // const [validSpent, { data: dataValSpent, loading: loadValSpent, error: errorValSpent }] = useMutation(ValidSpentMutation)
 
-  const [deleteSpent, { data: dataDelSpent, loading: loadDelSpent, error: errorDelSpent }] = useMutation(DeleteSpentMutation)
+//   const [deleteSpent, { data: dataDelSpent, loading: loadDelSpent, error: errorDelSpent }] = useMutation(DeleteSpentMutation)
 
   const {
     register,
@@ -212,13 +212,24 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
     setIsDeleteLoading(true);
     const variables = { id: spent.id, userId: session?.user.id, }
     try {
-      const theValidatedSpent = await toast.promise(deleteSpent({ variables }), {
-        loading: 'Opération en cours..',
-        success: 'Dépense approuvée avec succès!🎉',
-        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
-      })
+//       const theValidatedSpent = await toast.promise(deleteSpent({ variables }), {
+//         loading: 'Opération en cours..',
+//         success: 'Dépense supprimée avec succès!🎉',
+//         error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
+//       })
 
-      if(theValidatedSpent.data.validSpent) {
+      const theDeletedSpent =  await axios.post('/api/graphql',                                   {
+                                       "query": DeleteSpentMutation,
+                                       "variables" : variables
+                                      },
+                                   { headers: { 'Content-Type': 'application/json' } }
+                                  );
+
+      if(theDeletedSpent?.data.errors) {
+        toast.error(`${theDeletedSpent?.data.errors[0].extensions.originalError.message}`)
+        setIsValidateLoading(false);
+      } else {
+        toast.success('Dépense supprimée avec succès!🎉');
         router.push(`/spents/list`)
         setIsDeleteLoading(false);
         setOpenDeletionModal(false)
@@ -415,7 +426,7 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
                 : ""
               }
               {
-                (theUserSession?.user?.role === "ADMIN")
+                (theUserSession?.user?.role === "ADMIN" || theUserSession?.user?.role === "SUPER_ADMIN")
                 ? (
                       <button
                         onClick={() => deleteClickSpent()}
@@ -438,30 +449,6 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
                         )}
                       </button>
                    )
-                  : ""
-                }
-
-                { (spent.step === "2" && (theUserSession?.user?.role === "ADMIN" || theUserSession?.user?.role === "SUPER_ADMIN"))
-                ? ( <button
-                      onClick={() => deleteClickSpent()}
-                      className="bg-red-500 text-white font-medium px-4 py-2 rounded-md hover:bg-red-600"
-                    >
-                      {isDeleteLoading ? (
-                        <span className="flex items-center justify-center">
-                          <svg
-                            className="w-6 h-6 animate-spin mr-1"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
-                          </svg>
-                          Suppression...
-                        </span>
-                      ) : (
-                        <span className="font-bold">Supprimer</span>
-                      )}
-                    </button> )
                   : ""
                 }
             </div>
@@ -505,7 +492,7 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
                             Suppression
                           </Dialog.Title>
                           <div className="mt-2">
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-700">
                               Êtes-vous sûr(e) de vouloir supprimer cette dépense ?
                             </p>
                           </div>

@@ -175,14 +175,6 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
                                       </IconButton>
                                     </Link>
                                   )
-                                : ((node.status === "CREATED" || node.status === "CANCELED") && theUserSession?.user?.role === "ADMIN")
-                                ? (
-                                    <Link href="#">
-                                      <IconButton variant="text" color="white" className="text-sm bg-red-600 hover:bg-red-400">
-                                        <TrashIcon className="h-5 w-5 text-white-500" />
-                                      </IconButton>
-                                    </Link>
-                                  )
                                 : ""
                               }
                             </Typography>

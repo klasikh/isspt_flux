@@ -181,13 +181,15 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   }
 
   const user = await prisma.user.findUnique({
-    select: {
-      username: true,
-      role: true,
-    },
     where: {
       username: session.user?.username,
     },
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      role: true,
+    }
   });
 
   if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {

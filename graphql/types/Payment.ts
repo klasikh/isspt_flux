@@ -306,7 +306,10 @@ builder.mutationField('rejectPayment', (t) =>
 
         const getUserPriorities = await prisma.userModulePriority.findMany({
           where: {
-            userId: user.id
+            userId: user.id,
+            module: {
+              name: "PROFORMA"
+            }
           },
           select: {
             userId: true,
@@ -321,14 +324,18 @@ builder.mutationField('rejectPayment', (t) =>
           },
         })
 
-        for(let i=0; i<getUserPriorities.length; i++) {
-          if(getUserPriorities[i].module?.name === "PROFORMA") {
-            if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
-              throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action.")
+        if(getUserPriorities) {
+          for(let i=0; i<getUserPriorities.length; i++) {
+            if(getUserPriorities[i].module?.name === "PROFORMA") {
+              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
+                throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action.")
+              }
+            } else {
+              throw new Error("Vous n'avez aucune priorité sur ce module")
             }
-          } else {
-            throw new Error("Vous n'avez aucune priorité sur ce module")
           }
+        } else {
+          throw new Error("Vous n'avez aucune priorité sur ce module")
         }
 
         // return {
@@ -397,7 +404,10 @@ builder.mutationField('validPayment', (t) =>
 
         const getUserPriorities = await prisma.userModulePriority.findMany({
           where: {
-            userId: user.id
+            userId: user.id,
+            module: {
+              name: "PROFORMA"
+            }
           },
           select: {
             userId: true,
@@ -412,14 +422,18 @@ builder.mutationField('validPayment', (t) =>
           },
         })
 
-        for(let i=0; i<getUserPriorities.length; i++) {
-          if(getUserPriorities[i].module?.name === "PROFORMA") {
-            if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
-              throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action.")
+        if(getUserPriorities) {
+          for(let i=0; i<getUserPriorities.length; i++) {
+            if(getUserPriorities[i].module?.name === "PROFORMA") {
+              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
+                throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action.")
+              }
+            } else {
+              throw new Error("Vous n'avez aucune priorité sur ce module")
             }
-          } else {
-            throw new Error("Vous n'avez aucune priorité sur ce module")
           }
+        } else {
+          throw new Error("Vous n'avez aucune priorité sur ce module")
         }
 
         // return {
@@ -452,14 +466,61 @@ builder.mutationField('deletePayment', (t) =>
   t.prismaField({
     type: 'Payment',
     args: {
-      id: t.arg.id({ required: true })
+      id: t.arg.id({ required: true }),
+      userId: t.arg.id({ required: true }),
     },
-    resolve: async (query, _parent, args, _ctx) =>
-      prisma.payment.delete({
-        ...query,
+   resolve: async (query, _parent, args, _ctx) => {
+
+
+      const getServerSideProps: GetServerSideProps = async (context) => {
+
+        let session;
+        session = await getSession(context);
+
+        if (!session.user) {
+          throw new Error("Vous devez être connectés pour effectuer cette action");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
+          }
+        })
+
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+          throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
+          // return 'toto est Ok'
+        }
+
+        // CHECK
+        // const checkedSpent = prisma.spent.findUnique({
+        //   ...query,
+        //   where: {
+        //     id: args.id,
+        //   }
+        // });
+
+        // if(user.role === "USER") {
+        //   if(checkedSpent.addedBy !== userId) {
+        //     throw new Error("Désolé, vous n'êtes pas l'utilisateur qui a ajouté cette dépense");
+        //   }
+        // }
+      };
+
+      const deletedPayment = prisma.payment.delete({
         where: {
           id: args.id
-        }
-      })
+        },
+      });
+
+       return deletedPayment;
+
+    }
   })
 )

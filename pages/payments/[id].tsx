@@ -51,6 +51,13 @@ const RejectPaymentMutation = `
   }
 `
 
+const DeletePaymentMutation = `
+  mutation($id: ID!, $userId: ID!,) {
+    deletePayment(id: $id, userId: $userId,) {
+      id
+    }
+  }
+`
 const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
   const router = useRouter();
@@ -149,6 +156,35 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
         }
         setOpenRejectModal(false);
       }
+
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const delPaym = async () => {
+    setIsDeleteLoading(true);
+    const variables = { id: payment.id, userId: session?.user.id, }
+    try {
+
+      const theDeletedPayment =  await axios.post('/api/graphql',                                   {
+                                       "query": DeletePaymentMutation,
+                                       "variables" : variables
+                                      },
+                                   { headers: { 'Content-Type': 'application/json' } }
+                                  );
+
+      if(theDeletedPayment?.data.errors) {
+        toast.error(`${theDeletedPayment?.data.errors[0].extensions.originalError.message}`)
+        setIsValidateLoading(false);
+      } else {
+        toast.success('Paiement supprimé avec succès!🎉');
+        router.push(`/payments/list`)
+        setIsDeleteLoading(false);
+        setOpenDeletionModal(false)
+      }
+      setIsDeleteLoading(false);
+      setOpenDeletionModal(false);
 
     } catch (error) {
       console.error(error)
@@ -416,7 +452,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                             Suppression
                           </Dialog.Title>
                           <div className="mt-2">
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-700">
                               Êtes-vous sûr(e) de vouloir supprimer ce paiement ?
                             </p>
                           </div>
@@ -427,7 +463,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                       <button
                         type="button"
                         className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
-                        onClick={() => setOpenDeletionModal(false)}
+                        onClick={() => delPaym()}
                       >
                         Confirmer la suppression
                       </button>

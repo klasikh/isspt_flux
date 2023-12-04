@@ -1,12 +1,14 @@
 // pages/admin.tsx
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Head from "next/head";
 import { type SubmitHandler, useForm } from 'react-hook-form'
 import { gql, useQuery, useMutation } from '@apollo/client'
+import { ExclamationTriangleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from 'react-hot-toast'
 import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
+import axios from "axios";
 
 type FormValues = {
   userId: string;
@@ -53,7 +55,7 @@ const AllModulesQuery = gql`
   }
 `;
 
-const CreateModuleAttributeMutation = gql`
+const CreateModuleAttributeMutation = `
   mutation($userId: String!, $moduleId: String!, $priority: String!) {
     createUserModulePriority(userId: $userId, moduleId: $moduleId, priority: $priority) {
       userId
@@ -64,6 +66,7 @@ const CreateModuleAttributeMutation = gql`
 `
 const ModuleAttribute = () => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const { data: allUsers } = useQuery(AllUsersQuery);
 
@@ -111,7 +114,7 @@ const ModuleAttribute = () => {
       value: "C_R_UPDATE_DELETE"
     },
   ]
-  const [createUserModulePriority, { data, loading, error }] = useMutation(CreateModuleAttributeMutation)
+//   const [createUserModulePriority, { data, loading, error }] = useMutation(CreateModuleAttributeMutation)
   const {
     register,
     handleSubmit,
@@ -122,15 +125,31 @@ const ModuleAttribute = () => {
     const { userId, moduleId, priority, } = data
     const variables = { userId, moduleId, priority, }
     try {
-      const createTheAttributeModule = await toast.promise(createUserModulePriority({ variables }), {
-        loading: 'Opération en cours..',
-        success: 'Module attribué avec succès!🎉',
-        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
-      })
+//       const createTheAttributeModule = await toast.promise(createUserModulePriority({ variables }), {
+//         loading: 'Opération en cours..',
+//         success: 'Module attribué avec succès!🎉',
+//         error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
+//       })
 
-      if(createTheAttributeModule.data.createUserModulePriority) {
-        router.push('/modules/list')
+      setIsLoading(true)
+      const createTheAttributeModule = await axios.post('/api/graphql', {
+                                       "query": CreateModuleAttributeMutation,
+                                       "variables" : variables
+                                      },
+                                   { headers: { 'Content-Type': 'application/json' } }
+                                  );
+
+      if(createTheAttributeModule?.data.errors) {
+        toast.error(`${createTheAttributeModule?.data.errors[0].extensions.originalError.message}`)
+        setIsLoading(false)
+      } else {
+        toast.success('Privilège de module attribué avec succès!🎉');
+        setIsLoading(false)
+        if(createTheAttributeModule.data.data.createUserModulePriority) {
+           router.push(`/modules/list`)
+        }
       }
+      setIsLoading(false)
 
     } catch (error) {
       console.error(error)
@@ -145,6 +164,14 @@ const ModuleAttribute = () => {
       </Head>
       <div className="container mx-auto max-w-md py-12">
         <Toaster />
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="bg-gray-500 text-white font-bold px-4 py-2 mb-6 rounded-md hover:bg-gray-600 flex"
+        >
+          <ArrowLeftIcon className="h-6 w-6 text-white font-bold mr-2" aria-hidden="true" />
+          Retour
+        </button>
         <h1 className="text-3xl font-medium my-5">Attribuer un module à un utilisateur</h1>
         <form className="grid grid-cols-1 gap-y-6 bg-white shadow-lg p-8 rounded-lg" onSubmit={handleSubmit(onSubmit)}>
           <label className="block">
@@ -179,11 +206,11 @@ const ModuleAttribute = () => {
           </label>
 
           <button
-            disabled={loading}
+            disabled={isLoading}
             type="submit"
             className="my-4 capitalize bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600"
           >
-            {loading ? (
+            {isLoading ? (
               <span className="flex items-center justify-center">
                 <svg
                   className="w-6 h-6 animate-spin mr-1"

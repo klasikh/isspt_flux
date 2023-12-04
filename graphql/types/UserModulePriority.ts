@@ -58,7 +58,7 @@ builder.mutationField('createUserModulePriority', (t) =>
         session = await getSession(context);
 
         if (!session.user) {
-          throw new Error("You have to be logged in to perform this action");
+          throw new Error("Vous devez être connectés pour effectuer cette action");
         }
 
         const user = await prisma.user.findUnique({
@@ -74,7 +74,7 @@ builder.mutationField('createUserModulePriority', (t) =>
         })
 
         if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
-          throw new Error("You don't have permission to perform this action");
+          throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
           // return 'toto est Ok'
         }
 
@@ -86,19 +86,17 @@ builder.mutationField('createUserModulePriority', (t) =>
       try {
         const getSess = await getServerSideProps(ctx);
 
-        // let findModulePriority = await prisma.module.findMany({
-        //   ...query,
-        //   where: {
-        //     userId: userId,
-        //     moduleId: moduleId,
-        //   }
-        // })
-        //
-        // console.log(findModulePriority)
-        //
-        // if(findModulePriority) {
-        //   throw new Error("Désolé, ce module a déjà été attribué à cet utitlisateur");
-        // }
+        let findModulePriority = await prisma.userModulePriority.findMany({
+          ...query,
+          where: {
+            userId: userId,
+            moduleId: moduleId,
+          }
+        })
+
+        if(findModulePriority[0]) {
+          throw new Error("Désolé, ce module a déjà été attribué à cet utitlisateur");
+        }
 
       } catch (error) {
         console.log(error)
@@ -146,8 +144,60 @@ builder.mutationField('updateUserModulePriority', (t) =>
       moduleId: t.arg.string(),
       priority: t.arg.string(),
     },
-    resolve: async (query, _parent, args, _ctx) =>
-      prisma.userModulePriority.update({
+    resolve: async (query, _parent, args, ctx) =>
+    {
+
+      const { userId, moduleId, priority } = args
+
+      const getServerSideProps: GetServerSideProps = async (context) => {
+
+        let session;
+        session = await getSession(context);
+
+        if (!session.user) {
+          throw new Error("Vous devez être connectés pour effectuer cette action");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
+          }
+        })
+
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+          throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
+          // return 'toto est Ok'
+        }
+
+      };
+
+      try {
+        const getSess = await getServerSideProps(ctx);
+
+        let findModulePriority = await prisma.userModulePriority.findMany({
+          ...query,
+          where: {
+            userId: userId,
+            moduleId: moduleId,
+          }
+        })
+
+        if(findModulePriority[0]) {
+          throw new Error("Désolé, ce module a déjà été attribué à cet utitlisateur");
+        }
+
+      } catch (error) {
+        console.log(error)
+        return error;
+      }
+
+      const updatedModule = prisma.userModulePriority.update({
         ...query,
         where: {
           id: args.id,
@@ -158,6 +208,9 @@ builder.mutationField('updateUserModulePriority', (t) =>
           priority: args.priority ? args.priority : undefined,
         }
       })
+
+      return updatedModule;
+    }
   })
 )
 
@@ -165,14 +218,45 @@ builder.mutationField('deleteUserModulePriority', (t) =>
   t.prismaField({
     type: 'UserModulePriority',
     args: {
-      id: t.arg.id({ required: true })
+      id: t.arg.id({ required: true }),
+      userId: t.arg.id({ required: true }),
     },
-    resolve: async (query, _parent, args, _ctx) =>
-      prisma.userModulePriority.delete({
-        ...query,
+    resolve: async (query, _parent, args, _ctx) => {
+
+      const getServerSideProps: GetServerSideProps = async (context) => {
+
+        let session;
+        session = await getSession(context);
+
+        if (!session.user) {
+          throw new Error("Vous devez être connectés pour effectuer cette action");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
+          }
+        })
+
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+          throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
+        }
+      };
+
+      const deletedUserModulePriority = prisma.userModulePriority.delete({
         where: {
           id: args.id
-        }
-      })
+        },
+      });
+
+       return deletedUserModulePriority;
+
+    }
   })
 )

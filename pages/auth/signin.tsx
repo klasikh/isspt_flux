@@ -96,7 +96,7 @@ const SignIn = () => {
                                 <p className={`-ml-2.5 text-center justify-center ` + messageColor}>
                                     {message}
                                 </p>
-                                <Input type="email" label="Nom d'utilisateur" autoComplete="true" size="lg" onChange={(e) => setUsername(e.target.value)} />
+                                <Input type="text" label="Nom d'utilisateur" autoComplete="true" size="lg" onChange={(e) => setUsername(e.target.value)} />
                                 <Input type="password" label="Mot de passe" autoComplete="true" size="lg" onChange={(e) => setPassword(e.target.value)} />
                                 <div className="-ml-2.5">
                                     <Checkbox label="Se souvenir de moi" />

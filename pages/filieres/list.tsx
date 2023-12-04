@@ -1,14 +1,17 @@
 // /pages/index.tsx
+import React, { Fragment, useRef, useState } from 'react'
 import Head from "next/head";
 import { gql, useQuery, useMutation } from "@apollo/client";
-import { AwesomeLink } from "../../components/AwesomeLink";
+import { Dialog, Transition } from '@headlessui/react'
+import { ExclamationTriangleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 import type { Link as Node } from "@prisma/client";
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
-import { getSession } from "next-auth/react"
+import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import Link from "next/link";
-// import { useUser } from "@auth0/nextjs-auth0/client";
+import axios from "axios";
+
 import {
   Button,
   Card,
@@ -23,8 +26,62 @@ import {
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon, } from "@heroicons/react/24/outline";
 
+const DeleteFiliereMutation = `
+  mutation($id: ID!, $userId: ID!,) {
+    deleteFiliere(id: $id, userId: $userId,) {
+      id
+    }
+  }
+`
+
 const FilieresList = ({ filieres }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const router = useRouter();
+    const router = useRouter();
+
+    const {data:session}=useSession()
+    const theUserSession = session;
+
+    const [isValidateLoading, setIsValidateLoading] = useState(false);
+    const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+    const [openDeletionModal, setOpenDeletionModal] = useState(false)
+    const [filiereToDel, setFiliereToDel] = useState()
+
+    const cancelRejectButtonRef = useRef(null)
+    const cancelDeletionButtonRef = useRef(null)
+
+    const deleteClickFiliere = (theFiliere) => {
+      setFiliereToDel(theFiliere)
+      setOpenDeletionModal(true)
+    }
+
+    const delFiliere = async () => {
+      setIsDeleteLoading(true);
+      const variables = { id: filiereToDel, userId: session?.user.id, }
+      try {
+
+        const theDeletedFiliere =  await axios.post('/api/graphql', {
+                                        "query": DeleteFiliereMutation,
+                                        "variables" : variables
+                                        },
+                                    { headers: { 'Content-Type': 'application/json' } }
+                                    );
+
+        if(theDeletedFiliere?.data.errors) {
+          toast.error(`${theDeletedFiliere?.data.errors[0].extensions.originalError.message}`)
+          setIsValidateLoading(false);
+        } else {
+          toast.success('Filière supprimée avec succès!🎉');
+          router.reload()
+          setIsDeleteLoading(false);
+          setOpenDeletionModal(false)
+        }
+        setIsDeleteLoading(false);
+        setOpenDeletionModal(false);
+
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
 
     return (
       <div>
@@ -108,7 +165,7 @@ const FilieresList = ({ filieres }: InferGetServerSidePropsType<typeof getServer
                                     <PencilIcon className="h-5 w-5 text-white-500" />
                                   </IconButton>
                                 </Link>
-                                <Link href={`/filieres/delete/${node.id}`}>
+                                <Link href={`#`} onClick={() => deleteClickFiliere(node.id)}>
                                   <IconButton variant="text" color="white" className="text-sm bg-red-600 hover:bg-red-400">
                                     <TrashIcon className="h-5 w-5 text-white-500" />
                                   </IconButton>
@@ -123,6 +180,77 @@ const FilieresList = ({ filieres }: InferGetServerSidePropsType<typeof getServer
               </CardBody>
             </Card>
           </div>
+
+
+          <Transition.Root show={openDeletionModal} as={Fragment}>
+            <Dialog as="div" className="relative z-10" initialFocus={cancelDeletionButtonRef} onClose={setOpenDeletionModal}>
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+              </Transition.Child>
+
+              <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    enterTo="opacity-100 translate-y-0 sm:scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                    leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                  >
+                    <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                      <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div className="sm:flex sm:items-start">
+                          <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
+                          </div>
+                          <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                            <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                              Suppression
+                            </Dialog.Title>
+                            <div className="mt-2">
+                              <p className="text-sm text-gray-700">
+                                Êtes-vous sûr(e) de vouloir supprimer cette filière ?
+                              </p>
+                              <p className="text-sm text-red-600">
+                                Notez bien que cette action est irréversible et pourra compremettre les données existantes.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button
+                          type="button"
+                          className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                          onClick={() => delFiliere()}
+                        >
+                          Confirmer la suppression
+                        </button>
+                        <button
+                          type="button"
+                          className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                          onClick={() => setOpenDeletionModal(false)}
+                          ref={cancelDeletionButtonRef}
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
+              </div>
+            </Dialog>
+          </Transition.Root>
         </div>
       </div>
     );
@@ -169,6 +297,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       name: true,
       description: true,
     },
+    orderBy: { createdAt: "desc" },
   });
 
   if (!filieres) return {

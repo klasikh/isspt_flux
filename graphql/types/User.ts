@@ -80,7 +80,7 @@ builder.mutationField('createUser', (t) =>
         session = await getSession(context);
 
         if (!session.user) {
-          throw new Error("You have to be logged in to perform this action");
+          throw new Error("Vous devez être connectés pour effectuer cette action");
         }
 
         const user = await prisma.user.findUnique({
@@ -96,7 +96,7 @@ builder.mutationField('createUser', (t) =>
         })
 
         if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
-          throw new Error("You don't have permission to perform this action");
+          throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
           // return 'toto est Ok'
         }
 
@@ -124,6 +124,80 @@ builder.mutationField('createUser', (t) =>
           password: passwordHashed,
         }
       })
+    }
+  })
+)
+
+builder.mutationField('updateUser', (t) =>
+  t.prismaField({
+    type: 'User',
+    args: {
+      id: t.arg.id({ required: true }),
+      name: t.arg.string(),
+      username: t.arg.string(),
+      gradeId: t.arg.string(),
+      role: t.arg.string(),
+      image: t.arg.string({ required: false }),
+    },
+    resolve: async (query, _parent, args, _ctx) =>
+      prisma.user.update({
+        ...query,
+        where: {
+          id: args.id,
+        },
+        data: {
+          name: args.name ? args.name : undefined,
+          username: args.username ? args.username : undefined,
+          gradeId: args.gradeId ? args.gradeId : undefined,
+          role: args.role ? args.role : undefined,
+        }
+      })
+  })
+)
+
+builder.mutationField('deleteUser', (t) =>
+  t.prismaField({
+    type: 'User',
+    args: {
+      id: t.arg.id({ required: true }),
+      userId: t.arg.id({ required: true }),
+    },
+    resolve: async (query, _parent, args, _ctx) => {
+
+      const getServerSideProps: GetServerSideProps = async (context) => {
+
+        let session;
+        session = await getSession(context);
+
+        if (!session.user) {
+          throw new Error("Vous devez être connectés pour effectuer cette action");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
+          }
+        })
+
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+          throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
+        }
+      };
+
+      const deletedUser = prisma.user.delete({
+        where: {
+          id: args.id
+        },
+      });
+
+       return deletedUser;
+
     }
   })
 )
