@@ -33,7 +33,7 @@ import {
 
 // import { authOptions } from "../../../../pages/api/auth/[...nextauth]";
 // import { getServerSession } from "next-auth/next";
-import SignOut from "../../../SignOut"
+// import SignOut from "../../../SignOut"
 // import { useSession } from "next-auth/react"
 
 interface ControllerType {

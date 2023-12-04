@@ -65,7 +65,7 @@ const SpentAdd = () => {
         success: 'Dépense ajoutée avec succès!🎉',
         error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
       })
-//         const theAddedSpent = await toast.promise(axios.post('http://localhost:3000/api/grphql',                                   {
+//         const theAddedSpent = await toast.promise(axios.post('/api/grphql',                                   {
 //                                       "query": CreateSpentMutation,
 //                                       "variables" : variables
 //                                   },
@@ -190,7 +190,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       redirect: {
         permanent: false,
-        destination: '/api/auth/login',
+        destination: '/auth/signin',
       },
       props: {},
     };

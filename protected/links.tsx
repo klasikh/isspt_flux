@@ -164,7 +164,7 @@ export const routes = [
         icon: <PlusSmallIcon {...icon} />,
         name: "Ajouter une dépense",
         path: "/spents/add",
-        element: <spentAdd />,
+        element: <SpentAdd />,
         role: "USER"
       },
     ]

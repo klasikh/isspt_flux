@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
-import { signUp } from "../api/auth/signup";
+// import { signUp } from "../api/auth/signup";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation"
