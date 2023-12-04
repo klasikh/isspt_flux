@@ -81,6 +81,15 @@ export function DashboardNavbar() {
             <Link href={`/${page}`}>
               <Typography
 
+          {
+            payment.status === "APPROVED"
+            ? <div className="w-full mx-4 my-2 p-4 bg-gray-300 shadow rounded-md">
+                <iframe src={`/upload/payments` + payment?.filePath} style={{ width: "100%", height: "500px" }}>
+                </iframe>
+              </div>
+            : ""
+          }
+
                 variant="small"
                 color="blue-gray"
                 className="font-normal opacity-50 transition-all hover:text-blue-500 hover:opacity-100"
@@ -119,7 +128,7 @@ export function DashboardNavbar() {
           >
             <Cog6ToothIcon className="h-5 w-5 text-blue-gray-500" />
           </IconButton> */}
-          <Menu>
+          {/* <Menu>
             <MenuHandler>
               <IconButton variant="text" color="blue-gray">
                 <BellIcon className="h-5 w-5 text-blue-gray-500" />
@@ -196,7 +205,7 @@ export function DashboardNavbar() {
                 </div>
               </MenuItem>
             </MenuList>
-          </Menu>
+          </Menu> */}
           <Menu>
             <MenuHandler>
               <IconButton

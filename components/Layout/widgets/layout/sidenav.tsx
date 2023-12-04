@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { getSession, useSession } from "next-auth/react"
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, LifebuoyIcon } from "@heroicons/react/24/outline";
 import {
   Avatar,
   Button,
@@ -19,6 +20,8 @@ interface ControllerType {
 
 export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandName: any, routes: any }) {
 
+  const location = usePathname();
+
   const {controller, dispatch} = useMaterialTailwindController() as any;
 
   const { sidenavColor, sidenavType, openSidenav } = controller;
@@ -30,7 +33,6 @@ export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandN
 
   const {data:session}=useSession()
   const theUserSession = session;
-  console.log(session)
 
   return (
     <aside
@@ -63,9 +65,30 @@ export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandN
           <XMarkIcon strokeWidth={2.5} className="h-5 w-5 text-white" />
         </IconButton>
       </div>
-      <div className="m-4">
+      <Link href={`/dashboard`}>
+          <Button
+            variant="gradient"
+            className={
+              "flex items-center gap-4 px-4 mx-3 bg-none hover:bg-gray-300 hover:text-black " +
+              (location === "/dashboard"
+                ? " bg-blue-500"
+                : ""
+              )
+            }
+            fullWidth
+          >
+            <LifebuoyIcon className="w-6 h-6 text-white hover:text-black" />
+            <Typography
+              color="inherit"
+              className="font-medium capitalize"
+            >
+              Tableau de bord
+            </Typography>
+          </Button>
+      </Link>
+      <div className="m-2">
         {routes.map(({ layout, title, pages }: { layout: any, title: any, pages: any }, key: any) => (
-          <ul key={key} className="mb-4 flex flex-col gap-1">
+          <ul key={key} className=" flex flex-col gap-1">
             {title && (
               <li className="mx-3.5 mt-4 mb-2">
                 <Typography
@@ -82,24 +105,15 @@ export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandN
               (role && theUserSession?.user?.role === role)
                 ? ( <li key={name}>
                     <Link href={`${path}`}>
-                      {/* { ({ isActive }) => ( */}
-                        {/* <Button
-                          variant={isActive ? "gradient" : "text"}
-                          color={
-                            isActive
-                              ? sidenavColor
-                              : sidenavType === "dark"
-                              ? "white"
-                              : "blue-gray"
-                          }
-                          className="flex items-center gap-4 px-4 capitalize"
-                          fullWidth
-                        > */}
-
                         <Button
                           variant="gradient"
-                          color="blue"
-                          className="flex items-center gap-4 px-4 mb-2"
+                          className={
+                            "flex items-center gap-4 px-4 mx-3 bg-none hover:bg-gray-300 hover:text-black " +
+                            (location === `${path}`
+                              ? " bg-blue-500"
+                              : ""
+                            )
+                          }
                           fullWidth
                         >
                           {icon}
@@ -110,7 +124,6 @@ export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandN
                             {name}
                           </Typography>
                         </Button>
-                      {/* )} */}
                     </Link>
 
                 </li>)

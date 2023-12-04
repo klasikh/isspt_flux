@@ -95,34 +95,6 @@ const PaymentAdd = () => {
     formState: { errors },
   } = useForm<FormValues>()
 
-  // Upload photo function
-  const uploadPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length <= 0) return
-    const file = e.target.files[0]
-    const filename = encodeURIComponent(file.name)
-    const res = await fetch(`/api/upload-image?file=${filename}`)
-    const data = await res.json()
-    const formData = new FormData()
-
-    // @ts-ignore
-    Object.entries({ ...data.fields, file }).forEach(([key, value]) => {
-      // @ts-ignore
-      formData.append(key, value)
-    })
-
-    toast.promise(
-      fetch(data.url, {
-        method: 'POST',
-        body: formData,
-      }),
-      {
-        loading: 'Uploading...',
-        success: 'Image successfully uploaded!🎉',
-        error: `Upload failed 😥 Please try again ${error}`,
-      },
-    )
-  }
-
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     const { title, description, name, motifId, filiereId, amount, step, createdYear, addedBy } = data
 
@@ -152,6 +124,7 @@ const PaymentAdd = () => {
   }
 
   return (
+
     <div className="container mx-auto px-12 pt-4 pb-12">
       <Toaster />
       <button
@@ -220,16 +193,6 @@ const PaymentAdd = () => {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
         </label>
-        {/* <label className="block">
-          <span className="text-gray-700">Upload a .png or .jpg image (max 1MB).</span>
-          <input
-            {...register('image', { required: false })}
-            onChange={uploadPhoto}
-            type="file"
-            accept="image/png, image/jpeg"
-            name="image"
-          />
-        </label> */}
 
         <button
           disabled={loading}
@@ -273,13 +236,15 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   }
 
   const user = await prisma.user.findUnique({
+    where: {
+      username: session.user?.username,
+    },
     select: {
+      id: true,
+      name: true,
       username: true,
       role: true,
-    },
-    where: {
-      username: session?.user?.username,
-    },
+    }
   });
 
   if (!user || (user?.role !== "USER" && user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN")) {
@@ -292,9 +257,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     };
   }
 
-  const getUserPriorities = await prisma.userModulePriority.findMany({
+   const getUserPriorities = await prisma.userModulePriority.findMany({
     where: {
-      userId: user.id
+      userId: user.id,
+      module: {
+        name: "PROFORMA"
+      }
     },
     select: {
       userId: true,
@@ -307,26 +275,13 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       },
       priority: true
     },
+    take: 1,
   })
 
-  for(let i=0; i<getUserPriorities.length; i++) {
-    if(getUserPriorities[i].module?.name === "PROFORMA") {
+  if(getUserPriorities[0] && getUserPriorities[0]?.module?.name === "PROFORMA") {
+    if(getUserPriorities[0].priority !== "CREATE" && getUserPriorities[0].priority !== "CREATE_READ" && getUserPriorities[0].priority !== "C_READ_UPDATE" && getUserPriorities[0].priority !== "C_READ_DELETE" && getUserPriorities[0].priority !== "C_R_UPDATE_DELETE") {
 
-      if(getUserPriorities[i].priority !== "CREATE" || getUserPriorities[i].priority !== "CREATE_READ" || getUserPriorities[i].priority !== "C_READ_UPDATE" || getUserPriorities[i].priority !== "C_READ_DELETE" || getUserPriorities[i].priority !== "C_R_UPDATE_DELETE") {
-
-        toast.error("Vous n'avez pas les permissions requises pour effectuer cette action.");
-        return {
-          redirect: {
-            permanent: false,
-            destination: '/dashboard',
-          },
-          props: {},
-        };
-      }
-
-    } else {
-
-      toast.error("Vous n'avez aucune priorité sur ce module")
+      toast.error("Vous n'avez pas les permissions requises pour effectuer cette action.");
       return {
         redirect: {
           permanent: false,
@@ -335,6 +290,17 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         props: {},
       };
     }
+
+  } else {
+
+    toast.error("Vous n'avez aucune priorité sur ce module")
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/dashboard',
+      },
+      props: {},
+    };
   }
 
   return {

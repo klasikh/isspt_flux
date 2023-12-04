@@ -197,13 +197,15 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   }
 
   const user = await prisma.user.findUnique({
+    where: {
+      username: session.user?.username,
+    },
     select: {
+      id: true,
+      name: true,
       username: true,
       role: true,
-    },
-    where: {
-      username: session?.user?.username,
-    },
+    }
   });
 
   if (!user || (user?.role !== "USER" && user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN")) {
@@ -211,6 +213,52 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       redirect: {
         permanent: false,
         destination: '/404',
+      },
+      props: {},
+    };
+  }
+
+   const getUserPriorities = await prisma.userModulePriority.findMany({
+    where: {
+      userId: user.id,
+      module: {
+        name: "FACTURATION"
+      }
+    },
+    select: {
+      userId: true,
+      moduleId: true,
+      module: {
+        select: {
+          id: true,
+          name: true,
+        }
+      },
+      priority: true
+    },
+    take: 1,
+  })
+
+  if(getUserPriorities[0] && getUserPriorities[0]?.module?.name === "FACTURATION") {
+    if(getUserPriorities[0].priority !== "CREATE" && getUserPriorities[0].priority !== "CREATE_READ" && getUserPriorities[0].priority !== "C_READ_UPDATE" && getUserPriorities[0].priority !== "C_READ_DELETE" && getUserPriorities[0].priority !== "C_R_UPDATE_DELETE") {
+
+      toast.error("Vous n'avez pas les permissions requises pour effectuer cette action.");
+      return {
+        redirect: {
+          permanent: false,
+          destination: '/dashboard',
+        },
+        props: {},
+      };
+    }
+
+  } else {
+
+    toast.error("Vous n'avez aucune priorité sur ce module")
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/dashboard',
       },
       props: {},
     };

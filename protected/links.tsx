@@ -8,6 +8,8 @@ import {
   BellIcon,
   ArrowRightOnRectangleIcon,
   UserPlusIcon,
+  DocumentTextIcon,
+  BanknotesIcon,
 } from "@heroicons/react/24/solid";
 import { Home, } from "../pages/dashboard/home";
 import { Dashboard, } from "../pages/dashboard";
@@ -120,7 +122,19 @@ export const routes = [
         role: "ADMIN"
       },
       {
-        icon: <BellAlertIcon {...icon} />,
+        icon: <UserCircleIcon {...icon} />,
+        name: "Profile",
+        path: "/profile",
+        element: <Profile />
+      },
+    ],
+  },
+  {
+    title: "Proforma",
+    layout: "dashboard",
+    pages: [
+      {
+        icon: <DocumentTextIcon {...icon} />,
         name: "Liste des paiements",
         path: "/payments/list",
         element: <PaymentsList />,
@@ -133,8 +147,14 @@ export const routes = [
         element: <PaymentAdd />,
         role: "USER"
       },
-            {
-        icon: <BellAlertIcon {...icon} />,
+    ]
+  },
+  {
+    title: "Facturation",
+    layout: "dashboard",
+    pages: [
+      {
+        icon: <BanknotesIcon {...icon} />,
         name: "Liste des dépenses",
         path: "/spents/list",
         element: <SpentsList />,
@@ -147,13 +167,7 @@ export const routes = [
         element: <spentAdd />,
         role: "USER"
       },
-      {
-        icon: <UserCircleIcon {...icon} />,
-        name: "Profile",
-        path: "/profile",
-        element: <Profile />
-      },
-    ],
+    ]
   },
   {/*
     title: "auth pages",

@@ -86,6 +86,12 @@ builder.mutationField('createUser', (t) =>
         const user = await prisma.user.findUnique({
           where: {
             username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
           }
         })
 

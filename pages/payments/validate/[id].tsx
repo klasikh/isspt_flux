@@ -141,10 +141,12 @@ const ValidateAPayment: NextPage<Props> = ({ payment, dirs }: InferGetServerSide
 //         error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
 //       })
 
+      const theFilePath = data[0].filepath.substring(data[0].filepath.lastIndexOf('/') + 1)
+
       const theValidatedPayment = await axios.post('/api/graphql',
                                                   {
                                                     "query": ValidPaymentMutation,
-                                                    "variables" : { ...variables, filePath: data[0].filepath },
+                                                    "variables" : { ...variables, filePath: theFilePath },
                                                   },
                                                   { headers: { 'Content-Type': 'application/json' } }
                                     );

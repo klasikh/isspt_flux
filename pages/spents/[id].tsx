@@ -115,7 +115,7 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
       loading: 'Envoi en cours',
       success: 'Envoyée avec succès! 🎉',
       error: `Désolé, une erreur s'est produite 😥`,
-    });
+    });theFilePath
 
     if(sendTheSpent?.data.sendSpent) {
       router.push(`/spents/list`);
@@ -146,7 +146,7 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
     const variables = { id: spent.id, rejectMotif, userId: session?.user.id, status: theStatus, step: theStep }
     try {
 
-      const theRejectedSpent = await axios.post('http://localhost:3000/api/graphql',                                   {
+      const theRejectedSpent = await axios.post('/api/graphql',                                   {
                                        "query": RejectSpentMutation,
                                        "variables" : variables
                                       },
@@ -184,7 +184,7 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
       //    error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${errors}`,
       // })
 
-      const theValidatedSpent = await axios.post('http://localhost:3000/api/graphql',                                   {
+      const theValidatedSpent = await axios.post('/api/graphql',                                   {
                                        "query": ValidSpentMutation,
                                        "variables" : variables
                                       },
@@ -322,27 +322,51 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
             </span>
             <div className="float-right">
              {
-                (spent.step === "0")
-                ? ( <button
-                      onClick={() => sendTSpent()}
-                      className="capitalize bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600"
-                    >
-                      {isSendLoading ? (
-                        <span className="flex items-center justify-center">
-                          <svg
-                            className="w-6 h-6 animate-spin mr-1"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
+                (spent.step === "0" && spent.addedBy === theUserSession?.user?.id)
+                  ? (
+                      <span>
+                        <button
+                          onClick={() => sendTSpent()}
+                          className="capitalize bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600"
+                        >
+                          {isSendLoading ? (
+                            <span className="flex items-center justify-center">
+                              <svg
+                                className="w-6 h-6 animate-spin mr-1"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                              </svg>
+                              Envoi...
+                            </span>
+                          ) : (
+                            <span className="font-bold">Envoyer</span>
+                          )}
+                        </button>
+                        <button
+                            onClick={() => editSpent()}
+                            className="bg-blue-500 text-white font-medium px-4 py-2 rounded-md hover:bg-blue-600 mx-4"
                           >
-                            <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
-                          </svg>
-                          Envoi...
+                            {isEditLoading ? (
+                              <span className="flex items-center justify-center">
+                                <svg
+                                  className="w-6 h-6 animate-spin mr-1"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                                </svg>
+                                En cours...
+                              </span>
+                            ) : (
+                              <span className="font-bold">Modifier</span>
+                            )}
+                          </button>
                         </span>
-                      ) : (
-                        <span className="font-bold">Envoyer</span>
-                      )}
-                    </button>)
+                )
 
                 : (spent.step === "1")
 
@@ -391,28 +415,8 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
                 : ""
               }
               {
-                ((spent.step === "0" && spent.addedBy === theUserSession?.user?.id) || theUserSession?.user?.role === "ADMIN")
-                ? ( <span>
-                      <button
-                        onClick={() => editSpent()}
-                        className="bg-blue-500 text-white font-medium px-4 py-2 rounded-md hover:bg-blue-600 mx-4"
-                      >
-                        {isEditLoading ? (
-                          <span className="flex items-center justify-center">
-                            <svg
-                              className="w-6 h-6 animate-spin mr-1"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
-                            </svg>
-                            En cours...
-                          </span>
-                        ) : (
-                          <span className="font-bold">Modifier</span>
-                        )}
-                      </button>
+                (theUserSession?.user?.role === "ADMIN")
+                ? (
                       <button
                         onClick={() => deleteClickSpent()}
                         className="bg-red-500 text-white font-medium px-4 py-2 rounded-md hover:bg-red-600"
@@ -433,7 +437,7 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
                           <span className="font-bold">Supprimer</span>
                         )}
                       </button>
-                    </span> )
+                   )
                   : ""
                 }
 

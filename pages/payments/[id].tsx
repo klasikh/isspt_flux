@@ -131,7 +131,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
 //         setOpenRejectModal(false)
 //         router.push(`/payments/list`)
 //       }
-      const theRejectedPayment = await axios.post('http://localhost:3000/api/graphql', {
+      const theRejectedPayment = await axios.post('/api/graphql', {
                                        "query": RejectPaymentMutation,
                                        "variables" : variables
                                       },
@@ -154,31 +154,6 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
       console.error(error)
     }
   }
-
-  const onValidateSubmit: SubmitHandler<FormValues> = async (data) => {
-    const { id, userId, status, step, } = data
-
-    const theStep = "2";
-    const theStatus = "APPROVED";
-
-    const variables = { id: payment.id, userId: session?.user.id, status: theStatus, step: theStep }
-    try {
-      const theRejectedPayment = await toast.promise(rejectPayment({ variables }), {
-        loading: 'Opération en cours..',
-        success: 'Paiement rejeté avec succès!🎉',
-        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
-      })
-
-      if(theRejectedPayment.data.rejectPayment) {
-        setOpenRejectModal(false)
-        router.push(`/payments/list`)
-      }
-
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
 
   return (
     <div>
@@ -240,8 +215,9 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
 
           {
             payment.status === "APPROVED"
-            ? <div className="w-full mx-4 my-2 p-4 bg-gray-300 shadow rounded-md">
-                <iframe src={payment?.filePath} style={{ width: "100%", minHeight: "400px" }}>
+            ? <div className="mx-4 my-2 p-4 bg-gray-300 shadow rounded-md">
+                <h4 className="font-bold text-md mb-5">Quittance de paiement</h4>
+                <iframe src={`/upload/payments/` + payment?.filePath} style={{ width: "100%", height: "500px" }}>
                 </iframe>
               </div>
             : ""
@@ -279,27 +255,51 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
             </span>
             <div className="float-right">
              {
-                (payment.step === "0")
-                ? ( <button
-                      onClick={() => sendTPayment()}
-                      className="capitalize bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600"
-                    >
-                      {isSendLoading ? (
-                        <span className="flex items-center justify-center">
-                          <svg
-                            className="w-6 h-6 animate-spin mr-1"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
-                          </svg>
-                          Envoi...
-                        </span>
-                      ) : (
-                        <span className="font-bold">Envoyer</span>
-                      )}
-                    </button>)
+                (payment.step === "0" && payment.addedBy === theUserSession?.user?.id)
+                ? (
+                    <span>
+                      <button
+                        onClick={() => sendTPayment()}
+                        className="capitalize bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600"
+                      >
+                        {isSendLoading ? (
+                          <span className="flex items-center justify-center">
+                            <svg
+                              className="w-6 h-6 animate-spin mr-1"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                            </svg>
+                            Envoi...
+                          </span>
+                        ) : (
+                          <span className="font-bold">Envoyer</span>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => editPayment()}
+                        className="bg-blue-500 text-white font-medium px-4 py-2 rounded-md hover:bg-blue-600 mx-4"
+                      >
+                        {isEditLoading ? (
+                          <span className="flex items-center justify-center">
+                            <svg
+                              className="w-6 h-6 animate-spin mr-1"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                            </svg>
+                            En cours...
+                          </span>
+                        ) : (
+                          <span className="font-bold">Modifier</span>
+                        )}
+                      </button>
+                    </span>
+                   )
 
                 : (payment.step === "1")
 
@@ -350,28 +350,8 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                 : ""
               }
               {
-                ((payment.step === "0" && payment.addedBy === theUserSession?.user?.id) || theUserSession?.user?.role === "ADMIN")
-                ? ( <span>
-                      <button
-                        onClick={() => editPayment()}
-                        className="bg-blue-500 text-white font-medium px-4 py-2 rounded-md hover:bg-blue-600 mx-4"
-                      >
-                        {isEditLoading ? (
-                          <span className="flex items-center justify-center">
-                            <svg
-                              className="w-6 h-6 animate-spin mr-1"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
-                            </svg>
-                            En cours...
-                          </span>
-                        ) : (
-                          <span className="font-bold">Modifier</span>
-                        )}
-                      </button>
+                (theUserSession?.user?.role === "ADMIN")
+                ? (
                       <button
                         onClick={() => deletePayment()}
                         className="bg-red-500 text-white font-medium px-4 py-2 rounded-md hover:bg-red-600"
@@ -392,7 +372,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                           <span className="font-bold">Supprimer</span>
                         )}
                       </button>
-                    </span> )
+                   )
                   : ""
                 }
             </div>

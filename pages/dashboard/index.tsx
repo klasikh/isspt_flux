@@ -16,6 +16,8 @@ import {
 import {
   BellAlertIcon,
   PlusSmallIcon,
+  BanknotesIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import { StatisticsCard } from "../../components/Layout/widgets/cards";
 // import { StatisticsChart } from "../../components/Layout/widgets/charts";
@@ -31,17 +33,17 @@ export function Dashboard() {
   const dashboardMenu = [
     {
       color: "pink",
-      icon: BellAlertIcon,
-      title: "Liste des paiements",
+      icon: DocumentTextIcon,
+      title: "Module PROFORMA",
       path: "/payments/list",
-      value: "24",
+      value: "",
       footer:"",
     },
     {
       color: "blue",
-      icon: PlusSmallIcon,
-      title: "Ajouter un paiement",
-      path: "/payments/add",
+      icon: BanknotesIcon,
+      title: "Module FACTURATION",
+      path: "/spents/list",
       value: "",
       footer: {
         color: "text-green-500",

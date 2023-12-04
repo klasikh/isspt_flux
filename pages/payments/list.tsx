@@ -26,6 +26,9 @@ import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon, } from "@heroicon
 const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
 
+  const {data:session}=useSession()
+  const theUserSession = session;
+
   return (
     <div>
       <Head>
@@ -163,7 +166,7 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
                                 </IconButton>
                               </Link>
                               {
-                                (node.status === "CREATED" ||node.status === "CANCELED"|| node.status === "REJECTED")
+                                ((node.status === "CREATED" || node.status === "CANCELED"|| node.status === "REJECTED") && node.addedBy === theUserSession?.user?.id)
                                 ?
                                   (
                                     <Link href={`/payments/edit/${node.id}`}>
@@ -172,7 +175,7 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
                                       </IconButton>
                                     </Link>
                                   )
-                                : (node.status === "CREATED" ||node.status === "CANCELED")
+                                : ((node.status === "CREATED" || node.status === "CANCELED") && theUserSession?.user?.role === "ADMIN")
                                 ? (
                                     <Link href="#">
                                       <IconButton variant="text" color="white" className="text-sm bg-red-600 hover:bg-red-400">
@@ -213,14 +216,15 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   }
 
   const user = await prisma.user.findUnique({
+    where: {
+      username: session.user?.username,
+    },
     select: {
+      id: true,
+      name: true,
       username: true,
       role: true,
-      payments: true,
-    },
-    where: {
-      username: session?.user?.username,
-    },
+    }
   });
 
   if (!user || (user?.role !== "USER" && user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN")) {
@@ -259,10 +263,57 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       fromId: true,
       toId: true,
     },
+    orderBy: { createdAt: "desc" },
   });
 
   if (!payments) return {
     notFound: true
+  }
+
+  const getUserPriorities = await prisma.userModulePriority.findMany({
+    where: {
+      userId: user.id,
+      module: {
+        name: "PROFORMA"
+      }
+    },
+    select: {
+      userId: true,
+      moduleId: true,
+      module: {
+        select: {
+          id: true,
+          name: true,
+        }
+      },
+      priority: true
+    },
+    take: 1,
+  })
+
+  if(getUserPriorities[0] && getUserPriorities[0]?.module?.name === "PROFORMA") {
+    if(getUserPriorities[0].priority !== "READ" && getUserPriorities[0].priority !== "CREATE_READ" && getUserPriorities[0].priority !== "C_READ_UPDATE" && getUserPriorities[0].priority !== "C_READ_DELETE" && getUserPriorities[0].priority !== "C_R_UPDATE_DELETE" && getUserPriorities[0].priority !== "R_UPDATE_DELETE") {
+
+      toast.error("Vous n'avez pas les permissions requises pour effectuer cette action.");
+      return {
+        redirect: {
+          permanent: false,
+          destination: '/dashboard',
+        },
+        props: {},
+      };
+    }
+
+  } else {
+
+    toast.error("Vous n'avez aucune priorité sur ce module")
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/dashboard',
+      },
+      props: {},
+    };
   }
 
   return {
