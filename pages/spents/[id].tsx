@@ -75,7 +75,7 @@ const DeleteSpentMutation = `
   }
 `
 
-const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Spent = ({ spent, spentVar }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
   const router = useRouter();
 
@@ -115,7 +115,7 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
       loading: 'Envoi en cours',
       success: 'Envoyée avec succès! 🎉',
       error: `Désolé, une erreur s'est produite 😥`,
-    });theFilePath
+    });
 
     if(sendTheSpent?.data.sendSpent) {
       router.push(`/spents/list`);
@@ -379,7 +379,7 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
                         </span>
                 )
 
-                : (spent.step === "1")
+                : (spentVar && spent.step === "1")
 
                 ? ( <span>
                       <button
@@ -426,7 +426,7 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
                 : ""
               }
               {
-                (theUserSession?.user?.role === "ADMIN" || theUserSession?.user?.role === "SUPER_ADMIN")
+                (spentVar && (theUserSession?.user?.role === "ADMIN" || theUserSession?.user?.role === "SUPER_ADMIN"))
                 ? (
                       <button
                         onClick={() => deleteClickSpent()}
@@ -604,9 +604,33 @@ const Spent = ({ spent }: InferGetServerSidePropsType<typeof getServerSideProps>
 
 export default Spent;
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
-  const id = params?.id;
+  const id = ctx.params?.id;
+  const session = await getSession(ctx);
+
+  if (!session) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/auth/signin',
+      },
+      props: {},
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      username: session.user?.username,
+    },
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      role: true,
+    }
+  });
+
   const spent = await prisma.spent.findUnique({
     where: {
       id: id
@@ -634,9 +658,44 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     notFound: true
   }
 
+  const getUserProformaProp = await prisma.userModulePriority.findMany({
+    where: {
+      userId: user?.id,
+      module: {
+        name: "DEPENSE"
+      }
+    },
+    select: {
+      userId: true,
+      moduleId: true,
+      module: {
+        select: {
+          id: true,
+          name: true,
+        }
+      },
+      priority: true
+    },
+    take: 1,
+  })
+
+  let spentVar = false;
+  
+  if(getUserProformaProp[0] && getUserProformaProp[0]?.module?.name === "DEPENSE") {
+    if(getUserProformaProp[0].priority !== "APPROV_REJECT" && getUserProformaProp[0].priority !== "R_UPDATE_DELETE" && getUserProformaProp[0].priority !== "C_R_UPDATE_DELETE") {
+      spentVar = false;
+    } else {
+      spentVar = true
+    }
+
+  } else {
+    spentVar = false;
+  }
+
   return {
     props: {
       spent,
+      spentVar,
     },
   };
 };

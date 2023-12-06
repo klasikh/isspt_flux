@@ -42,6 +42,7 @@ const Filiere = ({ filiere }: InferGetServerSidePropsType<typeof getServerSidePr
         <h1 className="text-2xl font-bold mb-3 uppercase text-center">Informations de la filière</h1>
         <div className="w-full bg-white rounded overflow-hidden shadow-lg">
           <div className="px-6 py-4">
+            <div className="font-bold text-xl mb-4 block bg-gray-600 p-1 text-white">Sigle: {filiere.sigle}</div>
             <div className="font-bold text-xl mb-4 block bg-gray-600 p-1 text-white">Nom: {filiere.name}</div>
             <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Description</div>
             <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
@@ -99,6 +100,7 @@ export const getServerSideProps: GetServerSideProps = async ( ctx, params ) => {
         },
         select: {
             id: true,
+            sigle: true,
             name: true,
             description: true,
         },

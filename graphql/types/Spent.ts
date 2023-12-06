@@ -309,7 +309,7 @@ builder.mutationField('rejectSpent', (t) =>
           where: {
             userId: user.id,
             module: {
-              name: "FACTURATION"
+              name: "DEPENSE"
             }
           },
           select: {
@@ -327,8 +327,8 @@ builder.mutationField('rejectSpent', (t) =>
 
         if(getUserPriorities) {
           for(let i=0; i<getUserPriorities.length; i++) {
-            if(getUserPriorities[i].module?.name === "FACTURATION") {
-              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
+            if(getUserPriorities[i].module?.name === "DEPENSE") {
+              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "APPROV_REJECT" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
                 throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action.")
               }
             } else {
@@ -406,7 +406,7 @@ builder.mutationField('validSpent', (t) =>
           where: {
             userId: user.id,
             module: {
-              name: "FACTURATION"
+              name: "DEPENSE"
             }
           },
           select: {
@@ -424,8 +424,8 @@ builder.mutationField('validSpent', (t) =>
 
         if(getUserPriorities) {
           for(let i=0; i<getUserPriorities.length; i++) {
-            if(getUserPriorities[i].module?.name === "FACTURATION") {
-              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
+            if(getUserPriorities[i].module?.name === "DEPENSE") {
+              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "APPROV_REJECT" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
                 throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action.")
               }
             } else {

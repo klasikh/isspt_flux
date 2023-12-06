@@ -54,7 +54,7 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
               <table className="w-full min-w-[640px] table-auto">
                 <thead>
                   <tr>
-                    {["titre", "nom de l'étudiant", "motif", "montant", "status", "action",].map(
+                    {["nom de l'étudiant", "motif", "montant", "status", "action",].map(
                       (el) => (
                         <th
                           key={el}
@@ -74,17 +74,6 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
                 <tbody>
                   { payments.map((node) => (
                         <tr key={node.id}>
-                          <td className={`py-3 px-5`}>
-                            <div className="flex items-center gap-4">
-                              <Typography
-                                variant="small"
-                                color="blue-gray"
-                                className="text-xs font-medium text-blue-gray-600"
-                              >
-                                {node.title}
-                              </Typography>
-                            </div>
-                          </td>
                           <td className={`py-3 px-5`}>
                             <div className="flex items-center gap-4">
                               <Typography
@@ -223,7 +212,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       redirect: {
         permanent: false,
-        destination: '/404',
+        destination: '/dashboard',
       },
       props: {},
     };
@@ -232,7 +221,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const payments = await prisma.payment.findMany({
     select: {
       id: true,
-      title: true,
       description: true,
       name: true,
       motif: {
@@ -266,7 +254,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     where: {
       userId: user.id,
       module: {
-        name: "PROFORMA"
+        name: "PAIEMENT"
       }
     },
     select: {
@@ -283,7 +271,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     take: 1,
   })
 
-  if(getUserPriorities[0] && getUserPriorities[0]?.module?.name === "PROFORMA") {
+  if(getUserPriorities[0] && getUserPriorities[0]?.module?.name === "PAIEMENT") {
     if(getUserPriorities[0].priority !== "READ" && getUserPriorities[0].priority !== "CREATE_READ" && getUserPriorities[0].priority !== "C_READ_UPDATE" && getUserPriorities[0].priority !== "C_READ_DELETE" && getUserPriorities[0].priority !== "C_R_UPDATE_DELETE" && getUserPriorities[0].priority !== "R_UPDATE_DELETE") {
 
       toast.error("Vous n'avez pas les permissions requises pour effectuer cette action.");

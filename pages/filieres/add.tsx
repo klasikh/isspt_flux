@@ -9,13 +9,15 @@ import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
 
 type FormValues = {
+  sigle: string;
   name: string;
   description: string;
 }
 
 const CreateFiliereMutation = gql`
-  mutation($name: String!, $description: String!) {
-    createFiliere(name: $name, description: $description) {
+  mutation($sigle: String!, $name: String!, $description: String!) {
+    createFiliere(sigle: $sigle, name: $name, description: $description) {
+      sigle
       name
       description
     }
@@ -32,8 +34,8 @@ const FiliereAdd = () => {
   } = useForm<FormValues>()
   
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    const { name, description, } = data
-    const variables = { name, description, }
+    const { sigle, name, description, } = data
+    const variables = { sigle, name, description, }
     try {
       const createTheFiliere = await toast.promise(createFiliere({ variables }), {
         loading: 'Opération en cours..',
@@ -60,25 +62,36 @@ const FiliereAdd = () => {
         <Toaster />
         <h1 className="text-3xl font-medium my-5">Ajouter une filière</h1>
         <form className="grid grid-cols-1 gap-y-6 bg-white shadow-lg p-8 rounded-lg" onSubmit={handleSubmit(onSubmit)}>
+          <strong className="text-red-600">Tous les champs sont obligatoires</strong>
+          <label className="block">
+            <span className="text-gray-700">Sigle de la filière</span>
+            <input
+              placeholder="Sigle de la filière"
+              {...register('sigle', { required: true })}
+              name="sigle"
+              type="text" required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            />
+          </label>
           <label className="block">
             <span className="text-gray-700">Nom de la filière</span>
             <input
               placeholder="Nom de la filière"
               {...register('name', { required: true })}
               name="name"
-              type="text"
+              type="text" required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </label>
           <label for="descrption" class="block">
             <span className="text-gray-700">Description</span>
-            <textarea id="descrption" rows="4" {...register('description', { required: true })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description de la filière" name="description"></textarea>
+            <textarea id="descrption" rows="4" {...register('description', { required: true })} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description de la filière" name="description"></textarea>
           </label>
 
           <button
             disabled={loading}
             type="submit"
-            className="my-4 capitalize bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600"
+            className="my-4 capitalize text-white font-medium py-2 px-4 rounded-md bg-red-700 hover:bg-red-400"
           >
             {loading ? (
               <span className="flex items-center justify-center">
@@ -131,7 +144,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       redirect: {
         permanent: false,
-        destination: '/404',
+        destination: '/dashboard',
       },
       props: {},
     };

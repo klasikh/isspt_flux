@@ -26,23 +26,23 @@ async function main() {
   // MODULE SEED
   const createdModuleOne = await prisma.module.create({
     data: {
-      name: "PROFORMA",
-      description: 'Module PROFORMA',
+      name: "PAIEMENT",
+      description: 'Module PAIEMENT',
     },
   });
 
   const createdModuleTwo = await prisma.module.create({
     data: {
-      name: "ENGAGEMENT",
-      description: 'Module ENGAGEMENT',
+      name: "DEPENSE",
+      description: 'Module DEPENSE',
     },
   });
 
   // USERS SEED
   const createdUserOne = await prisma.user.create({
     data: {
-        name: "Toto",
-        username: "toto",
+        name: "Admin",
+        username: "admin",
         gradeId: createdGradeOne.id,
         role: 'ADMIN',
         password: passwordHashed,
@@ -68,8 +68,13 @@ async function main() {
         priority: "C_R_UPDATE_DELETE",
       },
       {
-        userId: createdUserTwo.id,
+        userId: createdUserOne.id,
         moduleId: createdModuleTwo.id,
+        priority: "C_R_UPDATE_DELETE",
+      },
+      {
+        userId: createdUserTwo.id,
+        moduleId: createdModuleOne.id,
         priority: "C_READ_UPDATE",
       }
     ]

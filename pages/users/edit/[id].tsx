@@ -123,7 +123,7 @@ const EditUser = ({ user }: InferGetServerSidePropsType<typeof getServerSideProp
               placeholder="Nom et prénoms"
               {...register('name', { required: true })}
               name="name"
-              type="text"
+              type="text" required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </label>
@@ -133,13 +133,13 @@ const EditUser = ({ user }: InferGetServerSidePropsType<typeof getServerSideProp
               placeholder="Nom d'utilisateur de l'utlisateur"
               {...register('username', { required: true })}
               name="username"
-              type="text"
+              type="text" required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </label>
           <label className="block">
             <span className="text-gray-700">Attribuer un grade</span>
-            <select id="grades" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="gradeId" {...register('gradeId', { required: true })}>
+            <select id="grades" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="gradeId" {...register('gradeId', { required: true })} required>
               <option value="" selected disabled>Grade</option>
               { allGrades?.grades.edges.map(({ node }: { node: Node }) => (
                 <option value={node.id}>{node.name}</option>
@@ -149,7 +149,7 @@ const EditUser = ({ user }: InferGetServerSidePropsType<typeof getServerSideProp
           </label>
           <label className="block">
             <span className="text-gray-700">Attribuer un rôle</span>
-            <select id="grades" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="role" {...register('role', { required: true })} >
+            <select id="grades" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="role" {...register('role', { required: true })}  required>
               <option value="" selected disabled>Rôle</option>
               <option value="USER">Utilisateur</option>
               <option value="ADMIN">Admin</option>
@@ -170,7 +170,7 @@ const EditUser = ({ user }: InferGetServerSidePropsType<typeof getServerSideProp
           <button
             disabled={loading}
             type="submit"
-            className="my-4 capitalize bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600"
+            className="my-4 capitalize text-white font-medium py-2 px-4 rounded-md bg-red-700 hover:bg-red-400"
           >
             {loading ? (
               <span className="flex items-center justify-center">

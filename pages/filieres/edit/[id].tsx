@@ -16,9 +16,10 @@ type FormValues = {
 }
 
 const EditFiliereMutation = gql`
-  mutation($id: ID!, $name: String!, $description: String!, ) {
-    updateFiliere(id: $id, name: $name, description: $description,) {
+  mutation($id: ID!, $sigle: String!, $name: String!, $description: String!, ) {
+    updateFiliere(id: $id, sigle: $sigle, name: $name, description: $description,) {
       id
+      sigle
       name
       description
     }
@@ -45,6 +46,7 @@ const EditFiliere = ({ filiere }: InferGetServerSidePropsType<typeof getServerSi
   useEffect(() => {
     if (filiere) {
         reset({
+          sigle: filiere.sigle ,
           name: filiere.name ,
           description: filiere.description,
         });
@@ -52,9 +54,9 @@ const EditFiliere = ({ filiere }: InferGetServerSidePropsType<typeof getServerSi
   }, [filiere]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    const { id, name, description } = data
+    const { id, sigle, name, description } = data
 
-    const variables = { id: filiere.id, name, description, }
+    const variables = { id: filiere.id, sigle, name, description, }
     try {
       const theEditedFiliere = await toast.promise(editFiliere({ variables }), {
         loading: 'Opération en cours..',
@@ -89,25 +91,36 @@ const EditFiliere = ({ filiere }: InferGetServerSidePropsType<typeof getServerSi
         </button>
         <h1 className="text-3xl font-medium mb-5 uppercase text-center">Modifier une filière</h1>
         <form className="grid grid-cols-1 gap-y-6 bg-white shadow-lg p-8 rounded-lg" onSubmit={handleSubmit(onSubmit)}>
+          <strong className="text-red-600">Tous les champs sont obligatoires</strong>
+          <label className="block">
+            <span className="text-gray-700">Sigle de la filière</span>
+            <input
+              placeholder="Sigle de la filière"
+              {...register('sigle', { required: true })}
+              name="sigle"
+              type="text" required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            />
+          </label>
           <label className="block">
             <span className="text-gray-700">Nom de la filière</span>
             <input
               placeholder="Nom de la filière"
               {...register('name', { required: true })}
               name="name"
-              type="text"
+              type="text" required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </label>
           <label for="description" class="block">
             <span className="text-gray-700">Description</span>
-            <textarea id="description" rows="4" {...register('description', { required: true })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description de la filière" name="description"></textarea>
+            <textarea id="description" rows="4" {...register('description', { required: true })} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description de la filière" name="description"></textarea>
           </label>
 
           <button
             disabled={loading}
             type="submit"
-            className="my-4 capitalize bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600"
+            className="my-4 capitalize text-white font-medium py-2 px-4 rounded-md bg-red-700 hover:bg-red-400"
           >
             {loading ? (
               <span className="flex items-center justify-center">
@@ -175,6 +188,7 @@ export const getServerSideProps: GetServerSideProps = async ( ctx, params ) => {
         },
         select: {
           id: true,
+          sigle: true,
           name: true,
           description: true,
         },

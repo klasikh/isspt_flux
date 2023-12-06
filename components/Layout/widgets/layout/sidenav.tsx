@@ -1,9 +1,15 @@
+import { useState } from "react";
 import PropTypes from "prop-types";
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getSession, useSession } from "next-auth/react"
-import { XMarkIcon, LifebuoyIcon } from "@heroicons/react/24/outline";
+import toast, { Toaster } from 'react-hot-toast';
+import { XMarkIcon, LifebuoyIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import {
+  Accordion,
+  AccordionHeader,
+  AccordionBody,
   Avatar,
   Button,
   IconButton,
@@ -18,9 +24,28 @@ interface ControllerType {
   // Ajoutez d'autres propriétés si nécessaire
 }
 
-export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandName: any, routes: any }) {
+function Icon({ id, open }: { id: any, open: any }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+      stroke="currentColor"
+      className={`${id === open ? "rotate-180" : ""} h-5 w-5 transition-transform`}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+    </svg>
+  );
+}
+const Sidenav = ({ user, routes, proformaVar }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
   const location = usePathname();
+  // console.log(proformaVar)
+  
+  const [open, setOpen] = useState(0);
+ 
+  const handleOpen = (value: any) => setOpen(open === value ? 0 : value);
 
   const {controller, dispatch} = useMaterialTailwindController() as any;
 
@@ -46,12 +71,12 @@ export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandN
         }`}
       >
         <Link href="/" className="flex items-center gap-4 py-6 px-8">
-          <img src={brandImg} alt="" className="h-12 rounded" />
+          <img src="/images/logo.png" alt="" className="h-12 rounded" />
           <Typography
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
           >
-            {brandName}
+            ISSPT
           </Typography>
         </Link>
         <IconButton
@@ -69,86 +94,173 @@ export function Sidenav({ brandImg, brandName, routes }: { brandImg: any, brandN
           <Button
             variant="gradient"
             className={
-              "flex items-center gap-4 px-4 mx-3 bg-none hover:bg-gray-300 hover:text-black " +
+              "flex items-center gap-2 px-3 mx-3 mt-2 bg-none hover:bg-gray-300 hover:text-black " +
               (location === "/dashboard"
                 ? " bg-blue-500"
                 : ""
               )
             }
-            fullWidth
+            style={{ width: "90%" }}
           >
             <LifebuoyIcon className="w-6 h-6 text-white hover:text-black" />
             <Typography
               color="inherit"
-              className="font-medium capitalize"
+              className="font-medium text-sm"
             >
               Tableau de bord
             </Typography>
           </Button>
       </Link>
       <div className="m-2">
-        {routes.map(({ layout, title, pages }: { layout: any, title: any, pages: any }, key: any) => (
-          <ul key={key} className=" flex flex-col gap-1">
-            {title && (
-              <li className="mx-3.5 mt-4 mb-2">
-                <Typography
-                  variant="small"
-                  color={sidenavType === "dark" ? "white" : "blue-gray"}
-                  className="font-black uppercase opacity-75"
+        {routes.map(({ layout, title, pages, role, number }: { layout: any, title: any, pages: any, role: any, number: any }, key: any) => (
+              
+          (role && theUserSession?.user?.role === role)
+          ? ( 
+            <Accordion 
+              key={number} 
+              open={open === number}
+              icon={<Icon id={number} open={open} />}
+              className="mb-2 rounded-lg border border-blue-gray-100 px-4"
+            >
+              {title && (
+                <AccordionHeader 
+                  className={`text-white text-md border-b-0 transition-colors uppercase hover:!text-white ${
+                    open === number ? "text-red-500" : ""
+                  }`}
+                  onClick={() => handleOpen(number)}
                 >
                   {title}
-                </Typography>
-              </li>
-            )}
-            {pages && pages.map(({ icon, name, path, role }: { icon: any, name: any, path: any, role: any }) => (
+                </AccordionHeader>
+              )}
+              {pages && pages.map(({ icon, name, path, module }: { icon: any, name: any, path: any, module: any }) => (
 
-              (role && theUserSession?.user?.role === role)
-                ? ( <li key={name}>
-                    <Link href={`${path}`}>
-                        <Button
-                          variant="gradient"
-                          className={
-                            "flex items-center gap-4 px-4 mx-3 bg-none hover:bg-gray-300 hover:text-black " +
-                            (location === `${path}`
-                              ? " bg-blue-500"
-                              : ""
-                            )
-                          }
-                          fullWidth
-                        >
-                          {icon}
-                          <Typography
-                            color="inherit"
-                            className="font-medium capitalize"
+                      <AccordionBody className="pt-0">
+                        <Link href={`${path}`}>
+                          <Button
+                            variant="gradient"
+                            className={
+                              "flex items-center gap-2 text-sm px-3 mx-1 bg-none -mb-3 hover:bg-gray-300 hover:text-black " +
+                              (location === `${path}`
+                                ? " bg-blue-500"
+                                : ""
+                              )
+                            }
+                            style={{ width: "97%" }}
                           >
-                            {name}
-                          </Typography>
-                        </Button>
-                    </Link>
-
-                </li>)
-
-                : ""
-            ))}
-          </ul>
+                            {icon}
+                            <Typography
+                              color="inherit"
+                              className="font-medium text-xs"
+                            >
+                              {name}
+                            </Typography>
+                          </Button>
+                        </Link>
+                      </AccordionBody>
+                        
+              ))}
+            </Accordion>
+           )
+          : ""
         ))}
       </div>
+      <Link href={`/profile`}>
+          <Button
+            variant="gradient"
+            className={
+              "flex items-center gap-2 px-3 mx-3 mt-2 bg-none hover:bg-gray-300 hover:text-black " +
+              (location === "/profile"
+                ? " bg-blue-500"
+                : ""
+              )
+            }
+            style={{ width: "90%" }}
+          >
+            <UserCircleIcon className="w-6 h-6 text-white hover:text-black" />
+            <Typography
+              color="inherit"
+              className="font-medium text-sm"
+            >
+              Profil
+            </Typography>
+          </Button>
+      </Link>
     </aside>
   );
 }
 
-Sidenav.defaultProps = {
-  brandImg: "/images/logo.png",
-  brandName: "Flux ISSPT",
-};
-
-Sidenav.propTypes = {
-  brandImg: PropTypes.string,
-  brandName: PropTypes.string,
-  routes: PropTypes.arrayOf(PropTypes.object),
-//   routes: PropTypes.arrayOf(PropTypes.object).isRequired,
-};
-
-Sidenav.displayName = "./sidnave.tsx";
-
 export default Sidenav;
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const session = await getSession(ctx);
+
+  if (!session) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/auth/signin',
+      },
+      props: {},
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      username: session.user?.username,
+    },
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      role: true,
+    }
+  });
+
+  if (!user || (user?.role !== "USER" && user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN")) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/dashboard',
+      },
+      props: {},
+    };
+  }
+  
+  const getUserProformaProp = await prisma.userModulePriority.findMany({
+    where: {
+      userId: user.id,
+      module: {
+        name: "PROFORMA"
+      }
+    },
+    select: {
+      userId: true,
+      moduleId: true,
+      module: {
+        select: {
+          id: true,
+          name: true,
+        }
+      },
+      priority: true
+    },
+    take: 1,
+  })
+
+  let proformaVar = false;
+  if(getUserProformaProp[0] && getUserProformaProp[0]?.module?.name === "PROFORMA") {
+    if(getUserProformaProp[0].priority !== "READ" && getUserProformaProp[0].priority !== "CREATE_READ" && getUserProformaProp[0].priority !== "C_READ_UPDATE" && getUserProformaProp[0].priority !== "C_READ_DELETE" && getUserProformaProp[0].priority !== "C_R_UPDATE_DELETE" && getUserProformaProp[0].priority !== "R_UPDATE_DELETE") {
+      proformaVar = true;
+    }
+
+  } else {
+    proformaVar = false;
+  }
+
+  return {
+    props: {
+      proformaVar,
+      user
+    },
+  };
+};

@@ -20,9 +20,11 @@ const HomePage = () => {
             router.push('/auth/signin')
         }
     }, [status])
-    return (
+    return ( 
       <>
-        <div>Bienvenue sur Flux ISSPT...</div>
+        <div className="text-center justify-center items-center flex min-h-screen bg-gray-100">
+          <img src="/images/spinner.gif" alt="" className="w-14 h-14 text-center justify-center items-center bg-none" />
+        </div>
       </>
     );
 }

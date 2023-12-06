@@ -55,7 +55,7 @@ export const authOptions: AuthOptions = {
     ],
     pages: {
         signIn: "/auth/sigin",
-        signOut: "/auth/signout",
+        // signOut: "/auth/signout",
     },
     secret: "theNextAuthSecretHashedToSecurePassw0rd",
     jwt: {

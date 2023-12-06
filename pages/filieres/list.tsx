@@ -108,7 +108,7 @@ const FilieresList = ({ filieres }: InferGetServerSidePropsType<typeof getServer
                 <table className="w-full min-w-[640px] table-auto">
                   <thead>
                     <tr>
-                      {["nom", "description", "action",].map(
+                      {["sigle", "nom", "description", "action",].map(
                         (el) => (
                           <th
                             key={el}
@@ -128,6 +128,17 @@ const FilieresList = ({ filieres }: InferGetServerSidePropsType<typeof getServer
                   <tbody>
                     { filieres.map((node) => (
                           <tr key={node.id}>
+                            <td className={`py-3 px-5`}>
+                              <div className="flex items-center gap-4">
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-bold"
+                                >
+                                  {node.sigle}
+                                </Typography>
+                              </div>
+                            </td>
                             <td className={`py-3 px-5`}>
                               <div className="flex items-center gap-4">
                                 <Typography
@@ -285,7 +296,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       redirect: {
         permanent: false,
-        destination: '/404',
+        destination: '/dashboard',
       },
       props: {},
     };
@@ -294,6 +305,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const filieres = await prisma.filiere.findMany({
     select: {
       id: true,
+      sigle: true,
       name: true,
       description: true,
     },

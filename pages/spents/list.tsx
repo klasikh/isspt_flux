@@ -278,7 +278,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       redirect: {
         permanent: false,
-        destination: '/404',
+        destination: '/dashboard',
       },
       props: {},
     };
@@ -313,7 +313,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     where: {
       userId: user.id,
       module: {
-        name: "FACTURATION"
+        name: "DEPENSE"
       }
     },
     select: {
@@ -330,7 +330,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     take: 1,
   })
 
-  if(getUserPriorities[0] && getUserPriorities[0]?.module?.name === "FACTURATION") {
+  if(getUserPriorities[0] && getUserPriorities[0]?.module?.name === "DEPENSE") {
     if(getUserPriorities[0].priority !== "READ" && getUserPriorities[0].priority !== "CREATE_READ" && getUserPriorities[0].priority !== "C_READ_UPDATE" && getUserPriorities[0].priority !== "C_READ_DELETE" && getUserPriorities[0].priority !== "C_R_UPDATE_DELETE" && getUserPriorities[0].priority !== "R_UPDATE_DELETE") {
 
       toast.error("Vous n'avez pas les permissions requises pour effectuer cette action.");

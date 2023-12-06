@@ -110,6 +110,10 @@ const ModuleAttribute = () => {
       value: "R_UPDATE_DELETE"
     },
     {
+      name: "Lire, approuver, rejeter",
+      value: "APPROV_REJECT"
+    },
+    {
       name: "Tous les privilèges",
       value: "C_R_UPDATE_DELETE"
     },
@@ -174,9 +178,10 @@ const ModuleAttribute = () => {
         </button>
         <h1 className="text-3xl font-medium my-5">Attribuer un module à un utilisateur</h1>
         <form className="grid grid-cols-1 gap-y-6 bg-white shadow-lg p-8 rounded-lg" onSubmit={handleSubmit(onSubmit)}>
+          <strong className="text-red-600">Tous les champs sont obligatoires</strong>
           <label className="block">
             <span className="text-gray-700">Sélectionnez un utilisateur</span>
-            <select id="users" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="userId" {...register('userId', { required: true })}>
+            <select id="users" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="userId" {...register('userId', { required: true })} required>
               <option value="" selected disabled>Utilisateur</option>
               { allUsers?.users.edges.map(({ node }: { node: Node }) => (
                 <option value={node.id}>{node.name}</option>
@@ -186,7 +191,7 @@ const ModuleAttribute = () => {
           </label>
           <label className="block">
             <span className="text-gray-700">Sélectionnez le module</span>
-            <select id="modules" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="moduleId" {...register('moduleId', { required: true })}>
+            <select id="modules" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="moduleId" {...register('moduleId', { required: true })} required>
               <option value="" selected disabled>Module</option>
               { allModules?.modules.edges.map(({ node }: { node: Node }) => (
                 <option value={node.id}>{node.name}</option>
@@ -196,7 +201,7 @@ const ModuleAttribute = () => {
           </label>
           <label className="block">
             <span className="text-gray-700">Privilège</span>
-            <select id="priorities" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="priority" {...register('priority', { required: true })}>
+            <select id="priorities" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="priority" {...register('priority', { required: true })} required>
               <option value="" selected disabled>Privilège</option>
               { priorities.map((node) => (
                 <option key={node.name} value={node.value}>{node.name}</option>
@@ -208,7 +213,7 @@ const ModuleAttribute = () => {
           <button
             disabled={isLoading}
             type="submit"
-            className="my-4 capitalize bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600"
+            className="my-4 capitalize text-white font-medium py-2 px-4 rounded-md bg-red-700 hover:bg-red-400"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">

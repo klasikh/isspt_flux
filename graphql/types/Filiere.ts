@@ -7,6 +7,7 @@ builder.prismaObject('Filiere', {
   name: 'Filiere',
   fields: (t) => ({
     id: t.exposeID('id'),
+    sigle: t.exposeString('sigle'),
     name: t.exposeString('name'),
     description: t.exposeString('description'),
     payments: t.relation('payments')
@@ -43,12 +44,13 @@ builder.mutationField('createFiliere', (t) =>
   t.prismaField({
     type: 'Filiere',
     args: {
+      sigle: t.arg.string({ required: true }),
       name: t.arg.string({ required: true }),
       description: t.arg.string({ required: true }),
     },
     resolve: async (query, _parent, args, ctx) => {
 
-      const { name, description, } = args
+      const { sigle, name, description, } = args
 
       const getServerSideProps: GetServerSideProps = async (context) => {
 
@@ -62,6 +64,12 @@ builder.mutationField('createFiliere', (t) =>
         const user = await prisma.user.findUnique({
           where: {
             username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
           }
         })
 
@@ -86,6 +94,7 @@ builder.mutationField('createFiliere', (t) =>
       return await prisma.filiere.create({
         ...query,
         data: {
+          sigle,
           name,
           description,
         }
@@ -99,16 +108,18 @@ builder.mutationField('updateFiliere', (t) =>
     type: 'Filiere',
     args: {
       id: t.arg.id({ required: true }),
+      sigle: t.arg.string(),
       name: t.arg.string(),
       description: t.arg.string(),
     },
-    resolve: async (query, _parent, args, _ctx) =>
+    resolve: async (query, _parent, args, _ctx) => 
       prisma.filiere.update({
         ...query,
         where: {
           id: args.id,
         },
         data: {
+          sigle: args.sigle ? args.sigle : undefined,
           name: args.name ? args.name : undefined,
           description: args.description ? args.description : undefined,
         }
@@ -141,6 +152,7 @@ builder.mutationField('deleteFiliere', (t) =>
           },
           select: {
             id: true,
+            sigle: true,
             name: true,
             username: true,
             role: true,

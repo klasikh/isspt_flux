@@ -20,9 +20,8 @@ type FormValues = {
 }
 
 const SendPaymentMutation = gql`
-  mutation ($id: ID!, $userId: ID!, $title: String!, $name: String!, $motifId: ID!, $filiereId: ID!, $amount: String!, $createdYear: String!,) {
-    sendPayment(id: $id, userId: $userId, title: $title, name: $name, motifId: $motifId, filiereId: $filiereId, amount: $amount, createdYear: $createdYear,) {
-      title
+  mutation ($id: ID!, $userId: ID!, $name: String!, $motifId: ID!, $filiereId: ID!, $amount: String!, $createdYear: String!,) {
+    sendPayment(id: $id, userId: $userId, name: $name, motifId: $motifId, filiereId: $filiereId, amount: $amount, createdYear: $createdYear,) {
       description
       name
       motifId
@@ -37,7 +36,6 @@ const RejectPaymentMutation = `
   mutation($id: ID!, $rejectMotif: String!, $userId: ID!, $status: String!, $step: String!) {
     rejectPayment(id: $id, rejectMotif: $rejectMotif, userId: $userId, status: $status, step: $step,) {
       id
-      title
       description
       name
       motifId
@@ -58,10 +56,10 @@ const DeletePaymentMutation = `
     }
   }
 `
-const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
   const router = useRouter();
-
+  
   const [isSendLoading, setIsSendLoading] = useState(false);
   const [isEditLoading, setIsEditLoading] = useState(false);
   const [isValidateLoading, setIsValidateLoading] = useState(false);
@@ -89,7 +87,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
 
   const sendTPayment = async () => {
     setIsSendLoading(true);
-    const sendThePay = await toast.promise(sendPayment({ variables: { id: payment.id, userId: theUserSession?.user.id, title: payment.title, name: payment.name, motifId: payment.motifId, filiereId: payment.filiereId, amount: payment.amount, createdYear: payment.createdYear } }), {
+    const sendThePay = await toast.promise(sendPayment({ variables: { id: payment.id, userId: theUserSession?.user.id, name: payment.name, motifId: payment.motifId, filiereId: payment.filiereId, amount: payment.amount, createdYear: payment.createdYear } }), {
       loading: 'Envoi en cours',
       success: 'Envoyé avec succès! 🎉',
       error: `Désolé, une erreur s'est produite 😥`,
@@ -206,12 +204,8 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
         <h1 className="text-2xl font-bold mb-3 uppercase text-center">Informations du paiement</h1>
         <div className="w-full bg-white rounded overflow-hidden shadow-lg">
           <div className="px-6 py-4">
-            <div className="font-bold text-xl mb-4 block bg-gray-600 p-1 text-white">Titre: {payment.title}</div>
-            <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Description</div>
-            <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
-              <span>{payment.description}</span>
-            </div>
             <div className="flex gap-x-4">
+
               <div className="md:w-1/2 sm:w-full sm:block">
                 <div className="font-bold text-xl bg-gray-600 p-1 text-white">Nom et prénoms de l&apos;étudiant</div>
                 <div className="text-gray-700 mb-4 text-base bg-gray-300 p-2">
@@ -219,25 +213,31 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                 </div>
               </div>
               <div className="md:w-1/2 sm:w-full sm:block">
-                <div className="font-bold text-xl bg-gray-600 p-1 text-white">Filière</div>
-                <div className="text-gray-700 mb-4 text-base bg-gray-300 p-2">
-                  <span>{payment.filiere.name}</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-x-4">
-              <div className="md:w-1/2 sm:w-full sm:block">
                 <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Motif de paiement</div>
                 <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
                   <span>{payment.motif.name}</span>
                 </div>
              </div>
+            </div>
+            <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Description</div>
+            <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
+              <span>{payment.description}</span>
+            </div>
+            <div className="flex gap-x-4">
+              <div className="md:w-1/2 sm:w-full sm:block">
+                <div className="font-bold text-xl bg-gray-600 p-1 text-white">Filière</div>
+                <div className="text-gray-700 mb-4 text-base bg-gray-300 p-2">
+                  <span>{payment.filiere.name}</span>
+                </div>
+              </div>
               <div className="md:w-1/2 sm:w-full sm:block">
                 <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Montant payé</div>
                 <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
                   <span>{payment.amount}</span>
                 </div>
                </div>
+            </div>
+            <div className="flex gap-x-4">
             </div>
           </div>
 
@@ -337,7 +337,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                     </span>
                    )
 
-                : (payment.step === "1")
+                : (proformaVar && payment.step === "1")
 
                 ? ( <span>
                       <Link
@@ -386,7 +386,7 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
                 : ""
               }
               {
-                (theUserSession?.user?.role === "ADMIN")
+                (proformaVar && theUserSession?.user?.role === "ADMIN")
                 ? (
                       <button
                         onClick={() => deletePayment()}
@@ -564,16 +564,39 @@ const Payment = ({ payment }: InferGetServerSidePropsType<typeof getServerSidePr
 
 export default Payment;
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  
+  const id = ctx.params?.id;
+  const session = await getSession(ctx);
 
-  const id = params?.id;
+  if (!session) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/auth/signin',
+      },
+      props: {},
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      username: session.user?.username,
+    },
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      role: true,
+    }
+  });
+
   const payment = await prisma.payment.findUnique({
     where: {
       id: id
     },
     select: {
       id: true,
-      title: true,
       description: true,
       name: true,
       filiereId: true,
@@ -606,9 +629,44 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     notFound: true
   }
 
+  const getUserProformaProp = await prisma.userModulePriority.findMany({
+    where: {
+      userId: user?.id,
+      module: {
+        name: "PAIEMENT"
+      }
+    },
+    select: {
+      userId: true,
+      moduleId: true,
+      module: {
+        select: {
+          id: true,
+          name: true,
+        }
+      },
+      priority: true
+    },
+    take: 1,
+  })
+
+  let proformaVar = false;
+  
+  if(getUserProformaProp[0] && getUserProformaProp[0]?.module?.name === "PAIEMENT") {
+    if(getUserProformaProp[0].priority !== "APPROV_REJECT" && getUserProformaProp[0].priority !== "R_UPDATE_DELETE" && getUserProformaProp[0].priority !== "C_R_UPDATE_DELETE") {
+      proformaVar = false;
+    } else {
+      proformaVar = true
+    }
+
+  } else {
+    proformaVar = false;
+  }
+
   return {
     props: {
       payment,
+      proformaVar,
     },
   };
 };

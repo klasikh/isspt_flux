@@ -9,7 +9,6 @@ import { ExclamationTriangleIcon, ArrowLeftIcon, ArrowUturnLeftIcon } from '@her
 import { getSession, useSession } from "next-auth/react"
 
 type FormValues = {
-  title: string;
   description: string;
   name: string;
   motifId: string;
@@ -60,10 +59,9 @@ const AllFilieresQuery = gql`
 `;
 
 const CreatePaymentMutation = gql`
-  mutation($title: String!, $description: String!, $name: String!, $motifId: ID!, $filiereId: ID!, $step: String!, $amount: String!, $createdYear: String!, $addedBy: String!) {
-    createPayment(title: $title, description: $description, name: $name, motifId: $motifId, filiereId: $filiereId, amount: $amount, step: $step, createdYear: $createdYear, addedBy: $addedBy) {
+  mutation($description: String!, $name: String!, $motifId: ID!, $filiereId: ID!, $step: String!, $amount: String!, $createdYear: String!, $addedBy: String!) {
+    createPayment(description: $description, name: $name, motifId: $motifId, filiereId: $filiereId, amount: $amount, step: $step, createdYear: $createdYear, addedBy: $addedBy) {
       id
-      title
       description
       name
       motifId
@@ -96,15 +94,15 @@ const PaymentAdd = () => {
   } = useForm<FormValues>()
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    const { title, description, name, motifId, filiereId, amount, step, createdYear, addedBy } = data
+    const { description, name, motifId, filiereId, amount, step, createdYear, addedBy } = data
 
     // const filePath = `https://${process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${image[0]?.name}`
 
     const theStep = "0";
     const year = new Date().getFullYear();
     const yearToString = year.toString()
-    // const variables = { title, description, name, motifId, filiereId, amount, theStep, filePath, createdYear, }
-    const variables = { title, description, name, motifId, filiereId, amount, step: theStep, createdYear: yearToString, addedBy: session?.user.id }
+    // const variables = { description, name, motifId, filiereId, amount, theStep, filePath, createdYear, }
+    const variables = { description, name, motifId, filiereId, amount, step: theStep, createdYear: yearToString, addedBy: session?.user.id }
     try {
       const theAddedPayment = await toast.promise(createPayment({ variables }), {
         loading: 'Opération en cours..',
@@ -137,34 +135,10 @@ const PaymentAdd = () => {
       </button>
       <h1 className="text-3xl font-medium mb-5">Ajouter un paiement</h1>
       <form className="grid grid-cols-1 gap-y-4 bg-white shadow-lg p-8 rounded-lg" onSubmit={handleSubmit(onSubmit)}>
-        <label className="block">
-          <span className="text-gray-700">Titre</span>
-          <input
-            placeholder="Paiement ..."
-            {...register('title', { required: true })}
-            name="title"
-            type="text"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-          />
-        </label>
-        <label for="description" class="block">
-          <span className="text-gray-700">Description</span>
-          <textarea id="description" rows="4" {...register('description', { required: true })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description du paiement" name="description"></textarea>
-        </label>
-        <label className="block">
-          <span className="text-gray-700">Nom de l&apos;étudiant</span>
-          <input
-            placeholder="Nom complet de l'étudiant"
-            {...register('name', { required: true })}
-            name="name"
-            type="text"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-          />
-        </label>
-        <div className="flex gap-x-4 w-full">
+        <strong className="text-red-600">Tous les champs sont obligatoires</strong>
           <label className="block w-full">
             <span className="text-gray-700">Motif de paiement</span>
-            <select id="motifs" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="motifId" {...register('motifId', { required: true })}>
+            <select id="motifs" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="motifId" {...register('motifId', { required: true })} required>
               <option value="" selected disabled>Motif</option>
               { allMotifs?.motifs.edges.map(({ node }: { node: Node }) => (
                   <option value={node.id}>{node.name}</option>
@@ -172,9 +146,24 @@ const PaymentAdd = () => {
               )}
             </select>
           </label>
+        <label for="description" class="block">
+          <span className="text-gray-700">Description</span>
+          <textarea id="description" rows="4" {...register('description', { required: true })} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description du paiement" name="description"></textarea>
+        </label>
+        <label className="block">
+          <span className="text-gray-700">Nom de l&apos;étudiant</span>
+          <input
+            placeholder="Nom complet de l'étudiant"
+            {...register('name', { required: true })}
+            name="name"
+            type="text" required
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+          />
+        </label>
+        <div className="flex gap-x-4 w-full">
           <label className="block w-full">
             <span className="text-gray-700">Filière de l&apos;étudiant</span>
-            <select id="filieres" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="filiereId" {...register('filiereId', { required: true })}>
+            <select id="filieres" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="filiereId" {...register('filiereId', { required: true })} required>
               <option value="" selected disabled>Filière</option>
               { allFilieres?.filieres.edges.map(({ node }: { node: Node }) => (
                   <option value={node.id}>{node.name}</option>
@@ -182,22 +171,22 @@ const PaymentAdd = () => {
               )}
             </select>
           </label>
+          <label className="block w-full">
+            <span className="text-gray-700">Montant</span>
+            <input
+              placeholder="Montant à payer"
+              {...register('amount', { required: true })}
+              name="amount"
+              type="number" required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            />
+          </label>
         </div>
-        <label className="block">
-          <span className="text-gray-700">Montant</span>
-          <input
-            placeholder="Montant à payer"
-            {...register('amount', { required: true })}
-            name="amount"
-            type="number"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-          />
-        </label>
 
         <button
           disabled={loading}
           type="submit"
-          className="my-4 capitalize bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600"
+          className="my-4 capitalize text-white font-medium py-2 px-4 rounded-md bg-red-700 hover:bg-red-400"
         >
           {loading ? (
             <span className="flex items-center justify-center">
@@ -212,7 +201,7 @@ const PaymentAdd = () => {
               En cours...
             </span>
           ) : (
-            <span>Valider</span>
+            <span>Enregistrer</span>
           )}
         </button>
       </form>
@@ -251,7 +240,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       redirect: {
         permanent: false,
-        destination: '/404',
+        destination: '/dashboard',
       },
       props: {},
     };
@@ -261,7 +250,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     where: {
       userId: user.id,
       module: {
-        name: "PROFORMA"
+        name: "PAIEMENT"
       }
     },
     select: {
@@ -278,7 +267,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     take: 1,
   })
 
-  if(getUserPriorities[0] && getUserPriorities[0]?.module?.name === "PROFORMA") {
+  if(getUserPriorities[0] && getUserPriorities[0]?.module?.name === "PAIEMENT") {
     if(getUserPriorities[0].priority !== "CREATE" && getUserPriorities[0].priority !== "CREATE_READ" && getUserPriorities[0].priority !== "C_READ_UPDATE" && getUserPriorities[0].priority !== "C_READ_DELETE" && getUserPriorities[0].priority !== "C_R_UPDATE_DELETE") {
 
       toast.error("Vous n'avez pas les permissions requises pour effectuer cette action.");

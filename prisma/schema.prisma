@@ -49,6 +49,7 @@ enum Priority {
   C_READ_DELETE
   C_R_UPDATE_DELETE
   R_UPDATE_DELETE
+  APPROV_REJECT
 }
 
 model UserModulePriority {
@@ -111,6 +112,7 @@ enum Status {
 
 model Filiere {
   id          String   @id @default(uuid())
+  sigle       String   @unique
   name        String   @unique
   description String
   payments Payment[]
@@ -129,7 +131,6 @@ model Motif {
 
 model Payment {
   id           String      @id @default(uuid())
-  title        String
   description  String?
   name         String
   filiereId    String

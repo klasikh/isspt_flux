@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* TO HIDE ERRORS ON THE NAVIGATOR */
+nextjs-portal {
+  display: none;
+}
+/* END TO HIDE ERRORS ON THE NAVIGATOR */
 
 /* width */
 ::-webkit-scrollbar {

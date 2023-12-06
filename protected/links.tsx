@@ -36,157 +36,196 @@ const icon = {
 };
 
 export const routes = [
+    {
+      title: "Grades",
+      layout: "dashboard",
+      number: 1,
+      role: "ADMIN",
+      pages: [
+        {
+          icon: <BellAlertIcon {...icon} />,
+          name: "Liste des grades",
+          path: "/grades/list",
+          element: <GradesList />,
+        },
+        {
+          icon: <PlusSmallIcon {...icon} />,
+          name: "Ajouter un grade",
+          path: "/grades/add",
+          element: <GradeAdd />,
+        },
+      ]
+    },
+    {
+      title: "Modules",
+      layout: "dashboard",
+      number: 2,
+      role: "ADMIN",
+      pages: [
+        {
+          icon: <BellAlertIcon {...icon} />,
+          name: "Liste des modules",
+          path: "/modules/list",
+          element: <ModulesList />,
+        },
+        {
+          icon: <PlusSmallIcon {...icon} />,
+          name: "Ajouter un module",
+          path: "/modules/add",
+          element: <ModuleAdd />,
+        },
+      ]
+    },
+    {
+      title: "Utilisateurs",
+      layout: "dashboard",
+      number: 3,
+      role: "ADMIN",
+      pages: [
+        {
+          icon: <UserCircleIcon {...icon} />,
+          name: "Liste des utilisateurs",
+          path: "/users/list",
+          element: <UsersList />,
+        },
+        {
+          icon: <PlusSmallIcon {...icon} />,
+          name: "Ajouter un utilisateur",
+          path: "/users/add",
+          element: <UserAdd />,
+        },
+      ]
+    },
+    {
+      title: "Filières",
+      layout: "dashboard",
+      number: 4,
+      role: "ADMIN",
+      pages: [
+        {
+          icon: <UserCircleIcon {...icon} />,
+          name: "Liste des filières",
+          path: "/filieres/list",
+          element: <FilieresList />,
+        },
+        {
+          icon: <PlusSmallIcon {...icon} />,
+          name: "Ajouter une filière",
+          path: "/filieres/add",
+          element: <FiliereAdd />,
+        },
+      ]
+    },
+    {
+      title: "Motifs",
+      layout: "dashboard",
+      number: 5,
+      role: "ADMIN",
+      pages: [
+        {
+          icon: <UserCircleIcon {...icon} />,
+          name: "Liste des motifs",
+          path: "/motifs/list",
+          element: <MotifsList />,
+        },
+        {
+          icon: <PlusSmallIcon {...icon} />,
+          name: "Ajouter un motif",
+          path: "/motifs/add",
+          element: <MotifAdd />,
+        },
+      ]
+    },
+    {
+      title: "Paiement",
+      layout: "dashboard",
+      number: 6,
+      role: "ADMIN",
+      pages: [
+        {
+          icon: <DocumentTextIcon {...icon} />,
+          name: "Liste des paiements",
+          path: "/payments/list",
+          element: <PaymentsList />,
+          module: "PAYMENT"
+        },
+        {
+          icon: <PlusSmallIcon {...icon} />,
+          name: "Ajouter un paiement",
+          path: "/payments/add",
+          element: <PaymentAdd />,
+          module: "PAYMENT"
+        },
+      ]
+    },
+    {
+      title: "Dépense",
+      layout: "dashboard",
+      number: 7,
+      role: "ADMIN",
+      pages: [
+        {
+          icon: <BanknotesIcon {...icon} />,
+          name: "Liste des dépenses",
+          path: "/spents/list",
+          element: <SpentsList />,
+          module:"SPENT"
+        },
+        {
+          icon: <PlusSmallIcon {...icon} />,
+          name: "Ajouter une dépense",
+          path: "/spents/add",
+          element: <SpentAdd />,
+          module:"SPENT"
+        },
+      ]
+    },
+
+    // USER BUTTONS
   {
+    title: "Paiement",
     layout: "dashboard",
-    pages: [
-      {
-        icon: <HomeIcon {...icon} />,
-        name: "Tableau de bord",
-        path: "/dashboard",
-        element: <Dashboard />,
-      },
-      // {
-      //   icon: <HomeIcon {...icon} />,
-      //   name: "dashboardjdjk",
-      //   path: "/dashboard/home",
-      //   element: <Home />,
-      // },
-      {
-        icon: <BellAlertIcon {...icon} />,
-        name: "Liste des grades",
-        path: "/grades/list",
-        element: <GradesList />,
-        role: "ADMIN"
-      },
-      {
-        icon: <PlusSmallIcon {...icon} />,
-        name: "Ajouter un grade",
-        path: "/grades/add",
-        element: <GradeAdd />,
-        role: "ADMIN"
-      },
-      {
-        icon: <BellAlertIcon {...icon} />,
-        name: "Liste des modules",
-        path: "/modules/list",
-        element: <ModulesList />,
-        role: "ADMIN"
-      },
-      {
-        icon: <PlusSmallIcon {...icon} />,
-        name: "Ajouter un module",
-        path: "/modules/add",
-        element: <ModuleAdd />,
-        role: "ADMIN"
-      },
-      {
-        icon: <UserCircleIcon {...icon} />,
-        name: "Liste des utilisateurs",
-        path: "/users/list",
-        element: <UsersList />,
-        role: "ADMIN"
-      },
-      {
-        icon: <PlusSmallIcon {...icon} />,
-        name: "Ajouter un utilisateur",
-        path: "/users/add",
-        element: <UserAdd />,
-        role: "ADMIN"
-      },
-      {
-        icon: <UserCircleIcon {...icon} />,
-        name: "Liste des filières",
-        path: "/filieres/list",
-        element: <FilieresList />,
-        role: "ADMIN"
-      },
-      {
-        icon: <PlusSmallIcon {...icon} />,
-        name: "Ajouter une filière",
-        path: "/filieres/add",
-        element: <FiliereAdd />,
-        role: "ADMIN"
-      },
-      {
-        icon: <UserCircleIcon {...icon} />,
-        name: "Liste des motifs",
-        path: "/motifs/list",
-        element: <MotifsList />,
-        role: "ADMIN"
-      },
-      {
-        icon: <PlusSmallIcon {...icon} />,
-        name: "Ajouter un motif",
-        path: "/motifs/add",
-        element: <MotifAdd />,
-        role: "ADMIN"
-      },
-      {
-        icon: <UserCircleIcon {...icon} />,
-        name: "Profile",
-        path: "/profile",
-        element: <Profile />
-      },
-    ],
-  },
-  {
-    title: "Proforma",
-    layout: "dashboard",
+    number: 8,
+    role: "USER",
     pages: [
       {
         icon: <DocumentTextIcon {...icon} />,
         name: "Liste des paiements",
         path: "/payments/list",
         element: <PaymentsList />,
-        role: "USER"
+        module: "PAYMENT"
       },
       {
         icon: <PlusSmallIcon {...icon} />,
         name: "Ajouter un paiement",
         path: "/payments/add",
         element: <PaymentAdd />,
-        role: "USER"
+        module: "PAYMENT"
       },
     ]
   },
   {
-    title: "Facturation",
+    title: "Dépense",
     layout: "dashboard",
+    number: 9,
+    role: "USER",
     pages: [
       {
         icon: <BanknotesIcon {...icon} />,
         name: "Liste des dépenses",
         path: "/spents/list",
         element: <SpentsList />,
-        role: "USER"
+        module:"SPENT"
       },
       {
         icon: <PlusSmallIcon {...icon} />,
         name: "Ajouter une dépense",
         path: "/spents/add",
         element: <SpentAdd />,
-        role: "USER"
+        module:"SPENT"
       },
     ]
   },
-  {/*
-    title: "auth pages",
-    layout: "auth",
-    pages: [
-      {
-        icon: <ArrowRightOnRectangleIcon {...icon} />,
-        name: "sign in",
-        path: "/sign-in",
-        element: <SignIn />,
-      },
-      {
-        icon: <UserPlusIcon {...icon} />,
-        name: "sign up",
-        path: "/sign-up",
-        element: <SignUp />,
-      },
-    ],
-  */},
 ];
 
 export default routes;

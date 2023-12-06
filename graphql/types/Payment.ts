@@ -6,7 +6,6 @@ import { getSession } from "next-auth/react"
 builder.prismaObject('Payment', {
   fields: (t) => ({
     id: t.exposeID('id'),
-    title: t.exposeString('title'),
     name: t.exposeString('name'),
     description: t.exposeString('description'),
     filiereId: t.exposeString('filiereId'),
@@ -56,7 +55,6 @@ builder.mutationField('createPayment', (t) =>
   t.prismaField({
     type: 'Payment',
     args: {
-      title: t.arg.string({ required: true }),
       description: t.arg.string({ required: false }),
       name: t.arg.string({ required: true }),
       motifId: t.arg.id({ required: true }),
@@ -73,7 +71,7 @@ builder.mutationField('createPayment', (t) =>
     },
     resolve: async (query, _parent, args, ctx) => {
       
-      const { title, description, name, motifId, filiereId, amount, step, createdYear, addedBy  } = args
+      const { description, name, motifId, filiereId, amount, step, createdYear, addedBy  } = args
 
 
       const getServerSideProps: GetServerSideProps = async (context) => {
@@ -128,7 +126,6 @@ builder.mutationField('createPayment', (t) =>
       return await prisma.payment.create({
         ...query,
         data: {
-          title,
           name,
           description,
           filiereId,
@@ -148,7 +145,6 @@ builder.mutationField('updatePayment', (t) =>
     type: 'Payment',
     args: {
       id: t.arg.id({ required: true }),
-      title: t.arg.string(),
       name: t.arg.string(),
       description: t.arg.string(),
       motifId: t.arg.id(),
@@ -165,7 +161,6 @@ builder.mutationField('updatePayment', (t) =>
           id: args.id,
         },
         data: {
-          title: args.title ? args.title : undefined,
           name: args.name ? args.name : undefined,
           description: args.description ? args.description : undefined,
           motifId: args.motifId ? args.motifId : undefined,
@@ -185,7 +180,6 @@ builder.mutationField('sendPayment', (t) =>
     args: {
       id: t.arg.id({ required: true }),
       userId: t.arg.id({ required: true }),
-      title: t.arg.string(),
       name: t.arg.string(),
       motifId: t.arg.id(),
       filiereId: t.arg.id(),
@@ -247,7 +241,6 @@ builder.mutationField('sendPayment', (t) =>
               },
               create: {
                 id: args.id,
-                title: args.title ? args.title : undefined,
                 name: args.name ? args.name : undefined,
                 motifId: args.motifId ? args.motifId : undefined,
                 filiereId: args.filiereId ? args.filiereId : undefined,
@@ -308,7 +301,7 @@ builder.mutationField('rejectPayment', (t) =>
           where: {
             userId: user.id,
             module: {
-              name: "PROFORMA"
+              name: "PAIEMENT"
             }
           },
           select: {
@@ -326,8 +319,8 @@ builder.mutationField('rejectPayment', (t) =>
 
         if(getUserPriorities) {
           for(let i=0; i<getUserPriorities.length; i++) {
-            if(getUserPriorities[i].module?.name === "PROFORMA") {
-              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
+            if(getUserPriorities[i].module?.name === "PAIEMENT") {
+              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "APPROV_REJECT" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
                 throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action.")
               }
             } else {
@@ -406,7 +399,7 @@ builder.mutationField('validPayment', (t) =>
           where: {
             userId: user.id,
             module: {
-              name: "PROFORMA"
+              name: "PAIEMENT"
             }
           },
           select: {
@@ -424,8 +417,8 @@ builder.mutationField('validPayment', (t) =>
 
         if(getUserPriorities) {
           for(let i=0; i<getUserPriorities.length; i++) {
-            if(getUserPriorities[i].module?.name === "PROFORMA") {
-              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
+            if(getUserPriorities[i].module?.name === "PAIEMENT") {
+              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "APPROV_REJECT" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
                 throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action.")
               }
             } else {
