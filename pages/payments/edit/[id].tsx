@@ -10,8 +10,9 @@ import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 
 type FormValues = {
   id: string;
-  description: string;
   name: string;
+  surname: string;
+  description: string;
   motifId: string;
   filiereId: string;
   amount: string;
@@ -60,11 +61,12 @@ const AllFilieresQuery = gql`
 `;
 
 const EditPaymentMutation = gql`
-  mutation($id: ID!, $description: String!, $name: String!, $motifId: ID!, $filiereId: ID!, $step: String!, $amount: String!, $createdYear: String!, $addedBy: String!) {
-    updatePayment(id: $id, description: $description, name: $name, motifId: $motifId, filiereId: $filiereId, amount: $amount, step: $step, createdYear: $createdYear, addedBy: $addedBy) {
+  mutation($id: ID!, $name: String!, $surname: String!, $description: String!, $motifId: ID!, $filiereId: ID!, $step: String!, $amount: String!, $createdYear: String!, $addedBy: String!) {
+    updatePayment(id: $id, name: $name, surname: $surname, description: $description, motifId: $motifId, filiereId: $filiereId, amount: $amount, step: $step, createdYear: $createdYear, addedBy: $addedBy) {
       id
-      description
       name
+      surname
+      description
       motifId
       filiereId
       amount
@@ -100,8 +102,9 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
   useEffect(() => {
     if (payment) {
         reset({
-          description: payment.description,
           name: payment.name ,
+          surname: payment.surname ,
+          description: payment.description,
           motifId: payment.motifId,
           filiereId: payment.filiereId,
           amount: payment.amount,
@@ -111,18 +114,18 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
   }, [payment]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    const { id,  description, name, motifId, filiereId, amount, step, createdYear, addedBy } = data
+    const { id, name, surname, description, motifId, filiereId, amount, step, createdYear, addedBy } = data
 
     const theStep = "0";
     const year = new Date().getFullYear();
     const yearToString = year.toString()
     
-    const variables = { id: payment.id, description, name, motifId, filiereId, amount, step: theStep, createdYear: yearToString, addedBy: session?.user.id }
+    const variables = { id: payment.id, name, surname, description, motifId, filiereId, amount, step: theStep, createdYear: yearToString, addedBy: session?.user.id }
     try {
       const theEditedPayment = await toast.promise(editPayment({ variables }), {
         loading: 'Opération en cours..',
         success: 'Paiement mis à jour avec succès!🎉',
-        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
+        error: `${Error}`,
       })
 
       // console.log(theEditedPayment)
@@ -165,16 +168,28 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
             <span className="text-gray-700">Description</span>
             <textarea id="description" rows="4" {...register('description', { required: true })} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description du paiement" name="description"></textarea>
           </label>
-          <label className="block">
-            <span className="text-gray-700">Nom de l&apos;étudiant</span>
-            <input
-              placeholder="Nom complet de l'étudiant"
-              {...register('name', { required: true })}
-              name="name"
-              type="text" required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            />
-          </label>
+          <div className="flex gap-x-4 w-full">
+            <label className="block w-full">
+              <span className="text-gray-700">Nom de l&apos;étudiant</span>
+              <input
+                placeholder="Nom de l'étudiant"
+                {...register('name', { required: true })}
+                name="name"
+                type="text" required
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              />
+            </label>
+            <label className="block w-full">
+              <span className="text-gray-700">Prénoms de l&apos;étudiant</span>
+              <input
+                placeholder="Prénoms de l'étudiant"
+                {...register('surname', { required: true })}
+                name="surname"
+                type="text" required
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              />
+            </label>
+          </div>
           <div className="flex gap-x-4 w-full">
             <label className="block w-full">
               <span className="text-gray-700">Filière de l&apos;étudiant</span>
@@ -247,6 +262,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       id: true,
       description: true,
       name: true,
+      surname: true,
       filiereId: true,
       motifId: true,
       amount: true,

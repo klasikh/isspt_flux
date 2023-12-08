@@ -133,6 +133,7 @@ model Payment {
   id           String      @id @default(uuid())
   description  String?
   name         String
+  surname      String
   filiereId    String
   motifId      String
   amount       String
@@ -141,7 +142,8 @@ model Payment {
   filePath       String?
   createdYear  String
   addedBy      String
-  rejectMotif      String?
+  rejectMotif  String?
+  resendMotif  String?
   isNotified    Boolean @default(false)
   fromId         String?
   toId           String?

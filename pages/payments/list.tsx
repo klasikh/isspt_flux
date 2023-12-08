@@ -1,5 +1,6 @@
 // /pages/index.tsx
 import Head from "next/head";
+import { useState, useEffect } from "react";
 import { gql, useQuery, useMutation } from "@apollo/client";
 import { AwesomeLink } from "../../components/AwesomeLink";
 import type { Link as Node } from "@prisma/client";
@@ -8,6 +9,8 @@ import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Pagination from "../../components/Pagination";
+import PaginationNew from "../../components/PaginationNew";
 // import { useUser } from "@auth0/nextjs-auth0/client";
 import {
   Button,
@@ -22,12 +25,66 @@ import {
   Progress,
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon, } from "@heroicons/react/24/outline";
+import axios, { all } from "axios";
 
-const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const AllPaymentsQuery = gql`
+  query allPaymentsQuery($first: Int, $after: ID) {
+    payments(first: $first, after: $after) {
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      edges {
+        cursor
+        node {
+          id
+          name
+          surname
+          description
+          motifId
+        }
+      }
+    }
+  }
+`;
+
+const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
 
   const {data:session}=useSession()
   const theUserSession = session;
+
+  const [allPayments, setAllPayments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [postsPerPage] = useState(10);
+
+  const { data: allPays } = useQuery(AllPaymentsQuery);
+        console.log(allPays)
+  useEffect(() => {
+    const fetchPosts = async () => { 
+        setLoading(true);
+        // const res = await axios.post('/api/graphql', {
+        //                         "query": AllPaymentsQuery,
+        //                         "variables" : ""
+        //                       },
+        //                     { headers: { 'Content-Type': 'application/json' } }
+        //                   );
+        // setAllPayments(res);
+        setLoading(false);
+    };
+    
+    fetchPosts();
+    console.log(allPayments);
+  }, []);
+
+  // Get current posts
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = payments.slice(indexOfFirstPost, indexOfLastPost);
+
+  // Change page
+  const paginate = (pageNumber: any) => setCurrentPage(pageNumber);
 
   return (
     <div>
@@ -44,6 +101,7 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
           </Link>
         </div>
         <div className="mt-12">
+          <div className=""></div>
           <Card>
             <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
               <Typography variant="h6" color="white">
@@ -72,7 +130,7 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
                   </tr>
                 </thead>
                 <tbody>
-                  { payments.map((node) => (
+                  { currentPosts?.map((node: any) => (
                         <tr key={node.id}>
                           <td className={`py-3 px-5`}>
                             <div className="flex items-center gap-4">
@@ -81,7 +139,7 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
                                 color="blue-gray"
                                 className="font-bold"
                               >
-                                {node.name}
+                                {node.name + " " + node.surname}
                               </Typography>
                             </div>
                           </td>
@@ -173,6 +231,16 @@ const PaymentsList = ({ payments }: InferGetServerSidePropsType<typeof getServer
                   )}
                 </tbody>
               </table>
+              <PaginationNew
+                postsPerPage={postsPerPage}
+                totalPosts={payments.length}
+                paginate={paginate}
+                currentPage={currentPage}
+              />
+              {/* <div className="text-center items-center justify-center w-1/3 mx-auto">
+
+                <Pagination />
+              </div> */}
             </CardBody>
           </Card>
         </div>
@@ -223,6 +291,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       id: true,
       description: true,
       name: true,
+      surname: true,
       motif: {
         select: {
           name: true
@@ -237,6 +306,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       step: true,
       status: true,
       rejectMotif: true,
+      resendMotif: true,
       isNotified: true,
       createdYear: true,
       addedBy: true,

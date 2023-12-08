@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 /* TO HIDE ERRORS ON THE NAVIGATOR */
-nextjs-portal {
+/* nextjs-portal {
   display: none;
-}
+} */
 /* END TO HIDE ERRORS ON THE NAVIGATOR */
 
 /* width */

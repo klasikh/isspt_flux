@@ -7,6 +7,7 @@ builder.prismaObject('Payment', {
   fields: (t) => ({
     id: t.exposeID('id'),
     name: t.exposeString('name'),
+    surname: t.exposeString('surname'),
     description: t.exposeString('description'),
     filiereId: t.exposeString('filiereId'),
     motifId: t.exposeString('motifId'),
@@ -57,6 +58,7 @@ builder.mutationField('createPayment', (t) =>
     args: {
       description: t.arg.string({ required: false }),
       name: t.arg.string({ required: true }),
+      surname: t.arg.string({ required: true }),
       motifId: t.arg.id({ required: true }),
       filiereId: t.arg.id({ required: true }),
       amount: t.arg.string({ required: true }),
@@ -71,7 +73,7 @@ builder.mutationField('createPayment', (t) =>
     },
     resolve: async (query, _parent, args, ctx) => {
       
-      const { description, name, motifId, filiereId, amount, step, createdYear, addedBy  } = args
+      const { description, name, surname, motifId, filiereId, amount, step, createdYear, addedBy  } = args
 
 
       const getServerSideProps: GetServerSideProps = async (context) => {
@@ -127,6 +129,7 @@ builder.mutationField('createPayment', (t) =>
         ...query,
         data: {
           name,
+          surname,
           description,
           filiereId,
           motifId,
@@ -146,6 +149,7 @@ builder.mutationField('updatePayment', (t) =>
     args: {
       id: t.arg.id({ required: true }),
       name: t.arg.string(),
+      surname: t.arg.string(),
       description: t.arg.string(),
       motifId: t.arg.id(),
       filiereId: t.arg.id(),
@@ -162,6 +166,7 @@ builder.mutationField('updatePayment', (t) =>
         },
         data: {
           name: args.name ? args.name : undefined,
+          surname: args.surname ? args.surname : undefined,
           description: args.description ? args.description : undefined,
           motifId: args.motifId ? args.motifId : undefined,
           filiereId: args.filiereId ? args.filiereId : undefined,
@@ -181,6 +186,7 @@ builder.mutationField('sendPayment', (t) =>
       id: t.arg.id({ required: true }),
       userId: t.arg.id({ required: true }),
       name: t.arg.string(),
+      surname: t.arg.string(),
       motifId: t.arg.id(),
       filiereId: t.arg.id(),
       amount: t.arg.string(),
@@ -202,7 +208,10 @@ builder.mutationField('sendPayment', (t) =>
             username: session.user?.username,
           },
           select: {
-            username: true
+            id: true,
+            name: true,
+            username: true,
+            role: true,
           }
         })
 
@@ -223,36 +232,40 @@ builder.mutationField('sendPayment', (t) =>
           id: args.id
         },
         data: {
+          resendMotif: "",
+          rejectMotif: "",
           step: "1",
           status: "ONPROCESS"
         }
       })
 
-      const updateUserPayments = await prisma.user.update({
-        ...query,
-        where: {
-          id: args.userId
-        },
-        data: {
-          payments: {
-            connectOrCreate: {
-              where: {
-                id: args.id,
-              },
-              create: {
-                id: args.id,
-                name: args.name ? args.name : undefined,
-                motifId: args.motifId ? args.motifId : undefined,
-                filiereId: args.filiereId ? args.filiereId : undefined,
-                amount: args.amount ? args.amount : undefined,
-                step: "1",
-                createdYear: args.createdYear ? args.createdYear : undefined,
-                rejectMotif: "",
-              },
-            },
-          }
-        }
-      })
+      // const updateUserPayments = await prisma.user.update({
+      //   ...query,
+      //   where: {
+      //     id: args.userId
+      //   },
+      //   data: {
+      //     payments: {
+      //       connectOrCreate: {
+      //         where: {
+      //           id: args.id,
+      //         },
+      //         create: {
+      //           id: args.id,
+      //           name: args.name ? args.name : undefined,
+      //           surname: args.surname ? args.surname : undefined,
+      //           motifId: args.motifId ? args.motifId : undefined,
+      //           filiereId: args.filiereId ? args.filiereId : undefined,
+      //           amount: args.amount ? args.amount : undefined,
+      //           step: "1",
+      //           createdYear: args.createdYear ? args.createdYear : undefined,
+      //           rejectMotif: "",
+      //           resendMotif: "",
+      //         },
+      //       },
+      //     }
+      //   }
+      // })
 
       return payment;
     }
@@ -349,6 +362,67 @@ builder.mutationField('rejectPayment', (t) =>
         },
         data: {
           rejectMotif: args.rejectMotif ? args.rejectMotif : undefined,
+          resendMotif: "",
+          status: args.status ? args.status : undefined,
+          step: args.step ? args.step : undefined,
+        }
+      })
+    }
+  })
+)
+
+builder.mutationField('resendPayment', (t) =>
+  t.prismaField({
+    type: 'Payment',
+    args: {
+      id: t.arg.id({ required: true }),
+      resendMotif: t.arg.string(),
+      userId: t.arg.id(),
+      status: t.arg.string(),
+      step: t.arg.string(),
+    },
+    resolve: async (query, _parent, args, _ctx) => {
+
+      const getServerSideProps: GetServerSideProps = async (context) => {
+
+        let session;
+        session = await getSession(context);
+
+        if (!session.user) {
+          throw new Error("Vous devez être connectés pour effectuer cette action");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
+          }
+        })
+
+        if (!user || (user.role !== "USER" && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+          throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
+          // return 'toto est Ok'
+        }
+      };
+
+      try {
+        const getSess = await getServerSideProps(_ctx);
+      } catch (error) {
+        return error;
+      }
+
+      return prisma.payment.update({
+        ...query,
+        where: {
+          id: args.id,
+        },
+        data: {
+          resendMotif: args.resendMotif ? args.resendMotif : undefined,
           status: args.status ? args.status : undefined,
           step: args.step ? args.step : undefined,
         }
@@ -374,13 +448,13 @@ builder.mutationField('validPayment', (t) =>
         let session;
         session = await getSession(context);
 
-        if (!session.user) {
+        if (!session?.user) {
           throw new Error("Vous devez être connectés pour effectuer cette action");
         }
 
         const user = await prisma.user.findUnique({
           where: {
-            username: session.user?.username,
+            username: session?.user?.username,
           },
           select: {
             id: true,
@@ -446,6 +520,8 @@ builder.mutationField('validPayment', (t) =>
           id: args.id,
         },
         data: {
+          rejectMotif: "",
+          resendMotif: "",
           status: args.status ? args.status : undefined,
           step: args.step ? args.step : undefined,
           filePath: args.filePath ? args.filePath : undefined,

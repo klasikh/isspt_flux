@@ -145,7 +145,7 @@ const Spent = ({ spent, spentVar }: InferGetServerSidePropsType<typeof getServer
 
     const variables = { id: spent.id, rejectMotif, userId: session?.user.id, status: theStatus, step: theStep }
     try {
-
+      setIsRejectLoading(true)
       const theRejectedSpent = await axios.post('/api/graphql',                                   {
                                        "query": RejectSpentMutation,
                                        "variables" : variables
@@ -156,12 +156,15 @@ const Spent = ({ spent, spentVar }: InferGetServerSidePropsType<typeof getServer
       if(theRejectedSpent?.data.errors) {
         toast.error(`${theRejectedSpent?.data.errors[0].extensions.originalError.message}`)
         setOpenRejectModal(false);
+        setIsRejectLoading(false)
       } else {
         toast.success('Dépense rejetée avec succès!🎉');
         if(theRejectedSpent.data.data.rejectSpent) {
+          setIsRejectLoading(false)
           setOpenRejectModal(false);
           router.push(`/spents/list`)
         }
+        setIsRejectLoading(false)
         setOpenRejectModal(false);
       }
 
@@ -230,9 +233,9 @@ const Spent = ({ spent, spentVar }: InferGetServerSidePropsType<typeof getServer
         setIsValidateLoading(false);
       } else {
         toast.success('Dépense supprimée avec succès!🎉');
-        router.push(`/spents/list`)
         setIsDeleteLoading(false);
         setOpenDeletionModal(false)
+        router.push(`/spents/list`)
       }
       setIsDeleteLoading(false);
       setOpenDeletionModal(false);
@@ -505,7 +508,21 @@ const Spent = ({ spent, spentVar }: InferGetServerSidePropsType<typeof getServer
                         className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
                         onClick={() => delSpent()}
                       >
-                        Confirmer la suppression
+                        {isDeleteLoading ? (
+                          <span className="flex items-center justify-center">
+                            <svg
+                              className="w-6 h-6 animate-spin mr-1"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                            </svg>
+                            Suppression...
+                          </span>
+                        ) : (
+                          <span className="font-bold">Confirmer la suppression</span>
+                        )}
                       </button>
                       <button
                         type="button"
@@ -577,7 +594,21 @@ const Spent = ({ spent, spentVar }: InferGetServerSidePropsType<typeof getServer
                           type="submit"
                           className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
                         >
-                          Valider
+                          {isRejectLoading ? (
+                            <span className="flex items-center justify-center">
+                              <svg
+                                className="w-6 h-6 animate-spin mr-1"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                              </svg>
+                              Rejet ...
+                            </span>
+                          ) : (
+                            <span className="font-bold">Rejeter</span>
+                          )}
                         </button>
                         <button
                           type="button"

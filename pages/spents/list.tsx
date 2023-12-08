@@ -10,6 +10,7 @@ import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import PaginationNew from "../../components/PaginationNew";
 // import { useUser } from "@auth0/nextjs-auth0/client";
 import {
   Button,
@@ -56,18 +57,30 @@ const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSide
 
   const [deleteSpent, { data: dataDelSpent, loading: loadDelSpent, error: errorDelSpent }] = useMutation(DeleteSpentMutation)
 
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [postsPerPage] = useState(10);
+
+  // Get current posts
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = spents.slice(indexOfFirstPost, indexOfLastPost);
+
+  // Change page
+  const paginate = (pageNumber: any) => setCurrentPage(pageNumber);
+
   const deleteClickSpent = () => {
     setOpenDeletionModal(true)
   }
 
-  const delSpent = async (spentId) => {
+  const delSpent = async (spentId: any) => {
     setIsDeleteLoading(true);
     const variables = { id: spentId, userId: session?.user?.id, }
     try {
       const theValidatedSpent = await toast.promise(deleteSpent({ variables }), {
         loading: 'Opération en cours..',
         success: 'Dépense approuvée avec succès!🎉',
-        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${error}`,
+        error: `Une erreur s'est produite 😥 Veuillez re-essayer SVP - ${Error}`,
       })
 
       if(theValidatedSpent.data.validSpent) {
@@ -126,7 +139,7 @@ const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSide
                   </tr>
                 </thead>
                 <tbody>
-                  { spents.map((node) => (
+                  { currentPosts.map((node: any) => (
                         <tr key={node.id}>
                           <td className={`py-3 px-5`}>
                             <div className="flex items-center gap-4">
@@ -238,6 +251,12 @@ const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSide
                   )}
                 </tbody>
               </table>
+              <PaginationNew
+                postsPerPage={postsPerPage}
+                totalPosts={spents.length}
+                paginate={paginate}
+                currentPage={currentPage}
+              />
             </CardBody>
           </Card>
         </div>

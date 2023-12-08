@@ -17,9 +17,10 @@ interface Props {
 
 type FormValues = {
   id: string;
-  description: string;
   name: string;
+  surname: string;
   motifId: string;
+  description: string;
   filiereId: string;
   amount: string;
   step: string;
@@ -70,8 +71,9 @@ const ValidPaymentMutation = `
   mutation($id: ID!, $userId: ID!, $status: String!, $step: String!, $filePath: String!) {
     validPayment(id: $id, userId: $userId, status: $status, step: $step, filePath: $filePath) {
       id
-      description
       name
+      surname
+      description
       motifId
       filiereId
       amount
@@ -110,8 +112,9 @@ const ValidateAPayment: NextPage<Props> = ({ payment, dirs }: InferGetServerSide
   useEffect(() => {
     if (payment) {
         reset({
-          description: payment.description,
           name: payment.name ,
+          surname: payment.surname ,
+          description: payment.description,
           motifId: payment.motifId,
           filiereId: payment.filiereId,
           amount: payment.amount,
@@ -155,7 +158,6 @@ const ValidateAPayment: NextPage<Props> = ({ payment, dirs }: InferGetServerSide
         if(theValidatedPayment.data.data.validPayment) {
           router.push(`/payments/${theValidatedPayment.data.data.validPayment.id}`)
         }
-        setOpenRejectModal(false);
       }
 
     } catch (error: any) {
@@ -193,17 +195,30 @@ const ValidateAPayment: NextPage<Props> = ({ payment, dirs }: InferGetServerSide
             <span className="text-gray-700">Description</span>
             <textarea id="description" rows="4" {...register('description', { required: true })} required className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description du paiement" name="description" disabled></textarea>
           </label>
-          <label className="block">
-            <span className="text-gray-700">Nom de l&apos;étudiant</span>
-            <input
-              placeholder="Nom complet de l'étudiant"
-              {...register('name', { required: true })}
-              name="name"
-              type="text" required
-              className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              disabled
-            />
-          </label>
+          <div className="flex gap-x-4 w-full">
+            <label className="block w-full">
+              <span className="text-gray-700">Nom de l&apos;étudiant</span>
+              <input
+                placeholder="Nom de l'étudiant"
+                {...register('name', { required: true })}
+                name="name"
+                type="text" required
+                className="mt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                disabled
+              />
+            </label>
+            <label className="block w-full">
+              <span className="text-gray-700">Prénoms de l&apos;étudiant</span>
+              <input
+                placeholder="Prénoms de l'étudiant"
+                {...register('surname', { required: true })}
+                name="surname"
+                type="text" required
+                className="mmt-1 text-gray-600 cursor-not-allowed block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                disabled
+              />
+            </label>
+          </div>
           <div className="flex gap-x-4 w-full">
             <label className="block w-full">
               <span className="text-gray-700">Filière de l&apos;étudiant</span>
@@ -308,6 +323,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       id: true,
       description: true,
       name: true,
+      surname: true,
       filiereId: true,
       motifId: true,
       amount: true,
