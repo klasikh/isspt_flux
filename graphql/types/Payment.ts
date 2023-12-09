@@ -10,7 +10,9 @@ builder.prismaObject('Payment', {
     surname: t.exposeString('surname'),
     description: t.exposeString('description'),
     filiereId: t.exposeString('filiereId'),
+    filiere: t.relation('filiere'),
     motifId: t.exposeString('motifId'),
+    motif: t.relation('motif'),
     amount: t.exposeString('amount'),
     step: t.exposeString('step'),
     status: t.exposeString('status'),
@@ -18,19 +20,53 @@ builder.prismaObject('Payment', {
     createdYear: t.exposeString('createdYear'),
     addedBy: t.exposeString('addedBy'),
     rejectMotif: t.exposeString('rejectMotif'),
+    resendMotif: t.exposeString('resendMotif'),
     isNotified: t.boolean(),
     fromId: t.exposeString('fromId', { nullable: true, }),
     toId: t.exposeString('toId', { nullable: true, }),
   }),
 })
 
+function formatDate() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  let mm = today.getMonth() + 1; // Months start at 0!
+  let mmToStr = mm.toString();
+  let dd = today.getDate();
+  let ddToStr = dd.toString();
+  
+  if (dd < 10) ddToStr = '0' + dd;
+  if (mm < 10) mmToStr = '0' + mm;
+  
+  const formattedToday = dd + '/' + mm + '/' + yyyy;
+  return formattedToday;
+}
+
+function checkTime(i: any) {
+  if (i < 10) {
+    i = "0" + i;
+  }
+  return i;
+}
+
+function funcTime() {
+  var today = new Date();
+  var h = today.getHours();
+  var m = today.getMinutes();
+  var s = today.getSeconds();
+  // add a zero in front of numbers<10
+  m = checkTime(m);
+  s = checkTime(s);
+  const theTime = h + ":" + m + ":" + s;
+  return theTime;
+}
 
 builder.queryField('payments', (t) =>
   t.prismaConnection({
     type: 'Payment',
     cursor: 'id',
     resolve: (query, _parent, _args, _ctx, _info) =>
-      prisma.payment.findMany({ ...query })
+      prisma.payment.findMany({ ...query, orderBy: {createdAt: 'desc'} })
   })
 )
 
@@ -41,24 +77,92 @@ builder.queryField('payment', (t) =>
     args: {
       id: t.arg.id({ required: true })
     },
-    resolve: (query, _parent, args, _info) =>
+    resolve: (query, _parent, args, _info) => {
       prisma.payment.findUnique({
         ...query,
         where: {
           id: args.id,
         }
       })
+    }
   })
 )
 
+builder.queryField('getDatasByFilter', (t) =>
+  t.prismaConnection({
+    type: 'Payment',
+    cursor: 'id',
+    args: {
+      inputvalue: t.arg.string({ required: true })
+    },
+    resolve: (query, _parent, args, _info) => {
+      // console.log(args.inputvalue)
+      const theDatas = prisma.payment.findMany({
+        ...query,
+        where: {
+          OR: [
+            { createdYear: args.inputvalue, },
+            { name: args.inputvalue, },
+            { name: '%' + args.inputvalue + '%', },
+            { name: '\\_' + args.inputvalue, },
+            { surname: args.inputvalue, },
+            { surname: '%' + args.inputvalue + '%', },
+            { surname: '\\_' + args.inputvalue, },
+            { motif:  { name: args.inputvalue, } },
+            { motif:  { name: '%' + args.inputvalue + '%',} },
+            { motif:  { name: '\\_' + args.inputvalue,} },
+            { filiere:  { name: args.inputvalue, } },
+            { filiere:  { name: '%' + args.inputvalue + '%',} },
+            { filiere:  { name: '\\_' + args.inputvalue,} },
+            { filiere:  { sigle: args.inputvalue, } },
+            { filiere:  { sigle: '%' + args.inputvalue + '%',} },
+            { filiere:  { sigle: '\\_' + args.inputvalue,} },
+            { amount: args.inputvalue, },
+            { amount: '%' + args.inputvalue + '%', },
+            { amount: '\\_' + args.inputvalue, },
+          ],
+        },
+        orderBy: {createdAt: 'desc'}
+      })
+
+      return theDatas;
+    }
+  })
+)
+
+builder.queryField('getDatasByFilterInterval', (t) =>
+  t.prismaConnection({
+    type: 'Payment',
+    cursor: 'id',
+    args: {
+      leftSide: t.arg.string({ required: true }),
+      rightSide: t.arg.string({ required: true })
+    },
+    resolve: (query, _parent, args, _info) => {
+      // console.log(args.inputvalue)
+      const theDatas = prisma.payment.findMany({
+        ...query,
+        where: {
+          createdAt: {
+            gte: new Date(args.leftSide), // Start of date range
+            lte: new Date(args.rightSide), // End of date range
+          },
+        },
+        orderBy: {createdAt: 'desc'}
+      })
+
+      return theDatas;
+    }
+  })
+)
 
 builder.mutationField('createPayment', (t) =>
   t.prismaField({
     type: 'Payment',
     args: {
-      description: t.arg.string({ required: false }),
       name: t.arg.string({ required: true }),
       surname: t.arg.string({ required: true }),
+      description: t.arg.string({ required: false }),
       motifId: t.arg.id({ required: true }),
       filiereId: t.arg.id({ required: true }),
       amount: t.arg.string({ required: true }),
@@ -73,9 +177,9 @@ builder.mutationField('createPayment', (t) =>
     },
     resolve: async (query, _parent, args, ctx) => {
       
-      const { description, name, surname, motifId, filiereId, amount, step, createdYear, addedBy  } = args
+      const { name, surname, description, motifId, filiereId, amount, step, createdYear, addedBy  } = args
 
-
+      let author;
       const getServerSideProps: GetServerSideProps = async (context) => {
 
         let session;
@@ -116,16 +220,16 @@ builder.mutationField('createPayment', (t) =>
         // return {
         //   props: {},
         // };
+        author = user.name;
       };
 
       try {
         const getSess = await getServerSideProps(ctx);
-
       } catch (error) {
         return error;
       }
 
-      return await prisma.payment.create({
+      const thePayment = await prisma.payment.create({
         ...query,
         data: {
           name,
@@ -139,6 +243,17 @@ builder.mutationField('createPayment', (t) =>
           addedBy,
         }
       })
+
+      const addLog = await prisma.logInfo.create({
+        data : {
+          title: "Paiement ajouté",
+          description: author + " a ajouté un paiement le " + formatDate() + " à " + funcTime() + ". Le paiement est accessible au lien :",
+          link: "/payments/" + thePayment.id,
+          createdYear
+        }
+      }) 
+
+      return thePayment;
     }
   })
 )
@@ -158,8 +273,59 @@ builder.mutationField('updatePayment', (t) =>
       createdYear: t.arg.string(),
       addedBy: t.arg.string(),
     },
-    resolve: async (query, _parent, args, _ctx) =>
-      prisma.payment.update({
+    resolve: async (query, _parent, args, ctx) => {
+
+      let author;
+      const getServerSideProps: GetServerSideProps = async (context) => {
+
+        let session;
+        session = await getSession(context);
+
+        if (!session.user) {
+          throw new Error("Vous devez être connectés pour effectuer cette action");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            username: session.user?.username,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
+          }
+        })
+
+        if (!user || (user.role !== "USER" && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+          throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
+          // return 'toto est Ok'
+        }
+
+        const getUserPriorities = await prisma.userModulePriority.findMany({
+          where: {
+            userId: user.id
+          },
+          select: {
+            userId: true,
+            moduleId: true,
+            priority: true
+          },
+        })
+
+        // return {
+        //   props: {},
+        // };
+        author = user.name;
+      };
+
+      try {
+        const getSess = await getServerSideProps(ctx);
+      } catch (error) {
+        return error;
+      }
+
+      const payment = prisma.payment.update({
         ...query,
         where: {
           id: args.id,
@@ -175,7 +341,22 @@ builder.mutationField('updatePayment', (t) =>
           createdYear: args.createdYear ? args.createdYear : undefined,
           addedBy: args.addedBy ? args.addedBy : undefined,
         }
-      })
+      });
+
+      const currentYear = new Date().getFullYear();
+      const yearToString = currentYear.toString();
+      const addLog = await prisma.logInfo.create({
+        data : {
+          title: "Paiement modifié",
+          description: author + " a modifié un paiement le " + formatDate() + " à " + funcTime() + ". Le paiement est accessible au lien :",
+          link: "/payments/" + args.id,
+          createdYear: yearToString,
+        }
+      }) 
+
+      return payment;
+
+    }
   })
 )
 
@@ -194,6 +375,7 @@ builder.mutationField('sendPayment', (t) =>
     },
     resolve: async (query, _parent, args, ctx) => {
 
+      let author;
       const getServerSideProps: GetServerSideProps = async (context) => {
 
         let session;
@@ -224,7 +406,14 @@ builder.mutationField('sendPayment', (t) =>
         // return {
         //   props: {},
         // };
+        author = user.name;
       };
+      
+      try {
+        const getSess = await getServerSideProps(ctx);
+      } catch (error) {
+        return error;
+      }
 
       const payment = await prisma.payment.update({
         ...query,
@@ -232,40 +421,23 @@ builder.mutationField('sendPayment', (t) =>
           id: args.id
         },
         data: {
-          resendMotif: "",
-          rejectMotif: "",
+          resendMotif: null,
+          rejectMotif: null,
           step: "1",
           status: "ONPROCESS"
         }
       })
 
-      // const updateUserPayments = await prisma.user.update({
-      //   ...query,
-      //   where: {
-      //     id: args.userId
-      //   },
-      //   data: {
-      //     payments: {
-      //       connectOrCreate: {
-      //         where: {
-      //           id: args.id,
-      //         },
-      //         create: {
-      //           id: args.id,
-      //           name: args.name ? args.name : undefined,
-      //           surname: args.surname ? args.surname : undefined,
-      //           motifId: args.motifId ? args.motifId : undefined,
-      //           filiereId: args.filiereId ? args.filiereId : undefined,
-      //           amount: args.amount ? args.amount : undefined,
-      //           step: "1",
-      //           createdYear: args.createdYear ? args.createdYear : undefined,
-      //           rejectMotif: "",
-      //           resendMotif: "",
-      //         },
-      //       },
-      //     }
-      //   }
-      // })
+      const currentYear = new Date().getFullYear();
+      const yearToString = currentYear.toString();
+      const addLog = await prisma.logInfo.create({
+        data : {
+          title: "Paiement envoyé",
+          description: author + " a envoyé un paiement le " + formatDate() + " à " + funcTime() + ". Le paiement est accessible au lien :",
+          link: "/payments/" + payment.id,
+          createdYear: yearToString,
+        }
+      }) 
 
       return payment;
     }
@@ -284,6 +456,7 @@ builder.mutationField('rejectPayment', (t) =>
     },
     resolve: async (query, _parent, args, _ctx) => {
 
+      let author;
       const getServerSideProps: GetServerSideProps = async (context) => {
 
         let session;
@@ -347,6 +520,7 @@ builder.mutationField('rejectPayment', (t) =>
         // return {
         //   props: {},
         // };
+        author = user?.name;
       };
 
       try {
@@ -355,18 +529,31 @@ builder.mutationField('rejectPayment', (t) =>
         return error;
       }
 
-      return prisma.payment.update({
+      const payment = prisma.payment.update({
         ...query,
         where: {
           id: args.id,
         },
         data: {
           rejectMotif: args.rejectMotif ? args.rejectMotif : undefined,
-          resendMotif: "",
+          resendMotif: null,
           status: args.status ? args.status : undefined,
           step: args.step ? args.step : undefined,
         }
       })
+
+      const currentYear = new Date().getFullYear();
+      const yearToString = currentYear.toString();
+      const addLog = await prisma.logInfo.create({
+        data : {
+          title: "Paiement rejeté",
+          description: author + " a rejeté un paiement le " + formatDate() + " à " + funcTime() + ". Le paiement est accessible au lien :",
+          link: "/payments/" + args.id,
+          createdYear: yearToString,
+        }
+      }) 
+
+      return payment;
     }
   })
 )
@@ -383,6 +570,7 @@ builder.mutationField('resendPayment', (t) =>
     },
     resolve: async (query, _parent, args, _ctx) => {
 
+      let author;
       const getServerSideProps: GetServerSideProps = async (context) => {
 
         let session;
@@ -408,6 +596,7 @@ builder.mutationField('resendPayment', (t) =>
           throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
           // return 'toto est Ok'
         }
+        author = user.name;
       };
 
       try {
@@ -416,7 +605,7 @@ builder.mutationField('resendPayment', (t) =>
         return error;
       }
 
-      return prisma.payment.update({
+      const payment = prisma.payment.update({
         ...query,
         where: {
           id: args.id,
@@ -427,6 +616,20 @@ builder.mutationField('resendPayment', (t) =>
           step: args.step ? args.step : undefined,
         }
       })
+
+      const currentYear = new Date().getFullYear();
+      const yearToString = currentYear.toString();
+      const addLog = await prisma.logInfo.create({
+        data : {
+          title: "Paiement renvoyé",
+          description: author + " a renvoyé un paiement le " + formatDate() + " à " + funcTime() + ". Le paiement est accessible au lien :",
+          link: "/payments/" + args.id,
+          createdYear: yearToString,
+        }
+      }) 
+
+      return payment;
+
     }
   })
 )
@@ -443,6 +646,7 @@ builder.mutationField('validPayment', (t) =>
     },
     resolve: async (query, _parent, args, _ctx) => {
 
+      let author;
       const getServerSideProps: GetServerSideProps = async (context) => {
 
         let session;
@@ -506,6 +710,7 @@ builder.mutationField('validPayment', (t) =>
         // return {
         //   props: {},
         // };
+        author = user.name;
       };
 
       try {
@@ -514,19 +719,32 @@ builder.mutationField('validPayment', (t) =>
         return error;
       }
 
-      return prisma.payment.update({
+      const payment = prisma.payment.update({
         ...query,
         where: {
           id: args.id,
         },
         data: {
-          rejectMotif: "",
-          resendMotif: "",
+          rejectMotif: null,
+          resendMotif: null,
           status: args.status ? args.status : undefined,
           step: args.step ? args.step : undefined,
           filePath: args.filePath ? args.filePath : undefined,
         }
       })
+
+      const currentYear = new Date().getFullYear();
+      const yearToString = currentYear.toString();
+      const addLog = await prisma.logInfo.create({
+        data : {
+          title: "Paiement validé",
+          description: author + " a validé un paiement le " + formatDate() + " à " + funcTime() + ". Le paiement est accessible au lien :",
+          link: "/payments/" + args.id,
+          createdYear: yearToString,
+        }
+      }) 
+
+      return payment;
     }
   })
 )
@@ -540,7 +758,7 @@ builder.mutationField('deletePayment', (t) =>
     },
    resolve: async (query, _parent, args, _ctx) => {
 
-
+      let author;
       const getServerSideProps: GetServerSideProps = async (context) => {
 
         let session;
@@ -566,29 +784,30 @@ builder.mutationField('deletePayment', (t) =>
           throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action");
           // return 'toto est Ok'
         }
-
-        // CHECK
-        // const checkedSpent = prisma.spent.findUnique({
-        //   ...query,
-        //   where: {
-        //     id: args.id,
-        //   }
-        // });
-
-        // if(user.role === "USER") {
-        //   if(checkedSpent.addedBy !== userId) {
-        //     throw new Error("Désolé, vous n'êtes pas l'utilisateur qui a ajouté cette dépense");
-        //   }
-        // }
+        author = user.name;
       };
-
+      try {
+        const getSess = await getServerSideProps(_ctx);
+      } catch (error) {
+        return error;
+      }
       const deletedPayment = prisma.payment.delete({
         where: {
           id: args.id
         },
       });
+      
+      const currentYear = new Date().getFullYear();
+      const yearToString = currentYear.toString();
+      const addLog = await prisma.logInfo.create({
+        data : {
+          title: "Paiement supprimé",
+          description: author + " a supprimé un paiement le " + formatDate() + " à " + funcTime() + ".",
+          createdYear: yearToString,
+        }
+      }) 
 
-       return deletedPayment;
+      return deletedPayment;
 
     }
   })

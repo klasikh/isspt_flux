@@ -90,10 +90,10 @@ const PaymentAdd = () => {
 
   const [createPayment, { data, loading, error }] = useMutation(CreatePaymentMutation)
 
-  const incrementNumber = (e: any) => {
-    console.log(e.target.value)
-    return setAmountVal(e.target.value);
-  }
+  // const incrementNumber = (e: any) => {
+  //   console.log(e.target.value)
+  //   return setAmountVal(e.target.value);
+  // }
 
   const {
     register,
@@ -110,7 +110,7 @@ const PaymentAdd = () => {
     const year = new Date().getFullYear();
     const yearToString = year.toString()
     // const variables = { description, name, motifId, filiereId, amount, theStep, filePath, createdYear, }
-    const variables = { name, surname, description, motifId, filiereId, amount: amountVal, step: theStep, createdYear: yearToString, addedBy: session?.user.id }
+    const variables = { name, surname, description, motifId, filiereId, amount, step: theStep, createdYear: yearToString, addedBy: session?.user.id }
     try {
       const theAddedPayment = await toast.promise(createPayment({ variables }), {
         loading: 'Opération en cours..',
@@ -198,10 +198,8 @@ const PaymentAdd = () => {
               {...register('amount', { required: true })}
               name="amount"
               type="number" required
-              onChange ={(e) => incrementNumber(e)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               min="1"
-              value={amountVal}
             />
           </label>
         </div>

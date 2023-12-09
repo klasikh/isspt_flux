@@ -6,6 +6,7 @@ import { ExclamationTriangleIcon, ArrowLeftIcon } from '@heroicons/react/24/outl
 import { getSession, useSession } from "next-auth/react";
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
+import Router from 'next/router'
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 
 type FormValues = {
@@ -252,8 +253,42 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
 
 export default EditPayment;
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-  const id = params?.id;
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const session = await getSession(ctx);
+  const id = ctx.params?.id;
+
+  if (!session) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/auth/login',
+      },
+      props: {},
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      username: session.user?.username,
+    },
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      role: true,
+    }
+  });
+  
+  if (!user || (user?.role !== "USER" && user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN")) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/dashboard',
+      },
+      props: {},
+    };
+  }
+
   const payment = await prisma.payment.findUnique({
     where: {
       id: id
@@ -279,6 +314,28 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
   if (!payment) return {
     notFound: true
+  }
+  
+  if(session?.user.id !== payment.addedBy) {
+    toast.error("Désolé, vous ne pouvez pas modifier ce paiement");
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/dashboard',
+      },
+      props: {},
+    };
+  }
+
+  if(payment?.step !== "0") {
+    toast.error("Désolé, vous ne pouvez plus modifier ce paiement");
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/dashboard',
+      },
+      props: {},
+    };
   }
 
   return {

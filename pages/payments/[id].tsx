@@ -53,7 +53,7 @@ const RejectPaymentMutation = `
 
 const ResendPaymentMutation = `
   mutation($id: ID!, $resendMotif: String!, $userId: ID!, $status: String!, $step: String!) {
-    resendPayment(id: $id, resendMotif: $rejectMotif, userId: $userId, status: $status, step: $step,) {
+    resendPayment(id: $id, resendMotif: $resendMotif, userId: $userId, status: $status, step: $step,) {
       id
       description
       name
@@ -88,6 +88,8 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
   const [openRejectModal, setOpenRejectModal] = useState(false)
   const [openResendModal, setOpenResendModal] = useState(false)
   const [openDeletionModal, setOpenDeletionModal] = useState(false)
+  const [rejectMotifText, setRejectMotifText] = useState("")
+  const [resendMotifText, setResendMotifText] = useState("")
 
   const cancelResendButtonRef = useRef(null)
   const cancelRejectButtonRef = useRef(null)
@@ -141,16 +143,21 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
   }
 
   const resendClickPayment = () => {
-    setOpenRejectModal(true)
+    setOpenResendModal(true)
   }
 
-  const onRejectSubmit = async () => {
+  const configRejectMotif = (e: any) => {
+    setRejectMotifText(e.target.value)
+  }
+
+  const onRejectSubmit = async (e: any) => {
+    e.preventDefault();
 
     const theStep = "0";
     const theStatus = "REJECTED";
     setIsRejectLoading(true)
 
-    const variables = { id: payment.id, rejectMotif, userId: session?.user.id, status: theStatus, step: theStep }
+    const variables = { id: payment.id, rejectMotif: rejectMotifText, userId: session?.user.id, status: theStatus, step: theStep }
     try {
       setIsRejectLoading(true)
       const theRejectedPayment = await axios.post('/api/graphql', {
@@ -167,9 +174,9 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
       } else {
         toast.success('Paiement rejeté avec succès!🎉');
         if(theRejectedPayment.data.data.rejectPayment) {
+          router.push(`/payments/list`);
           setOpenRejectModal(false);
           setIsRejectLoading(false)
-          router.push(`/payments/list`)
         }
         setIsRejectLoading(false)
         setOpenRejectModal(false);
@@ -180,13 +187,18 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
     }
   }
 
-  const onResendSubmit = async () => {
+  const configResendMotif = (e: any) => {
+    setResendMotifText(e.target.value)
+  }
+
+  const onResendSubmit = async (e: any) => {
+    e.preventDefault();
     // const { id, resendMotif, userId, status, step, } = data
 
     const theStep = "1";
     const theStatus = "ONPROCESS";
 
-    const variables = { id: payment.id, resendMotif, userId: session?.user.id, status: theStatus, step: theStep }
+    const variables = { id: payment.id, resendMotif: resendMotifText, userId: session?.user.id, status: theStatus, step: theStep }
     try {
       setIsResendLoading(true)
       const theResentPayment = await axios.post('/api/graphql', {
@@ -203,9 +215,9 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
       } else {
         toast.success('Paiement renvoyé avec succès!🎉');
         if(theResentPayment.data.data.resendPayment) {
+          router.push(`/payments/list`)
           setOpenResendModal(false);
           setIsResendLoading(false)
-          router.push(`/payments/list`)
         }
         setIsResendLoading(false)
         setOpenResendModal(false);
@@ -232,9 +244,9 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
         setIsValidateLoading(false);
       } else {
         toast.success('Paiement supprimé avec succès!🎉');
+        router.push(`/payments/list`)
         setIsDeleteLoading(false);
         setOpenDeletionModal(false)
-        router.push(`/payments/list`)
       }
       setIsDeleteLoading(false);
       setOpenDeletionModal(false);
@@ -296,7 +308,7 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
             </div>
           </div>
 
-          { payment.status === "REJECTED"
+          { (payment.status === "REJECTED" || (payment.status === "ONPROCESS" && payment.resendMotif !== null))
             ? <div className="mx-4 my-2 p-4 bg-gray-300 shadow rounded-md">
                 <h4 className="font-bold text-md">Motif(s) du rejet:</h4>
                 <span className="text-sm text-gray-700">{ payment.rejectMotif }</span>
@@ -304,7 +316,7 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
             : ""
           }
 
-          { (payment.status === "ONPROCESS" && payment.resendMotif !== "")
+          { (payment.status === "ONPROCESS" && payment.resendMotif !== null)
             ? <div className="mx-4 my-2 p-4 bg-gray-300 shadow rounded-md">
                 <h4 className="font-bold text-md">Note de renvoie:</h4>
                 <span className="text-sm text-gray-700">{ payment.resendMotif }</span>
@@ -399,14 +411,14 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
                       </button>
                     </span>
                    )
-                : (payment.step === "0" && payment.addedBy === theUserSession?.user?.id && payment.resendMotif)
+                : (payment.step === "0" && payment.addedBy === theUserSession?.user?.id && payment.rejectMotif)
                 ? (
                     <span>
                       <button
                         onClick={() => resendClickPayment()}
                         className="capitalize bg-green-500 text-white font-medium px-4 py-2 rounded-md hover:bg-green-600"
                       >
-                        {isSendLoading ? (
+                        {isResendLoading ? (
                           <span className="flex items-center justify-center">
                             <svg
                               className="w-6 h-6 animate-spin mr-1"
@@ -416,7 +428,7 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
                             >
                               <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
                             </svg>
-                            Envoi...
+                            Renvoi...
                           </span>
                         ) : (
                           <span className="font-bold">Renvoyer</span>
@@ -659,15 +671,15 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
               </div>
             </div>
           </div>
-          <form className="grid grid-cols-1 gap-y-2 bg-white shadow-lg p-4 rounded-lg" onSubmit={() => (onResendSubmit)}>
-            <label htmlFor="rejectMotif" className="block mx-7">
+          <form className="grid grid-cols-1 gap-y-2 bg-white shadow-lg p-4 rounded-lg" onSubmit={onResendSubmit}>
+            <label htmlFor="resendMotif" className="block mx-7">
               {/* <span className="text-gray-700">Raison(s) du rejet</span> */}
-              <textarea id="resendMotif" rows="4" {...register('resendMotif', { required: true })} className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Raison(s)" name="rejectMotif" required></textarea>
+              <textarea id="resendMotif" rows={4} onChange={(e) => configResendMotif(e)} className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Note de renvoie" name="resendMotif" required></textarea>
             </label>
             <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
               <button
                 type="submit"
-                className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto"
               >
                 {isResendLoading ? (
                   <span className="flex items-center justify-center">
@@ -679,7 +691,7 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
                     >
                       <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
                     </svg>
-                    Rejet ...
+                    Renvoie ...
                   </span>
                 ) : (
                   <span className="font-bold">Renvoyer</span>
@@ -687,7 +699,7 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
               </button>
               <button
                 type="button"
-                className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                className="mt-3 inline-flex w-full justify-center rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-red-600 sm:mt-0 sm:w-auto"
                 onClick={() => setOpenResendModal(false)}
                 ref={cancelResendButtonRef}
               >
@@ -745,16 +757,16 @@ const Payment = ({ payment, proformaVar, }: InferGetServerSidePropsType<typeof g
                         </div>
                       </div>
                     </div>
-                    <form className="grid grid-cols-1 gap-y-2 bg-white shadow-lg p-4 rounded-lg" >
+                    <form className="grid grid-cols-1 gap-y-2 bg-white shadow-lg p-4 rounded-lg" onSubmit={onRejectSubmit} >
                       <label htmlFor="rejectMotif" className="block mx-7">
                         <span className="text-gray-700">Raison(s) du rejet</span>
-                        <textarea id="rejectMotif" rows={4} {...register('rejectMotif', { required: true })} className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Raison(s)" name="rejectMotif" required></textarea>
+                        <textarea id="rejectMotif" rows={4} onChange={(e) => configRejectMotif(e)} className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Raison(s)" name="rejectMotif" required></textarea>
                       </label>
                       <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                         <button
                           type="submit"
                           className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
-                          onClick={() => (onRejectSubmit)}
+                          // onClick={() => (onRejectSubmit)}
                         >
                           {isRejectLoading ? (
                             <span className="flex items-center justify-center">

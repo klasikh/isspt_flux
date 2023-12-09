@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { Prisma, User, UserModulePriority, Link, Module, Service, Grade, Filiere, Motif, Payment, Spent } from "@prisma/client";
+import type { Prisma, User, UserModulePriority, Link, Module, Service, Grade, Filiere, Motif, Payment, Spent, LogInfo } from "@prisma/client";
 export default interface PrismaTypes {
     User: {
         Name: "User";
@@ -193,5 +193,17 @@ export default interface PrismaTypes {
                 Types: PrismaTypes["User"];
             };
         };
+    };
+    LogInfo: {
+        Name: "LogInfo";
+        Shape: LogInfo;
+        Include: never;
+        Select: Prisma.LogInfoSelect;
+        OrderBy: Prisma.LogInfoOrderByWithRelationInput;
+        WhereUnique: Prisma.LogInfoWhereUniqueInput;
+        Where: Prisma.LogInfoWhereInput;
+        RelationName: never;
+        ListRelations: never;
+        Relations: {};
     };
 }

@@ -193,8 +193,42 @@ const EditSpent = ({ spent }: InferGetServerSidePropsType<typeof getServerSidePr
 
 export default EditSpent;
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-  const id = params?.id;
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const session = await getSession(ctx);
+  const id = ctx.params?.id;
+
+  if (!session) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/auth/login',
+      },
+      props: {},
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      username: session.user?.username,
+    },
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      role: true,
+    }
+  });
+  
+  if (!user || (user?.role !== "USER" && user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN")) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/dashboard',
+      },
+      props: {},
+    };
+  }
+
   const spent = await prisma.spent.findUnique({
     where: {
       id: id
@@ -219,6 +253,28 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
   if (!spent) return {
     notFound: true
+  }
+
+  if(session?.user.id !== spent.addedBy) {
+    toast.error("Désolé, vous ne pouvez pas modifier cette dépense");
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/dashboard',
+      },
+      props: {},
+    };
+  }
+
+  if(spent?.step !== "0") {
+    toast.error("Désolé, vous ne pouvez plus modifier cette dépense");
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/dashboard',
+      },
+      props: {},
+    };
   }
 
   return {
