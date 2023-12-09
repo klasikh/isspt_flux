@@ -35,5 +35,8 @@ export const resolvers = {
     spents: () => {
       return prisma.spent.findMany()
     },
+    logs: () => {
+      return prisma.logInfo.findMany()
+    },
   },
 }

@@ -11,6 +11,7 @@ import "./types/Module"
 import "./types/UserModulePriority"
 import "./types/Payment"
 import "./types/Spent"
+import "./types/LogInfo"
 // import { writeFileSync } from 'fs'
 // import { resolve } from 'path'
 // import { printSchema } from 'graphql'

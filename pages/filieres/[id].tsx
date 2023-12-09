@@ -58,7 +58,7 @@ const Filiere = ({ filiere }: InferGetServerSidePropsType<typeof getServerSidePr
 
 export default Filiere;
 
-export const getServerSideProps: GetServerSideProps = async ( ctx, params ) => {
+export const getServerSideProps: GetServerSideProps = async ( ctx, ) => {
     const id = ctx.params?.id;
     const session = await getSession(ctx);
 

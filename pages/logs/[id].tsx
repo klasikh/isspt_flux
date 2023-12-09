@@ -11,14 +11,14 @@ import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 
-const Grade = ({ grade }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const LogInfo = ({ logInfo }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
   const router = useRouter();
 
   return (
     <div>
       <Head>
-        <title>Informations d'un grade</title>
+        <title>Informations d'un log</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="container mx-auto max-w-lg">
@@ -33,20 +33,29 @@ const Grade = ({ grade }: InferGetServerSidePropsType<typeof getServerSideProps>
                 Retour
             </button>
             <Link
-                href="/grades/list"
+                href="/logs/list"
                 className="bg-blue-500 text-white font-bold px-4 py-2 mb-6 rounded-md hover:bg-gray-600 float-right right-0 ml-auto"
             >
-                Liste des grades
+                Liste des logs
             </Link>
         </div>
-        <h1 className="text-2xl font-bold mb-3 uppercase text-center">Informations du grade</h1>
+        <h1 className="text-2xl font-bold mb-3 uppercase text-center">Informations du log</h1>
         <div className="w-full bg-white rounded overflow-hidden shadow-lg">
           <div className="px-6 py-4">
-            <div className="font-bold text-xl mb-4 block bg-gray-600 p-1 text-white">Nom: {grade.name}</div>
+            <div className="font-bold text-xl mb-4 block bg-gray-600 p-1 text-white">Titre: {logInfo.title}</div>
             <div className="font-bold text-xl block bg-gray-600 p-1 text-white">Description</div>
             <div className="text-gray-700 mb-4 text-base block bg-gray-300 p-2">
-              <span>{grade.description}</span>
+              <span>{logInfo.description}</span>
             </div>
+            { 
+                logInfo.link 
+                ? (
+                    <div className="">
+                        <Link href={logInfo.link} className="bg-green-500 rounded-lg shadow-lg p-2 text-white my-4">Lien de l'élément</Link>
+                    </div>
+                    )
+                : ""
+            }
           </div>
         </div>
 
@@ -55,9 +64,9 @@ const Grade = ({ grade }: InferGetServerSidePropsType<typeof getServerSideProps>
   );
 };
 
-export default Grade;
+export default LogInfo;
 
-export const getServerSideProps: GetServerSideProps = async ( ctx, ) => {
+export const getServerSideProps: GetServerSideProps = async ( ctx ) => {
     const id = ctx.params?.id;
     const session = await getSession(ctx);
 
@@ -93,24 +102,26 @@ export const getServerSideProps: GetServerSideProps = async ( ctx, ) => {
         };
     }
 
-    const grade = await prisma.grade.findUnique({
+    const logInfo = await prisma.logInfo.findUnique({
         where: {
             id: id
         },
         select: {
             id: true,
-            name: true,
+            title: true,
             description: true,
+            link: true,
+            createdYear: true,
         },
     });
 
-    if (!grade) return {
+    if (!logInfo) return {
         notFound: true
     }
 
     return {
         props: {
-            grade,
+            logInfo,
         },
     };
 };

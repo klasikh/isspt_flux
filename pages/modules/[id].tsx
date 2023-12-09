@@ -57,7 +57,7 @@ const Module = ({ moduled }: InferGetServerSidePropsType<typeof getServerSidePro
 
 export default Module;
 
-export const getServerSideProps: GetServerSideProps = async ( ctx, params ) => {
+export const getServerSideProps: GetServerSideProps = async ( ctx, ) => {
     const id = ctx.params?.id;
     const session = await getSession(ctx);
 

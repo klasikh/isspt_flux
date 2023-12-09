@@ -25,7 +25,7 @@ import {
   Progress,
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon, } from "@heroicons/react/24/outline";
-import axios, { all } from "axios";
+import axios from "axios";
 
 const AllSpentsQuery = `
   query MyQuery {

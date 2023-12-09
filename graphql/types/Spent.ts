@@ -314,7 +314,7 @@ builder.mutationField('updateSpent', (t) =>
     };
 
     try {
-      const getSess = await getServerSideProps(ctx);
+      const getSess = await getServerSideProps(_ctx);
     } catch (error) {
       return error;
     }
@@ -697,6 +697,12 @@ builder.mutationField('deleteSpent', (t) =>
         }
         author = user.name;
       };
+
+      try {
+        const getSess = await getServerSideProps(_ctx);
+      } catch (error) {
+        return error;
+      }
 
       const deletedSpent = prisma.spent.delete({
         where: {

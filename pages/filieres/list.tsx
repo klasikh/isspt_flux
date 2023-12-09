@@ -113,7 +113,7 @@ const FilieresList = ({ filieres }: InferGetServerSidePropsType<typeof getServer
             <Card>
               <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
                 <Typography variant="h6" color="white">
-                  Filière ({filieres.length})
+                  Filières ({filieres.length})
                 </Typography>
               </CardHeader>
               <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">

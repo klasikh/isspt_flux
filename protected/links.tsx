@@ -10,6 +10,7 @@ import {
   UserPlusIcon,
   DocumentTextIcon,
   BanknotesIcon,
+  AdjustmentsHorizontalIcon
 } from "@heroicons/react/24/solid";
 import { Home, } from "../pages/dashboard/home";
 import { Dashboard, } from "../pages/dashboard";
@@ -28,6 +29,7 @@ import PaymentsList from "../pages/payments/list";
 import PaymentAdd from "../pages/payments/add";
 import SpentsList from "../pages/spents/list";
 import SpentAdd from "../pages/spents/add";
+import LogsList from "../pages/logs/list";
 
 // import { Home, Profile, Tables, Notifications } from "../pages/dashboard";
 
@@ -223,6 +225,20 @@ export const routes = [
         path: "/spents/add",
         element: <SpentAdd />,
         module:"SPENT"
+      },
+    ]
+  },
+  {
+    title: "Logs",
+    layout: "dashboard",
+    number: 10,
+    role: "ADMIN",
+    pages: [
+      {
+        icon: <AdjustmentsHorizontalIcon {...icon} />,
+        name: "Liste des logs",
+        path: "/logs/list",
+        element: <LogsList />,
       },
     ]
   },

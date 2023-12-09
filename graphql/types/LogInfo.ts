@@ -8,9 +8,9 @@ builder.prismaObject('LogInfo', {
   fields: (t) => ({
     id: t.exposeID('id'),
     title: t.exposeString('title'),
-    description: t.exposeString('description'),
-    link: t.exposeString('link'),
-    createdYear: t.relation('createdYear')
+    description: t.exposeString('description', { nullable: true, }),
+    link: t.exposeString('link', { nullable: true, }),
+    createdYear: t.exposeString('createdYear', { nullable: true, })
   }),
 })
 
@@ -40,8 +40,7 @@ builder.queryField('logInfo', (t) =>
   })
 )
 
-
-builder.queryField('getLogInfoDatasByFilter', (t) =>
+builder.queryField('getLogInfosDatasByFilter', (t) =>
   t.prismaConnection({
     type: 'LogInfo',
     cursor: 'id',
@@ -71,7 +70,7 @@ builder.queryField('getLogInfoDatasByFilter', (t) =>
   })
 )
 
-builder.queryField('getLogInfoDatasByFilterInterval', (t) =>
+builder.queryField('getLogInfosDatasByFilterInterval', (t) =>
   t.prismaConnection({
     type: 'LogInfo',
     cursor: 'id',
