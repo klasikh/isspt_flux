@@ -122,6 +122,10 @@ const EditUserModulePriority = ({ userModuled }: InferGetServerSidePropsType<typ
       value: "APPROV_REJECT"
     },
     {
+      name: "Créer, approuver, rejeter",
+      value: "C_R_U_APPROV_REJECT"
+    },
+    {
       name: "Tous les privilèges",
       value: "C_R_UPDATE_DELETE"
     },

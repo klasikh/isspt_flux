@@ -122,9 +122,9 @@ const EditSpent = ({ spent }: InferGetServerSidePropsType<typeof getServerSidePr
           <textarea id="description" rows="4" {...register('description', { required: true })} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description de la dépense" name="description"></textarea>
         </label>
         <label className="block">
-          <span className="text-gray-700">Nom du matériel</span>
+          <span className="text-gray-700">Nom du bénéficiaire</span>
           <input
-            placeholder="Nom du matériel"
+            placeholder="Nom du bénéficiaire"
             {...register('name', { required: true })}
             name="name"
             type="text" required

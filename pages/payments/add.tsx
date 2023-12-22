@@ -289,7 +289,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   })
 
   if(getUserPriorities[0] && getUserPriorities[0]?.module?.name === "PAIEMENT") {
-    if(getUserPriorities[0].priority !== "CREATE" && getUserPriorities[0].priority !== "CREATE_READ" && getUserPriorities[0].priority !== "C_READ_UPDATE" && getUserPriorities[0].priority !== "C_READ_DELETE" && getUserPriorities[0].priority !== "C_R_UPDATE_DELETE") {
+    if(getUserPriorities[0].priority !== "CREATE" && getUserPriorities[0].priority !== "CREATE_READ" && getUserPriorities[0].priority !== "C_READ_UPDATE" && getUserPriorities[0].priority !== "C_READ_DELETE" && getUserPriorities[0].priority !== "C_R_UPDATE_DELETE" && getUserPriorities[0].priority !== "C_R_U_APPROV_REJECT") {
 
       toast.error("Vous n'avez pas les permissions requises pour effectuer cette action.");
       return {

@@ -901,7 +901,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   let proformaVar = false;
   
   if(getUserProformaProp[0] && getUserProformaProp[0]?.module?.name === "PAIEMENT") {
-    if(getUserProformaProp[0].priority !== "APPROV_REJECT" && getUserProformaProp[0].priority !== "R_UPDATE_DELETE" && getUserProformaProp[0].priority !== "C_R_UPDATE_DELETE") {
+    if(getUserProformaProp[0].priority !== "APPROV_REJECT" && getUserProformaProp[0].priority !== "R_UPDATE_DELETE" && getUserProformaProp[0].priority !== "C_R_UPDATE_DELETE" && getUserProformaProp[0].priority !== "C_R_U_APPROV_REJECT") {
       proformaVar = false;
     } else {
       proformaVar = true

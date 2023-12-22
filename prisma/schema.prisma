@@ -50,6 +50,7 @@ enum Priority {
   C_R_UPDATE_DELETE
   R_UPDATE_DELETE
   APPROV_REJECT
+  C_R_U_APPROV_REJECT
 }
 
 model UserModulePriority {

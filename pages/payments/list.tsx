@@ -1,6 +1,6 @@
 // /pages/index.tsx
 import Head from "next/head";
-import { useState, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { gql, useQuery, useMutation } from "@apollo/client";
 import { AwesomeLink } from "../../components/AwesomeLink";
 import type { Link as Node } from "@prisma/client";
@@ -24,8 +24,13 @@ import {
   Tooltip,
   Progress,
 } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon, } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon, ArrowsUpDownIcon, } from "@heroicons/react/24/outline";
 import axios from "axios";
+// import { useTable } from "react-table";
+import DataTable from "react-data-table-component";
+import { CSVLink } from "react-csv";
+import { useReactToPrint } from 'react-to-print';
+import { DownloadTableExcel } from 'react-export-table-to-excel';
 
 const AllPaymentsQuery = `
   query MyQuery {
@@ -108,6 +113,72 @@ query($leftSide: String!, $rightSide: String!) {
 }
 `;
 
+const statusRender = (node: any) => {
+  return (
+    <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="text-xs font-medium text-blue-gray-600"
+                                >
+                                  <span className={
+                                      node.status === "CREATED"
+                                      ? "inline-block bg-gray-400 rounded-full px-3 py-1 text-xs font-semibold text-gray-900 mr-2 mb-2"
+                                      : node.status === "CANCELED"
+                                      ? "inline-block bg-black rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
+                                      : node.status === "ONPROCESS"
+                                      ? "inline-block bg-yellow-500 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 mr-2 mb-2"
+                                      : node.status === "APPROVED"
+                                      ? "inline-block bg-green-500 rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
+                                      : node.status === "REJECTED"
+                                      ? "inline-block bg-red-500 rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
+                                      : ""
+                                    }
+                                  >
+                                    {
+                                      node.status === "CREATED"
+                                      ? "En attente"
+                                      : node.status === "CANCELED"
+                                      ? "Annuler"
+                                      : node.status === "ONPROCESS"
+                                      ? "Traitement..."
+                                      : node.status === "APPROVED"
+                                      ? "Approuvé"
+                                      : node.status === "REJECTED"
+                                      ? "Rejeté"
+                                      : ""
+                                    }
+                                  </span>
+                                </Typography>
+  );
+}
+
+const actionButtons = (node: any) => {
+  const {data:session}=useSession();
+  const theUserSession = session;
+  return (
+    <Typography
+                                className="text-xs font-semibold text-blue-gray-600"
+                              >
+                                <Link href={`/payments/${node.id}`}>
+                                  <IconButton variant="text" color="white" className="text-sm bg-gray-600 hover:bg-gray-400">
+                                    <EyeIcon className="h-5 w-5 text-white-500" />
+                                  </IconButton>
+                                </Link>
+                                {
+                                  ((node.status === "CREATED" || node.status === "CANCELED"|| node.status === "REJECTED") && node.addedBy === theUserSession?.user?.id)
+                                  ?
+                                    (
+                                      <Link href={`/payments/edit/${node.id}`}>
+                                        <IconButton variant="text" color="white" className="text-sm bg-blue-600 hover:bg-blue-400 mx-3">
+                                          <PencilIcon className="h-5 w-5 text-white-500" />
+                                        </IconButton>
+                                      </Link>
+                                    )
+                                  : ""
+                                }
+                              </Typography>
+  )
+}
 
 const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
@@ -323,6 +394,82 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
     fetchTheDatas();
   }
 
+  // Contains the column headers and table data in the required format for CSV
+  const csvData = [
+    ["Name", "Username", "Email", "Phone", "Website"],
+    ...currentPosts.map(({node}: {node: any}) => [
+      node.name,
+      node.surname,
+      node.amount,
+      node.status,
+    ]),
+  ];
+
+  const componentRef = useRef<any>();
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
+  
+  const columns = [
+    {
+      id: 1,
+      name: "Nom",
+      selector: ({node}: {node: any}) => node.name,
+      sortable: true,
+      reorder: true
+    },
+    {
+      id: 2,
+      name: "Prénoms",
+      selector: ({node}: {node: any}) => node.surname,
+      sortable: true,
+      reorder: true
+    },
+    {
+      id: 3,
+      name: "Motif",
+      selector: ({node}: {node: any}) => node.motif?.name,
+      sortable: true,
+      reorder: true
+    },
+    {
+      id: 4,
+      name: "Montant",
+      selector: ({node}: {node: any}) => node.amount,
+      sortable: true,
+      right: true,
+      reorder: true
+    },
+    {
+      id: 5,
+      name: "Status",
+      selector: ({node}: {node: any}) => statusRender(node),
+      sortable: false,
+      reorder: true
+    },
+    {
+      id: 6,
+      name: "Action",
+      selector: ({node}: {node: any}) => actionButtons(node),
+      sortable: false,
+      right: true,
+      reorder: true
+    }
+  ];
+  
+  const paginationComponentOptions = {
+    rowsPerPageText: "Lignes par page",
+    rangeSeparatorText: "de",
+    selectAllRowsItem: true,
+    selectAllRowsItemText: "Tout"
+  };
+
+  // const contextMessage = {
+  //   singular: "",
+  //   plural: "",
+  //   message: "Aucun"
+  // }
+
   return (
     <div>
       <Head>
@@ -349,7 +496,10 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
               </select>
             </div>
             <div className="">
-              <input type="text" id="textInput" placeholder="Nom / motif / filière / montant" className="-mt-2 rounded-md mx-5" onChange={ (e) => filterByYearNameAndOthers(e) } />
+              <input type="text" id="textInput" placeholder="Nom ou prénoms" className="-mt-2 rounded-md mx-5" onChange={ (e) => filterByYearNameAndOthers(e) } />
+            </div>
+            <div className="">
+              <input type="text" id="textInput" placeholder="Motif" className="-mt-2 rounded-md mx-5" onChange={ (e) => filterByYearNameAndOthers(e) } />
             </div>
           </div>
           <div className="flex space-x-1 mb-10 ml-10">
@@ -363,9 +513,6 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
                 max={ formatDate(currentDate) }
               />
               <span>et</span>
-              {
-                intervalLeftSide 
-                ? (
                     <input 
                       type="date" 
                       className={
@@ -379,11 +526,6 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
                       placeholder={ formatDate(currentDate) }
                       disabled={!intervalLeftSide} 
                     />
-                )
-                : (
-                  <span className="mx-4">Aujourd'hui</span>
-                )
-              }
             </div>
             <div className="float-right right-0 mx-auto">
               <button 
@@ -399,6 +541,27 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
               </button>
             </div>
           </div>
+          <div className="mb-10">
+            {/* Export Buttons Start */}
+            <span className="mr-5">
+            <DownloadTableExcel
+                    filename="liste_des_paiements"
+                    sheet="users"
+                    currentTableRef={componentRef.current}
+                >
+
+                   <button> Export excel </button>
+
+                </DownloadTableExcel>
+            </span>
+            <span className="mr-5">
+              <CSVLink className="" filename="liste_des_paiements.csv" data={csvData}>
+                Export to CSV
+              </CSVLink>
+            </span>
+            <button onClick={handlePrint} type="button" > Export to PDF </button>
+            {/* Export Buttons End */}
+          </div>
           <Card>
             <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
               <Typography variant="h6" color="white">
@@ -406,130 +569,25 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
               </Typography>
             </CardHeader>
             <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-              <table className="w-full min-w-[640px] table-auto">
-                <thead>
-                  <tr>
-                    {["nom de l'étudiant", "motif", "montant", "status", "action",].map(
-                      (el) => (
-                        <th
-                          key={el}
-                          className="border-b border-blue-gray-50 py-3 px-5 text-left"
-                        >
-                          <Typography
-                            variant="small"
-                            className="text-[11px] font-bold uppercase text-blue-gray-400"
-                          >
-                            {el}
-                          </Typography>
-                        </th>
-                      )
-                    )}
-                  </tr>
-                </thead>
-                { !loading &&
-                      currentPosts?.map(({node}: {node: any}) => (
-                      <tbody>
-                          <tr key={node.id}>
-                            <td className={`py-3 px-5`}>
-                              <div className="flex items-center gap-4">
-                                <Typography
-                                  variant="small"
-                                  color="blue-gray"
-                                  className="font-bold"
-                                >
-                                  {node.name + " " + node.surname}
-                                </Typography>
-                              </div>
-                            </td>
-                            <td className={`py-3 px-5`}>
-                              <div className="flex items-center gap-4">
-                                <Typography
-                                  variant="small"
-                                  color="blue-gray"
-                                  className="font-bold"
-                                >
-                                  {node.motif?.name}
-                                </Typography>
-                              </div>
-                            </td>
-                            <td className={`py-3 px-5`}>
-                              <div className="flex items-center gap-4">
-                                <Typography
-                                  variant="small"
-                                  color="blue-gray"
-                                  className="font-bold"
-                                >
-                                  {node.amount}
-                                </Typography>
-                              </div>
-                            </td>
-                            <td className={`py-3 px-5`}>
-                              <div className="flex items-center gap-4">
-                                <Typography
-                                  variant="small"
-                                  color="blue-gray"
-                                  className="text-xs font-medium text-blue-gray-600"
-                                >
-                                  <span className={
-                                      node.status === "CREATED"
-                                      ? "inline-block bg-gray-400 rounded-full px-3 py-1 text-xs font-semibold text-gray-900 mr-2 mb-2"
-                                      : node.status === "CANCELED"
-                                      ? "inline-block bg-black rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
-                                      : node.status === "ONPROCESS"
-                                      ? "inline-block bg-yellow-500 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 mr-2 mb-2"
-                                      : node.status === "APPROVED"
-                                      ? "inline-block bg-green-500 rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
-                                      : node.status === "REJECTED"
-                                      ? "inline-block bg-red-500 rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
-                                      : ""
-                                    }
-                                  >
-                                    {
-                                      node.status === "CREATED"
-                                      ? "En attente"
-                                      : node.status === "CANCELED"
-                                      ? "Annuler"
-                                      : node.status === "ONPROCESS"
-                                      ? "Traitement..."
-                                      : node.status === "APPROVED"
-                                      ? "Approuvé"
-                                      : node.status === "REJECTED"
-                                      ? "Rejeté"
-                                      : ""
-                                    }
-                                  </span>
-                                </Typography>
-                              </div>
-                            </td>
-                            <td className={`py-3 px-5`}>
-                              <Typography
-                                className="text-xs font-semibold text-blue-gray-600"
-                              >
-                                <Link href={`/payments/${node.id}`}>
-                                  <IconButton variant="text" color="white" className="text-sm bg-gray-600 hover:bg-gray-400">
-                                    <EyeIcon className="h-5 w-5 text-white-500" />
-                                  </IconButton>
-                                </Link>
-                                {
-                                  ((node.status === "CREATED" || node.status === "CANCELED"|| node.status === "REJECTED") && node.addedBy === theUserSession?.user?.id)
-                                  ?
-                                    (
-                                      <Link href={`/payments/edit/${node.id}`}>
-                                        <IconButton variant="text" color="white" className="text-sm bg-blue-600 hover:bg-blue-400 mx-3">
-                                          <PencilIcon className="h-5 w-5 text-white-500" />
-                                        </IconButton>
-                                      </Link>
-                                    )
-                                  : ""
-                                }
-                              </Typography>
-                            </td>
-                          </tr>
-                        </tbody>
-                      )
-                    )
-                }
-              </table>
+              <div className="" ref={componentRef}>
+                { !loading && (
+                  <table>
+
+                    <DataTable
+                    title=""
+                    columns={columns}
+                    data={currentPosts}
+                    defaultSortFieldId={1}
+                    sortIcon={<ArrowsUpDownIcon />}
+                    // contextMessage={contextMessage}
+                    noDataComponent="Aucune donnée à afficher"
+                    pagination
+                    paginationComponentOptions={paginationComponentOptions}
+                    selectableRows
+                  />
+                  </table>
+                )}
+              </div>
               {
                 loading && (
                   <div className="flex text-center justify-center items-center mx-auto flex-wrap">
@@ -540,12 +598,12 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
               { noDataResponse &&
                   <div className="text-center mt-5">{noDataResponse}</div>
               }
-              <PaginationNew
+              {/* <PaginationNew
                 postsPerPage={postsPerPage}
                 totalPosts={allPayments?.length}
                 paginate={paginate}
                 currentPage={currentPage}
-              />
+              /> */}
               {/* <div className="text-center items-center justify-center w-1/3 mx-auto">
 
                 <Pagination />
@@ -651,7 +709,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   })
 
   if(getUserPriorities[0] && getUserPriorities[0]?.module?.name === "PAIEMENT") {
-    if(getUserPriorities[0].priority !== "READ" && getUserPriorities[0].priority !== "CREATE_READ" && getUserPriorities[0].priority !== "C_READ_UPDATE" && getUserPriorities[0].priority !== "C_READ_DELETE" && getUserPriorities[0].priority !== "C_R_UPDATE_DELETE" && getUserPriorities[0].priority !== "R_UPDATE_DELETE") {
+    if(getUserPriorities[0].priority !== "READ" && getUserPriorities[0].priority !== "CREATE_READ" && getUserPriorities[0].priority !== "C_READ_UPDATE" && getUserPriorities[0].priority !== "C_READ_DELETE" && getUserPriorities[0].priority !== "C_R_UPDATE_DELETE" && getUserPriorities[0].priority !== "R_UPDATE_DELETE" && getUserPriorities[0].priority !== "C_R_U_APPROV_REJECT") {
 
       toast.error("Vous n'avez pas les permissions requises pour effectuer cette action.");
       return {

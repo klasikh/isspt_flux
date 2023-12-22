@@ -506,7 +506,7 @@ builder.mutationField('rejectPayment', (t) =>
         if(getUserPriorities) {
           for(let i=0; i<getUserPriorities.length; i++) {
             if(getUserPriorities[i].module?.name === "PAIEMENT") {
-              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "APPROV_REJECT" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
+              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "APPROV_REJECT" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_U_APPROV_REJECT")) {
                 throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action.")
               }
             } else {
@@ -696,7 +696,7 @@ builder.mutationField('validPayment', (t) =>
         if(getUserPriorities) {
           for(let i=0; i<getUserPriorities.length; i++) {
             if(getUserPriorities[i].module?.name === "PAIEMENT") {
-              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "APPROV_REJECT" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE")) {
+              if(!getUserPriorities[i] || (getUserPriorities[i].priority !== "UPDATE" && getUserPriorities[i].priority !== "APPROV_REJECT" && getUserPriorities[i].priority !== "R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_UPDATE_DELETE" && getUserPriorities[i].priority !== "C_R_U_APPROV_REJECT")) {
                 throw new Error("Vous n'avez pas les permissions requises pour effectuer cette action.")
               }
             } else {
