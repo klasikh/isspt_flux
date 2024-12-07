@@ -34,6 +34,7 @@ import {
   ordersOverviewData,
 } from "../../data";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
+import prisma from '../lib/prisma'
 
 const Dashboard = ({ user, paymentVar, depenseVar }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
