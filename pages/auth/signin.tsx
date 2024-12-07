@@ -77,7 +77,7 @@ const SignIn = () => {
     }
 
     useEffect(() => {
-        if(status === "authenticated") {
+        if(status && status === "authenticated") {
             // router.refresh();
             router.push('/dashboard');
         }
@@ -96,7 +96,7 @@ const SignIn = () => {
                                 className="bg-[#1a1930] text-center justify-center mb-4 grid h-28 place-items-center"
                             >
                                 <div className="d-flex">
-                                    <img
+                                    <Image
                                         src="/images/logo.png"
                                         alt=""
                                         className="h-12 rounded mx-auto"

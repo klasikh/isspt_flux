@@ -4,6 +4,7 @@ import type { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getSession, useSession } from "next-auth/react"
+import Image from "next/image";
 import toast, { Toaster } from 'react-hot-toast';
 import { XMarkIcon, LifebuoyIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import {
@@ -38,7 +39,8 @@ function Icon({ id, open }: { id: any, open: any }) {
     </svg>
   );
 }
-const Sidenav = ({ user, routes, proformaVar }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+
+export function Sidenav ({ user, routes, proformaVar }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
   const location = usePathname();
   // console.log(proformaVar)
@@ -71,7 +73,7 @@ const Sidenav = ({ user, routes, proformaVar }: InferGetServerSidePropsType<type
         }`}
       >
         <Link href="/" className="flex items-center gap-4 py-6 px-8">
-          <img src="/images/logo.png" alt="" className="h-12 rounded" />
+          <Image src="/images/logo.png" alt="" className="h-12 rounded" />
           <Typography
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}

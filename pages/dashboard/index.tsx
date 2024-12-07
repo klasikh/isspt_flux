@@ -210,7 +210,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     }
   });
 
-  if (!user || (user?.role !== "USER" && user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN")) {
+  if (!user || (user && user?.role !== "USER" && user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN")) {
     return {
       redirect: {
         permanent: false,
