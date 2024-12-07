@@ -5,10 +5,12 @@ import { IconButton } from "@material-tailwind/react";
 import {
 //   DashboardNavbar,
 //   Configurator,
+  DashboardNavbar,
+  Sidenav,
   Footer,
 } from "./widgets/layout";
-import Sidenav from "./widgets/layout/Sidenav"
-import DashboardNavbar from "./widgets/layout/dashboard-navbar"
+// import Sidenav from "./widgets/layout/Sidenav"
+// import DashboardNavbar from "./widgets/layout/dashboard-navbar"
 import { useMaterialTailwindController, setOpenConfigurator } from "../context";
 import Link from "next/link";
 
