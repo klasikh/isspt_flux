@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation"
+import Image from "next/image";
 
 const HomePage = () => {
     const router = useRouter();
@@ -23,7 +24,7 @@ const HomePage = () => {
     return ( 
       <>
         <div className="text-center justify-center items-center flex min-h-screen bg-gray-100">
-          <img src="/images/spinner.gif" alt="" className="w-14 h-14 text-center justify-center items-center bg-none" />
+          <Image src="/images/spinner.gif" alt="" className="w-14 h-14 text-center justify-center items-center bg-none" />
         </div>
       </>
     );
