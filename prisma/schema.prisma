@@ -1,0 +1,189 @@
+datasource db {
+  provider     = "mysql"
+  url          = "mysql://univergicieluser:00000000@213.210.20.64:3310/univergicieldb"
+  relationMode = "prisma"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator pothos {
+  provider = "prisma-pothos-types"
+  clientOutput = "@prisma/client"
+  output = "./pothos-types.ts"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String?
+  username  String   @unique
+  image     String?
+  gradeId   String
+  role      Role     @default(USER)
+  password  String
+  bookmarks Link[]
+  payments Payment[]
+  spents Spent[]
+  userModulesPriorities UserModulePriority[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  grade Grade @relation(fields: [gradeId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Priority {
+  NONE
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  CREATE_READ
+  C_READ_UPDATE
+  C_READ_DELETE
+  C_R_UPDATE_DELETE
+  R_UPDATE_DELETE
+  APPROV_REJECT
+  C_R_U_APPROV_REJECT
+}
+
+model UserModulePriority {
+  id        String      @id @default(uuid())
+  userId    String
+  moduleId  String
+  priority  Priority @default(NONE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  module Module @relation(fields: [moduleId], references: [id])
+}
+
+model Link {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  url         String
+  imageUrl    String
+  category    String
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Module {
+  id          String      @id @default(uuid())
+  name        String   @unique
+  description String
+  userModulesPriorities UserModulePriority[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Service {
+  id          String      @id @default(uuid())
+  name        String   @unique
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Grade {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  users User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Status {
+  CREATED
+  CANCELED
+  ONPROCESS
+  APPROVED
+  REJECTED
+}
+
+model Filiere {
+  id          String   @id @default(uuid())
+  sigle       String   @unique
+  name        String   @unique
+  description String
+  payments Payment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Motif {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  payments Payment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Payment {
+  id           String      @id @default(uuid())
+  description  String?
+  name         String
+  surname      String
+  filiereId    String
+  motifId      String
+  amount       String
+  step         String
+  status       Status @default(CREATED)
+  filePath       String?
+  createdYear  String
+  addedBy      String
+  rejectMotif  String?
+  resendMotif  String?
+  isNotified    Boolean @default(false)
+  fromId         String?
+  toId           String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  filiere Filiere @relation(fields: [filiereId], references: [id])
+  motif Motif @relation(fields: [motifId], references: [id])
+  user User @relation(fields: [addedBy], references: [id])
+}
+
+model Spent {
+  id           String      @id @default(uuid())
+  title        String
+  description  String?
+  nature         String?
+  name    String?
+  motif      String
+  amount        String
+  step         String
+  status       Status @default(CREATED)
+  createdYear        String
+  addedBy      String
+  rejectMotif      String?
+  isNotified    Boolean @default(false)
+  fromId         String?
+  toId           String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [addedBy], references: [id])
+}
+
+model LogInfo {
+  id           String      @id @default(uuid())
+  title        String
+  description  String?
+  link         String?
+  createdYear  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
