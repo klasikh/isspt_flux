@@ -3,6 +3,7 @@ import { builder } from "../builder";
 import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
 import { NextResponse } from "next/server";
+import prisma from '../../lib/prisma';
 
 builder.prismaObject('Spent', {
   fields: (t) => ({
