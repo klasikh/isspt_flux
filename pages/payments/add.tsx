@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import type { GetServerSideProps } from 'next'
 import { ExclamationTriangleIcon, ArrowLeftIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/outline'
 import { getSession, useSession } from "next-auth/react"
+import prisma from '../../lib/prisma'
 
 type FormValues = {
   name: string;

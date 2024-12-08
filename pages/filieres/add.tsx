@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import toast, { Toaster } from 'react-hot-toast'
 import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
+import prisma from '../../lib/prisma'
 
 type FormValues = {
   sigle: string;

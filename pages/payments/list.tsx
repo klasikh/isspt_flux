@@ -12,6 +12,7 @@ import Link from "next/link";
 import Pagination from "../../components/Pagination";
 import PaginationNew from "../../components/PaginationNew";
 // import { useUser } from "@auth0/nextjs-auth0/client";
+import prisma from '../../lib/prisma';
 import {
   Button,
   Card,

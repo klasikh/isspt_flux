@@ -9,6 +9,7 @@ import toast, { Toaster } from 'react-hot-toast'
 import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
 import axios from "axios";
+import prisma from '../../lib/prisma';
 
 type FormValues = {
   userId: string;

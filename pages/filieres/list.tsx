@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import axios from "axios";
 import PaginationNew from "../../components/PaginationNew";
+import prisma from '../../lib/prisma'
 
 import {
   Button,
