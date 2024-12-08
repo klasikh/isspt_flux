@@ -13,6 +13,7 @@ import Pagination from "../../components/Pagination";
 import PaginationNew from "../../components/PaginationNew";
 // import { useUser } from "@auth0/nextjs-auth0/client";
 import prisma from '../../lib/prisma';
+import Image from "next/image";
 import {
   Button,
   Card,
@@ -60,96 +61,96 @@ const AllPaymentsQuery = `
   }
 `;
 
-const GetDatasByFilter = `
-  query($inputvalue: String!) {
-    getDatasByFilter(inputvalue: $inputvalue) {
-      edges {
-        node {
-          id
-          name
-          surname
-          description
-          motifId
-          motif{
-            name
-            description
-          }
-          filiere {
-            name
-            description
-          }
-          amount
-          status
-          step
-        }
-      }
-    }
-  }
-`;
-
-const GetDatasByFilterInterval = `
-query($leftSide: String!, $rightSide: String!) {
-  getDatasByFilterInterval(leftSide: $leftSide, rightSide: $rightSide) {
-    edges {
-      node {
-        id
-        name
-        surname
-        description
-        motifId
-        motif{
-          name
-          description
-        }
-        filiere {
-          name
-          description
-        }
-        amount
-        status
-        step
-      }
-    }
-  }
-}
-`;
+// const GetDatasByFilter = `
+//   query($inputvalue: String!) {
+//     getDatasByFilter(inputvalue: $inputvalue) {
+//       edges {
+//         node {
+//           id
+//           name
+//           surname
+//           description
+//           motifId
+//           motif{
+//             name
+//             description
+//           }
+//           filiere {
+//             name
+//             description
+//           }
+//           amount
+//           status
+//           step
+//         }
+//       }
+//     }
+//   }
+// `;
+//
+// const GetDatasByFilterInterval = `
+// query($leftSide: String!, $rightSide: String!) {
+//   getDatasByFilterInterval(leftSide: $leftSide, rightSide: $rightSide) {
+//     edges {
+//       node {
+//         id
+//         name
+//         surname
+//         description
+//         motifId
+//         motif{
+//           name
+//           description
+//         }
+//         filiere {
+//           name
+//           description
+//         }
+//         amount
+//         status
+//         step
+//       }
+//     }
+//   }
+// }
+// `;
 
 const statusRender = (node: any) => {
   return (
     <Typography
-                                  variant="small"
-                                  color="blue-gray"
-                                  className="text-xs font-medium text-blue-gray-600"
-                                >
-                                  <span className={
-                                      node.status === "CREATED"
-                                      ? "inline-block bg-gray-400 rounded-full px-3 py-1 text-xs font-semibold text-gray-900 mr-2 mb-2"
-                                      : node.status === "CANCELED"
-                                      ? "inline-block bg-black rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
-                                      : node.status === "ONPROCESS"
-                                      ? "inline-block bg-yellow-500 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 mr-2 mb-2"
-                                      : node.status === "APPROVED"
-                                      ? "inline-block bg-green-500 rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
-                                      : node.status === "REJECTED"
-                                      ? "inline-block bg-red-500 rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
-                                      : ""
-                                    }
-                                  >
-                                    {
-                                      node.status === "CREATED"
-                                      ? "En attente"
-                                      : node.status === "CANCELED"
-                                      ? "Annuler"
-                                      : node.status === "ONPROCESS"
-                                      ? "Traitement..."
-                                      : node.status === "APPROVED"
-                                      ? "Approuvé"
-                                      : node.status === "REJECTED"
-                                      ? "Rejeté"
-                                      : ""
-                                    }
-                                  </span>
-                                </Typography>
+      variant="small"
+      color="blue-gray"
+      className="text-xs font-medium text-blue-gray-600"
+    >
+      <span className={
+          node.status === "CREATED"
+          ? "inline-block bg-gray-400 rounded-full px-3 py-1 text-xs font-semibold text-gray-900 mr-2 mb-2"
+          : node.status === "CANCELED"
+          ? "inline-block bg-black rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
+          : node.status === "ONPROCESS"
+          ? "inline-block bg-yellow-500 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 mr-2 mb-2"
+          : node.status === "APPROVED"
+          ? "inline-block bg-green-500 rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
+          : node.status === "REJECTED"
+          ? "inline-block bg-red-500 rounded-full px-3 py-1 text-xs font-semibold text-white mr-2 mb-2"
+          : ""
+        }
+      >
+        {
+          node.status === "CREATED"
+          ? "En attente"
+          : node.status === "CANCELED"
+          ? "Annuler"
+          : node.status === "ONPROCESS"
+          ? "Traitement..."
+          : node.status === "APPROVED"
+          ? "Approuvé"
+          : node.status === "REJECTED"
+          ? "Rejeté"
+          : ""
+        }
+      </span>
+    </Typography>
   );
 }
 
@@ -158,26 +159,26 @@ const actionButtons = (node: any) => {
   const theUserSession = session;
   return (
     <Typography
-                                className="text-xs font-semibold text-blue-gray-600"
-                              >
-                                <Link href={`/payments/${node.id}`}>
-                                  <IconButton variant="text" color="white" className="text-sm bg-gray-600 hover:bg-gray-400">
-                                    <EyeIcon className="h-5 w-5 text-white-500" />
-                                  </IconButton>
-                                </Link>
-                                {
-                                  ((node.status === "CREATED" || node.status === "CANCELED"|| node.status === "REJECTED") && node.addedBy === theUserSession?.user?.id)
-                                  ?
-                                    (
-                                      <Link href={`/payments/edit/${node.id}`}>
-                                        <IconButton variant="text" color="white" className="text-sm bg-blue-600 hover:bg-blue-400 mx-3">
-                                          <PencilIcon className="h-5 w-5 text-white-500" />
-                                        </IconButton>
-                                      </Link>
-                                    )
-                                  : ""
-                                }
-                              </Typography>
+      className="text-xs font-semibold text-blue-gray-600"
+    >
+      <Link href={`/payments/${node.id}`}>
+        <IconButton variant="text" color="white" className="text-sm bg-gray-600 hover:bg-gray-400">
+          <EyeIcon className="h-5 w-5 text-white-500" />
+        </IconButton>
+      </Link>
+      {
+        ((node.status === "CREATED" || node.status === "CANCELED"|| node.status === "REJECTED") && node.addedBy === theUserSession?.user?.id)
+        ?
+          (
+            <Link href={`/payments/edit/${node.id}`}>
+              <IconButton variant="text" color="white" className="text-sm bg-blue-600 hover:bg-blue-400 mx-3">
+                <PencilIcon className="h-5 w-5 text-white-500" />
+              </IconButton>
+            </Link>
+          )
+        : ""
+      }
+    </Typography>
   )
 }
 
@@ -187,7 +188,7 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
   const {data:session}=useSession();
   const theUserSession = session;
 
-  const [allPayments, setAllPayments] = useState([]);
+//   const [allPayments, setAllPayments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [postsPerPage] = useState(10);
@@ -195,79 +196,79 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
   const [textSearchVar, setTextSearchVar] = useState("");
   const [intervalLeftSide, setIntervalLeftSide] = useState("");
 
-  let yearsArray = []
-  const currentDate = new Date();
-  const currentYear = new Date().getFullYear();
-  const yearToString = currentYear.toString()
-  const nextDate = new Date(currentDate)
-  nextDate.setDate(currentDate.getDate() + 1)
-
-  for(let i=2018; i <= currentYear; i++) {
-    yearsArray.push(i)
-  } 
-
-  function formatDate(date: any) {
-    var d = new Date(date),
-        month = '' + (d.getMonth() + 1),
-        day = '' + d.getDate(),
-        year = d.getFullYear();
-
-    if (month.length < 2) 
-        month = '0' + month;
-    if (day.length < 2) 
-        day = '0' + day;
-
-    return [year, month, day].join('-');
-  }
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-        setLoading(true);
-        const res = await axios.post('/api/graphql', {
-                                "query": AllPaymentsQuery,
-                                // "variables" : ""
-                              },
-                            { headers: { 'Content-Type': 'application/json' } }
-                          );
-        if(res.data?.errors) {
-          toast.error(`${res?.data.errors[0].extensions.originalError.message}`)
-          setNoDataResponse(`${res?.data.errors[0].extensions.originalError.message}`);
-          setLoading(false);
-        } else {
-          setLoading(false);
-          setAllPayments(res.data?.data?.payments?.edges);
-        }
-        setLoading(false);
-    };
-    
-    fetchPosts();
-  }, []);
+//   let yearsArray = []
+//   const currentDate = new Date();
+//   const currentYear = new Date().getFullYear();
+//   const yearToString = currentYear.toString()
+//   const nextDate = new Date(currentDate)
+//   nextDate.setDate(currentDate.getDate() + 1)
+//
+//   for(let i=2018; i <= currentYear; i++) {
+//     yearsArray.push(i)
+//   }
+//
+//   function formatDate(date: any) {
+//     var d = new Date(date),
+//         month = '' + (d.getMonth() + 1),
+//         day = '' + d.getDate(),
+//         year = d.getFullYear();
+//
+//     if (month.length < 2)
+//         month = '0' + month;
+//     if (day.length < 2)
+//         day = '0' + day;
+//
+//     return [year, month, day].join('-');
+//   }
+//
+//   useEffect(() => {
+//     const fetchPosts = async () => {
+//         setLoading(true);
+//         const res = await axios.post('/api/graphql', {
+//                                 "query": AllPaymentsQuery,
+//                                 // "variables" : ""
+//                               },
+//                             { headers: { 'Content-Type': 'application/json' } }
+//                           );
+//         if(res.data?.errors) {
+//           toast.error(`${res?.data.errors[0].extensions.originalError.message}`)
+//           setNoDataResponse(`${res?.data.errors[0].extensions.originalError.message}`);
+//           setLoading(false);
+//         } else {
+//           setLoading(false);
+//           setAllPayments(res.data?.data?.payments?.edges);
+//         }
+//         setLoading(false);
+//     };
+//
+//     fetchPosts();
+//   }, []);
 
   // Get current posts
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = allPayments?.slice(indexOfFirstPost, indexOfLastPost);
+  const currentPosts = payments?.slice(indexOfFirstPost, indexOfLastPost);
 
   // Change page
   const paginate = (pageNumber: any) => setCurrentPage(pageNumber);
 
   const fetchTheDatas = async () => {
     setLoading(true);
-        const res = await axios.post('/api/graphql', {
-                                "query": AllPaymentsQuery,
-                                // "variables" : ""
-                              },
-                            { headers: { 'Content-Type': 'application/json' } }
-                          );
-        if(res.data?.errors) {
-          toast.error(`${res?.data.errors[0].extensions.originalError.message}`)
-          setNoDataResponse(`${res?.data.errors[0].extensions.originalError.message}`);
-          setLoading(false);
-        } else {
-          setLoading(false);
-          setAllPayments(res.data?.data?.payments?.edges);
-        }
-        setLoading(false);
+    const res = await axios.post('/api/graphql', {
+                            "query": AllPaymentsQuery,
+                            // "variables" : ""
+                          },
+                        { headers: { 'Content-Type': 'application/json' } }
+                      );
+    if(res.data?.errors) {
+      toast.error(`${res?.data.errors[0].extensions.originalError.message}`)
+      setNoDataResponse(`${res?.data.errors[0].extensions.originalError.message}`);
+      setLoading(false);
+    } else {
+      setLoading(false);
+      setAllPayments(res.data?.data?.payments?.edges);
+    }
+    setLoading(false);
   }
 
   const filterByYearNameAndOthers = async (e: any) => {
@@ -398,7 +399,7 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
   // Contains the column headers and table data in the required format for CSV
   const csvData = [
     ["Name", "Username", "Email", "Phone", "Website"],
-    ...currentPosts.map(({node}: {node: any}) => [
+    ...currentPosts.map((node: any) => [
       node.name,
       node.surname,
       node.amount,
@@ -415,28 +416,28 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
     {
       id: 1,
       name: "Nom",
-      selector: ({node}: {node: any}) => node.name,
+      selector: (node: any) => node.name,
       sortable: true,
       reorder: true
     },
     {
       id: 2,
       name: "Prénoms",
-      selector: ({node}: {node: any}) => node.surname,
+      selector: (node: any) => node.surname,
       sortable: true,
       reorder: true
     },
     {
       id: 3,
       name: "Motif",
-      selector: ({node}: {node: any}) => node.motif?.name,
+      selector: (node: any) => node.motif?.name,
       sortable: true,
       reorder: true
     },
     {
       id: 4,
       name: "Montant",
-      selector: ({node}: {node: any}) => node.amount,
+      selector: (node: any) => node.amount,
       sortable: true,
       right: true,
       reorder: true
@@ -444,14 +445,14 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
     {
       id: 5,
       name: "Status",
-      selector: ({node}: {node: any}) => statusRender(node),
+      selector: (node: any) => statusRender(node),
       sortable: false,
       reorder: true
     },
     {
       id: 6,
       name: "Action",
-      selector: ({node}: {node: any}) => actionButtons(node),
+      selector: (node: any) => actionButtons(node),
       sortable: false,
       right: true,
       reorder: true
@@ -486,7 +487,7 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
           </Link>
         </div>
         <div className="mt-5">
-          <div className="flex space-x-1 mb-6 ml-10">
+          {/* <div className="flex space-x-1 mb-6 ml-10">
             <span className="text-md">Filtrer par :</span>
             <div className="">
               <select name="" id="yearSelect" className="-mt-2 ml-5 rounded-md -p-5" onChange={ (e) => filterByYearNameAndOthers(e) } >
@@ -543,7 +544,6 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
             </div>
           </div>
           <div className="mb-10">
-            {/* Export Buttons Start */}
             <span className="mr-5">
             <DownloadTableExcel
                     filename="liste_des_paiements"
@@ -561,43 +561,36 @@ const PaymentsList = ({ payments, }: InferGetServerSidePropsType<typeof getServe
               </CSVLink>
             </span>
             <button onClick={handlePrint} type="button" > Export to PDF </button>
-            {/* Export Buttons End */}
-          </div>
+          </div> */}
           <Card>
             <CardHeader variant="gradient" color="" className="bg-[#1a1930] mb-8 p-6">
               <Typography variant="h6" color="white">
-                Liste des paiements ({allPayments?.length})
+                Liste des paiements ({payments?.length})
               </Typography>
             </CardHeader>
             <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
               <div className="" ref={componentRef}>
                 { !loading && (
-                  <table>
-
                     <DataTable
-                    title=""
-                    columns={columns}
-                    data={currentPosts}
-                    defaultSortFieldId={1}
-                    sortIcon={<ArrowsUpDownIcon />}
-                    // contextMessage={contextMessage}
-                    noDataComponent="Aucune donnée à afficher"
-                    pagination
-                    paginationComponentOptions={paginationComponentOptions}
-                    selectableRows
+                      title=""
+                      columns={columns}
+                      data={currentPosts}
+                      defaultSortFieldId={1}
+                      sortIcon={<ArrowsUpDownIcon />}
+                      // contextMessage={contextMessage}
+                      noDataComponent="Aucune donnée à afficher"
+                      pagination
+                      paginationComponentOptions={paginationComponentOptions}
+                      selectableRows
                   />
-                  </table>
                 )}
               </div>
               {
                 loading && (
                   <div className="flex text-center justify-center items-center mx-auto flex-wrap">
-                        <img src="/images/horizontal_loading.gif" alt="" className="inline-flex" style={{ width: "200px", height: "120px"}} />
+                        <Image src="/images/horizontal_loading.gif" alt="Loading" width={100} height={50} className="inline-flex" style={{ width: "200px", height: "120px"}} />
                       </div>
                   ) 
-              }
-              { noDataResponse &&
-                  <div className="text-center mt-5">{noDataResponse}</div>
               }
               {/* <PaginationNew
                 postsPerPage={postsPerPage}

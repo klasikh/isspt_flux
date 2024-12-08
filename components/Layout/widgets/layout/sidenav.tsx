@@ -73,7 +73,13 @@ export function Sidenav ({ user, routes, proformaVar }: InferGetServerSidePropsT
         }`}
       >
         <Link href="/" className="flex items-center gap-4 py-6 px-8">
-          <Image src="/images/logo.png" alt="" className="h-12 rounded" />
+          <Image
+            src="/images/logo.png"
+            alt="Logo"
+            className="h-12 rounded"
+            width={60}
+            height={60}
+          />
           <Typography
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
@@ -114,7 +120,7 @@ export function Sidenav ({ user, routes, proformaVar }: InferGetServerSidePropsT
           </Button>
       </Link>
       <div className="m-2">
-        {routes.map(({ layout, title, pages, role, number }: { layout: any, title: any, pages: any, role: any, number: any }, key: any) => (
+        {routes.map(({ layout, title, pages, role, number }: { layout: any, title: any, pages: any, role: any, number: any }) => (
               
             <Accordion 
               key={number} 
@@ -134,29 +140,29 @@ export function Sidenav ({ user, routes, proformaVar }: InferGetServerSidePropsT
               )}
               {pages && pages.map(({ icon, name, path, module }: { icon: any, name: any, path: any, module: any }) => (
 
-                      <AccordionBody className="pt-0">
-                        <Link href={`${path}`}>
-                          <Button
-                            variant="gradient"
-                            className={
-                              "flex items-center gap-2 text-sm px-3 mx-1 bg-none -mb-3 hover:bg-gray-300 hover:text-black " +
-                              (location === `${path}`
-                                ? " bg-[#cb6e35]"
-                                : ""
-                              )
-                            }
-                            style={{ width: "97%" }}
-                          >
-                            {icon}
-                            <Typography
-                              color="inherit"
-                              className="font-medium text-xs"
-                            >
-                              {name}
-                            </Typography>
-                          </Button>
-                        </Link>
-                      </AccordionBody>
+                  <AccordionBody key={name} className="pt-0">
+                    <Link href={`${path}`}>
+                      <Button
+                        variant="gradient"
+                        className={
+                          "flex items-center gap-2 text-sm px-3 mx-1 bg-none -mb-3 hover:bg-gray-300 hover:text-black " +
+                          (location === `${path}`
+                            ? " bg-[#cb6e35]"
+                            : ""
+                          )
+                        }
+                        style={{ width: "97%" }}
+                      >
+                        {icon}
+                        <Typography
+                          color="inherit"
+                          className="font-medium text-xs"
+                        >
+                          {name}
+                        </Typography>
+                      </Button>
+                    </Link>
+                  </AccordionBody>
                         
               ))}
             </Accordion>

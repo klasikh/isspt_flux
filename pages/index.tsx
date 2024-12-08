@@ -24,7 +24,13 @@ const HomePage = () => {
     return ( 
       <>
         <div className="text-center justify-center items-center flex min-h-screen bg-gray-100">
-          <Image src="/images/spinner.gif" alt="" className="w-14 h-14 text-center justify-center items-center bg-none" />
+          <Image
+            src="/images/spinner.gif"
+            alt="Loading"
+            className="w-14 h-14 text-center justify-center items-center bg-none"
+            width={100}
+            height={100}
+          />
         </div>
       </>
     );

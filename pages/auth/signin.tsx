@@ -100,6 +100,8 @@ const SignIn = () => {
                                         src="/images/logo.png"
                                         alt=""
                                         className="h-12 rounded mx-auto"
+                                        width={60}
+                                        height={60}
                                     />
                                 </div>
                                 <Typography variant="h3" color="white">

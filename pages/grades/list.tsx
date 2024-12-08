@@ -100,22 +100,22 @@ const GradesList = ({ grades }: InferGetServerSidePropsType<typeof getServerSide
     return (
       <div>
         <Head>
-          <title>Liste des grades</title>
+          <title>Liste des profils</title>
           <link rel="icon" href="/favicon.ico" />
         </Head>
         <div className="container mx-auto max-w-5xl mt-7">
           <div className="mb-12">
             <Link href="/grades/add">
               <Button variant="outlined" size="sm" className="bg-[#bb303b] text-white hover:text-[#1a1930]">
-                Ajouter un grade
+                Ajouter un profil
               </Button>
             </Link>
           </div>
           <div className="mt-12">
             <Card>
-              <CardHeader variant="gradient" color="" className="bg-[#1a1930] mb-8 p-6">
+              <CardHeader variant="gradient" color="none" className="bg-[#1a1930] mb-8 p-6">
                 <Typography variant="h6" color="white">
-                  Grades ({grades.length})
+                  Profils ({grades.length})
                 </Typography>
               </CardHeader>
               <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">

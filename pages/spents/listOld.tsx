@@ -29,6 +29,66 @@ import {
 import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon, } from "@heroicons/react/24/outline";
 import axios from "axios";
 
+const AllSpentsQuery = `
+  query MyQuery {
+    spents {
+      edges {
+        node {
+          id
+          title
+          name
+          description
+          motif
+          nature
+          amount
+          status
+          step
+        }
+      }
+    }
+  }
+`;
+
+const GetSpentsDatasByFilter = `
+  query($inputvalue: String!) {
+    getSpentsDatasByFilter(inputvalue: $inputvalue) {
+      edges {
+        node {
+          id
+          title
+          name
+          description
+          motif
+          nature
+          amount
+          status
+          step
+        }
+      }
+    }
+  }
+`;
+
+const GetSpentsDatasByFilterInterval = `
+query($leftSide: String!, $rightSide: String!) {
+  getSpentsDatasByFilterInterval(leftSide: $leftSide, rightSide: $rightSide) {
+    edges {
+      node {
+        id
+        title
+        name
+        description
+        motif
+        nature
+        amount
+        status
+        step
+      }
+    }
+  }
+}
+`;
+
 const DeleteSpentMutation = gql`
   mutation($id: ID!, $userId: ID!,) {
     deleteSpent(id: $id, userId: $userId,) {
@@ -51,213 +111,213 @@ const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSide
   const {data:session}=useSession();
   const theUserSession = session;
 
- //  const [allSpents, setAllSpents] = useState([]);
+  const [allSpents, setAllSpents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [postsPerPage] = useState(10);
-//   const [noDataResponse, setNoDataResponse] = useState("");
-//   const [textSearchVar, setTextSearchVar] = useState("");
-//   const [intervalLeftSide, setIntervalLeftSide] = useState("");
+  const [noDataResponse, setNoDataResponse] = useState("");
+  const [textSearchVar, setTextSearchVar] = useState("");
+  const [intervalLeftSide, setIntervalLeftSide] = useState("");
 
-//   let yearsArray = []
-//   const currentDate = new Date();
-//   const currentYear = new Date().getFullYear();
-//   const yearToString = currentYear.toString()
-//   const nextDate = new Date(currentDate)
-//   nextDate.setDate(currentDate.getDate() + 1)
-//
-//   for(let i=2018; i <= currentYear; i++) {
-//     yearsArray.push(i)
-//   }
-//
-//   function formatDate(date: any) {
-//     var d = new Date(date),
-//         month = '' + (d.getMonth() + 1),
-//         day = '' + d.getDate(),
-//         year = d.getFullYear();
-//
-//     if (month.length < 2)
-//         month = '0' + month;
-//     if (day.length < 2)
-//         day = '0' + day;
-//
-//     return [year, month, day].join('-');
-//   }
-//
-//   useEffect(() => {
-//     const fetchPosts = async () => {
-//         setLoading(true);
-//         const res = await axios.post('/api/graphql', {
-//                                 "query": AllSpentsQuery,
-//                                 // "variables" : ""
-//                               },
-//                             { headers: { 'Content-Type': 'application/json' } }
-//                           );
-//         if(res.data?.errors) {
-//           toast.error(`${res?.data.errors[0].extensions.originalError.message}`)
-//           setNoDataResponse(`${res?.data.errors[0].extensions.originalError.message}`);
-//           setLoading(false);
-//         } else {
-//           setLoading(false);
-//           setAllSpents(res.data?.data?.spents?.edges);
-//         }
-//         setLoading(false);
-//     };
-//
-//     fetchPosts();
-//   }, []);
+  let yearsArray = []
+  const currentDate = new Date();
+  const currentYear = new Date().getFullYear();
+  const yearToString = currentYear.toString()
+  const nextDate = new Date(currentDate)
+  nextDate.setDate(currentDate.getDate() + 1)
+
+  for(let i=2018; i <= currentYear; i++) {
+    yearsArray.push(i)
+  } 
+
+  function formatDate(date: any) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+  }
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+        setLoading(true);
+        const res = await axios.post('/api/graphql', {
+                                "query": AllSpentsQuery,
+                                // "variables" : ""
+                              },
+                            { headers: { 'Content-Type': 'application/json' } }
+                          );
+        if(res.data?.errors) {
+          toast.error(`${res?.data.errors[0].extensions.originalError.message}`)
+          setNoDataResponse(`${res?.data.errors[0].extensions.originalError.message}`);
+          setLoading(false);
+        } else {
+          setLoading(false);
+          setAllSpents(res.data?.data?.spents?.edges);
+        }
+        setLoading(false);
+    };
+    
+    fetchPosts();
+  }, []);
 
   // Get current posts
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = spents?.slice(indexOfFirstPost, indexOfLastPost);
+  const currentPosts = allSpents?.slice(indexOfFirstPost, indexOfLastPost);
 
   // Change page
   const paginate = (pageNumber: any) => setCurrentPage(pageNumber);
 
-//   const fetchTheDatas = async () => {
-//     setLoading(true);
-//         const res = await axios.post('/api/graphql', {
-//                                 "query": AllSpentsQuery,
-//                                 // "variables" : ""
-//                               },
-//                             { headers: { 'Content-Type': 'application/json' } }
-//                           );
-//         if(res.data?.errors) {
-//           toast.error(`${res?.data.errors[0].extensions.originalError.message}`)
-//           setNoDataResponse(`${res?.data.errors[0].extensions.originalError.message}`);
-//           setLoading(false);
-//         } else {
-//           setLoading(false);
-//           setAllSpents(res.data?.data?.spents?.edges);
-//         }
-//         setLoading(false);
-//   }
-//
-//   const filterByYearNameAndOthers = async (e: any) => {
-//     if(e.target.value) {
-//       if(e.target.value.length >= 3) {
-//         setTextSearchVar(e.target.value);
-//         try {
-//           setLoading(true);
-//           const filterRes = await axios.post('/api/graphql', {
-//                     "query": GetSpentsDatasByFilter,
-//                     "variables" : { inputvalue: e.target.value }
-//               },
-//             { headers: { 'Content-Type': 'application/json' } }
-//           );
-//
-//           if(filterRes.data?.errors) {
-//             toast.error(`${filterRes?.data.errors[0].extensions.originalError.message}`)
-//             setNoDataResponse(`${filterRes?.data.errors[0].extensions.originalError.message}`)
-//             setLoading(false);
-//           } else {
-//             setLoading(false);
-//             // if(filterRes.data?.data?.getDatasByFilter?.edges.length < 1) {
-//             //   setNoDataResponse("Aucune donnée trouvée")
-//             // } else {
-//               setAllSpents(filterRes.data?.data?.getSpentsDatasByFilter?.edges);
-//             // }
-//           }
-//           setLoading(false);
-//
-//         } catch (error) {
-//           console.error(error)
-//         }
-//       }
-//     } else {
-//       fetchTheDatas();
-//     }
-//   }
-//
-//   const filterByIntervalLeftSide = async (e: any) => {
-//     if(e.target.value) {
-//       if(e.target.value.length >= 3) {
-//         setIntervalLeftSide(e.target.value)
-//         try {
-//           setLoading(true);
-//           const filterRes = await axios.post('/api/graphql', {
-//                     "query": GetSpentsDatasByFilterInterval,
-//                     "variables" : { leftSide: e.target.value, rightSide: formatDate(nextDate) }
-//               },
-//             { headers: { 'Content-Type': 'application/json' } }
-//           );
-//
-//           if(filterRes.data?.errors) {
-//             toast.error(`${filterRes?.data.errors[0].extensions.originalError.message}`)
-//             setNoDataResponse(`${filterRes?.data.errors[0].extensions.originalError.message}`)
-//             setLoading(false);
-//           } else {
-//             setLoading(false);
-//             // if(filterRes.data?.data?.getDatasByFilter?.edges.length < 1) {
-//             //   setNoDataResponse("Aucune donnée trouvée")
-//             // } else {
-//               setAllSpents(filterRes.data?.data?.getSpentsDatasByFilterInterval?.edges);
-//             // }
-//           }
-//           setLoading(false);
-//
-//         } catch (error) {
-//           console.error(error)
-//         }
-//       }
-//     } else {
-//       fetchTheDatas();
-//     }
-//   }
-//
-//   const filterByIntervalRightSide = async (e: any) => {
-//     if(e.target.value) {
-//       if(intervalLeftSide) {
-//         if(e.target.value !== "" && e.target.value.length >= 3) {
-//           const selectedDate = new Date(e.target.value)
-//           let thisNextDate = new Date(selectedDate)
-//           thisNextDate.setDate(selectedDate.getDate() + 1)
-//
-//           try {
-//             setLoading(true);
-//             const filterRes = await axios.post('/api/graphql', {
-//                       "query": GetSpentsDatasByFilterInterval,
-//                       "variables" : { leftSide: intervalLeftSide, rightSide: formatDate(thisNextDate) }
-//                 },
-//               { headers: { 'Content-Type': 'application/json' } }
-//             );
-//
-//             if(filterRes.data?.errors) {
-//               toast.error(`${filterRes?.data.errors[0].extensions.originalError.message}`)
-//               setNoDataResponse(`${filterRes?.data.errors[0].extensions.originalError.message}`)
-//               setLoading(false);
-//             } else {
-//               setLoading(false);
-//               // if(filterRes.data?.data?.getDatasByFilter?.edges.length < 1) {
-//               //   setNoDataResponse("Aucune donnée trouvée")
-//               // } else {
-//                 setAllSpents(filterRes.data?.data?.getSpentsDatasByFilterInterval?.edges);
-//               // }
-//             }
-//             setLoading(false);
-//
-//           } catch (error) {
-//             console.error(error)
-//           }
-//         }
-//       }
-//     } else {
-//       fetchTheDatas();
-//     }
-//   }
-//
-//   const skipAllFilter = async () =>  {
-//     setTextSearchVar("")
-//     setIntervalLeftSide("")
-//     let yearSel = document.getElementById('yearSelect')
-//     let textInp = document.getElementById('textInput')
-//     let dateInp = document.getElementById('dateInput')
-//     yearSel.value = ""
-//     textInp.value = ""
-//     dateInp.value = ""
-//     fetchTheDatas();
-//   }
+  const fetchTheDatas = async () => {
+    setLoading(true);
+        const res = await axios.post('/api/graphql', {
+                                "query": AllSpentsQuery,
+                                // "variables" : ""
+                              },
+                            { headers: { 'Content-Type': 'application/json' } }
+                          );
+        if(res.data?.errors) {
+          toast.error(`${res?.data.errors[0].extensions.originalError.message}`)
+          setNoDataResponse(`${res?.data.errors[0].extensions.originalError.message}`);
+          setLoading(false);
+        } else {
+          setLoading(false);
+          setAllSpents(res.data?.data?.spents?.edges);
+        }
+        setLoading(false);
+  }
+
+  const filterByYearNameAndOthers = async (e: any) => {
+    if(e.target.value) {
+      if(e.target.value.length >= 3) {
+        setTextSearchVar(e.target.value);
+        try {
+          setLoading(true);
+          const filterRes = await axios.post('/api/graphql', {
+                    "query": GetSpentsDatasByFilter,
+                    "variables" : { inputvalue: e.target.value }
+              },
+            { headers: { 'Content-Type': 'application/json' } }
+          );
+          
+          if(filterRes.data?.errors) {
+            toast.error(`${filterRes?.data.errors[0].extensions.originalError.message}`)
+            setNoDataResponse(`${filterRes?.data.errors[0].extensions.originalError.message}`)
+            setLoading(false);
+          } else {
+            setLoading(false);
+            // if(filterRes.data?.data?.getDatasByFilter?.edges.length < 1) {
+            //   setNoDataResponse("Aucune donnée trouvée")
+            // } else {
+              setAllSpents(filterRes.data?.data?.getSpentsDatasByFilter?.edges);
+            // }
+          }
+          setLoading(false);
+          
+        } catch (error) {
+          console.error(error)
+        }
+      }
+    } else {
+      fetchTheDatas();
+    }
+  }
+  
+  const filterByIntervalLeftSide = async (e: any) => {
+    if(e.target.value) {
+      if(e.target.value.length >= 3) {
+        setIntervalLeftSide(e.target.value)
+        try {
+          setLoading(true);
+          const filterRes = await axios.post('/api/graphql', {
+                    "query": GetSpentsDatasByFilterInterval,
+                    "variables" : { leftSide: e.target.value, rightSide: formatDate(nextDate) }
+              },
+            { headers: { 'Content-Type': 'application/json' } }
+          );
+          
+          if(filterRes.data?.errors) {
+            toast.error(`${filterRes?.data.errors[0].extensions.originalError.message}`)
+            setNoDataResponse(`${filterRes?.data.errors[0].extensions.originalError.message}`)
+            setLoading(false);
+          } else {
+            setLoading(false);
+            // if(filterRes.data?.data?.getDatasByFilter?.edges.length < 1) {
+            //   setNoDataResponse("Aucune donnée trouvée")
+            // } else {
+              setAllSpents(filterRes.data?.data?.getSpentsDatasByFilterInterval?.edges);
+            // }
+          }
+          setLoading(false);
+          
+        } catch (error) {
+          console.error(error)
+        }
+      }
+    } else {
+      fetchTheDatas();
+    }
+  }
+   
+  const filterByIntervalRightSide = async (e: any) => {
+    if(e.target.value) {
+      if(intervalLeftSide) {
+        if(e.target.value !== "" && e.target.value.length >= 3) {
+          const selectedDate = new Date(e.target.value)
+          let thisNextDate = new Date(selectedDate)
+          thisNextDate.setDate(selectedDate.getDate() + 1)
+
+          try {
+            setLoading(true);
+            const filterRes = await axios.post('/api/graphql', {
+                      "query": GetSpentsDatasByFilterInterval,
+                      "variables" : { leftSide: intervalLeftSide, rightSide: formatDate(thisNextDate) }
+                },
+              { headers: { 'Content-Type': 'application/json' } }
+            );
+            
+            if(filterRes.data?.errors) {
+              toast.error(`${filterRes?.data.errors[0].extensions.originalError.message}`)
+              setNoDataResponse(`${filterRes?.data.errors[0].extensions.originalError.message}`)
+              setLoading(false);
+            } else {
+              setLoading(false);
+              // if(filterRes.data?.data?.getDatasByFilter?.edges.length < 1) {
+              //   setNoDataResponse("Aucune donnée trouvée")
+              // } else {
+                setAllSpents(filterRes.data?.data?.getSpentsDatasByFilterInterval?.edges);
+              // }
+            }
+            setLoading(false);
+            
+          } catch (error) {
+            console.error(error)
+          }
+        }
+      }
+    } else {
+      fetchTheDatas();
+    }
+  }
+
+  const skipAllFilter = async () =>  {
+    setTextSearchVar("")
+    setIntervalLeftSide("")
+    let yearSel = document.getElementById('yearSelect')
+    let textInp = document.getElementById('textInput')
+    let dateInp = document.getElementById('dateInput')
+    yearSel.value = ""
+    textInp.value = ""
+    dateInp.value = ""
+    fetchTheDatas();
+  }
   
   const deleteClickSpent = () => {
     setOpenDeletionModal(true)
@@ -301,7 +361,7 @@ const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSide
           </Link>
         </div>
         <div className="mt-12">
-          {/* <div className="flex space-x-1 mb-6 ml-10">
+          <div className="flex space-x-1 mb-6 ml-10">
             <span className="text-md">Filtrer par :</span>
             <div className="">
               <select name="" id="yearSelect" className="-mt-2 ml-5 rounded-md -p-5" onChange={ (e) => filterByYearNameAndOthers(e) } >
@@ -361,11 +421,11 @@ const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSide
                 Annuler les filtres
               </button>
             </div>
-          </div> */}
+          </div>
           <Card>
             <CardHeader variant="gradient" color="" className="bg-[#1a1930] mb-8 p-6">
               <Typography variant="h6" color="white">
-                Liste des dépenses ({spents.length})
+                Liste des dépenses ({allSpents.length})
               </Typography>
             </CardHeader>
             <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
@@ -390,7 +450,7 @@ const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSide
                   </tr>
                 </thead>
                 { !loading && 
-                    currentPosts?.map((node: any) => (
+                    currentPosts?.map(({node}: {node: any}) => (
                       <tbody>
                         <tr key={node.id}>
                           <td className={`py-3 px-5`}>
@@ -511,9 +571,12 @@ const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSide
                       </div>
                   ) 
               }
+              { noDataResponse &&
+                  <div className="text-center mt-5">{noDataResponse}</div>
+              }
               <PaginationNew
                 postsPerPage={postsPerPage}
-                totalPosts={spents?.length}
+                totalPosts={allSpents?.length}
                 paginate={paginate}
                 currentPage={currentPage}
               />
