@@ -66,7 +66,7 @@ const EditUserModuleMutation = `
   }
 `
 
-const EditUserModulePriority = ({ userModuled }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const EditUserModulePriority = ({ userModuled, users, modules }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -206,8 +206,8 @@ const EditUserModulePriority = ({ userModuled }: InferGetServerSidePropsType<typ
             <span className="text-gray-700">Sélectionnez un utilisateur</span>
             <select id="users" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="userId" {...register('userId', { required: true })} required>
               <option value="" selected disabled>Utilisateur</option>
-              { allUsers?.users.edges.map(({ node }: { node: Node }) => (
-                <option value={node.id}>{node.name}</option>
+              { users.map((node: any) => (
+                <option value={node.id} key={node.id}>{node.name}</option>
                 )
               )}
             </select>
@@ -216,8 +216,8 @@ const EditUserModulePriority = ({ userModuled }: InferGetServerSidePropsType<typ
             <span className="text-gray-700">Sélectionnez le module</span>
             <select id="modules" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="moduleId" {...register('moduleId', { required: true })} required>
               <option value="" selected disabled>Module</option>
-              { allModules?.modules.edges.map(({ node }: { node: Node }) => (
-                <option value={node.id}>{node.name}</option>
+              { modules.map((node: any) => (
+                <option value={node.id} key={node.id}>{node.name}</option>
                 )
               )}
             </select>
@@ -327,8 +327,35 @@ export const getServerSideProps: GetServerSideProps = async ( ctx, params ) => {
         notFound: true
     }
 
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        image: true,
+        grade: {
+          select: {
+            name: true
+          },
+        },
+        role: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const modules = await prisma.module.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
     return {
         props: {
+          users,
+          modules,
           userModuled,
         },
     };

@@ -112,7 +112,7 @@ const EditFiliere = ({ filiere }: InferGetServerSidePropsType<typeof getServerSi
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           </label>
-          <label for="description" class="block">
+          <label for="description" className="block">
             <span className="text-gray-700">Description</span>
             <textarea id="description" rows="4" {...register('description', { required: true })} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description de la filière" name="description"></textarea>
           </label>

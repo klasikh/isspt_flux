@@ -333,7 +333,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     orderBy: { sigle: "asc" },
   });
 
-
   return {
     props: {
       motifs,

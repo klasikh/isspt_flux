@@ -49,7 +49,7 @@ const EditUserMutation = gql`
   }
 `
 
-const EditUser = ({ user }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const EditUser = ({ user, grades }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -138,11 +138,11 @@ const EditUser = ({ user }: InferGetServerSidePropsType<typeof getServerSideProp
             />
           </label>
           <label className="block">
-            <span className="text-gray-700">Attribuer un grade</span>
+            <span className="text-gray-700">Attribuer un profil</span>
             <select id="grades" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="gradeId" {...register('gradeId', { required: true })} required>
-              <option value="" selected disabled>Grade</option>
-              { allGrades?.grades.edges.map(({ node }: { node: Node }) => (
-                <option value={node.id}>{node.name}</option>
+              <option value="" selected disabled>Profil</option>
+              { grades.map((node: any) => (
+                <option value={node.id} key={node.id}>{node.name}</option>
                 )
               )}
             </select>
@@ -251,6 +251,15 @@ export const getServerSideProps: GetServerSideProps = async ( ctx, params ) => {
         },
     });
 
+    const grades = await prisma.grade.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
     if (!user) return {
         notFound: true
     }
@@ -258,6 +267,7 @@ export const getServerSideProps: GetServerSideProps = async ( ctx, params ) => {
     return {
         props: {
           user,
+          grades,
         },
     };
 };

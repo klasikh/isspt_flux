@@ -79,7 +79,7 @@ const EditPaymentMutation = gql`
   }
 `
 
-const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const EditPayment = ({ payment, motifs, filieres, }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -159,13 +159,13 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
               <span className="text-gray-700">Motif de paiement</span>
               <select id="motifs" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="motifId" {...register('motifId', { required: true })} required>
                 <option value="" disabled>Motif</option>
-                { allMotifs?.motifs.edges.map(({ node }: { node: Node }) => (
-                    <option value={node.id} >{node.name}</option>
+                { motifs.map((node: any) => (
+                    <option value={node.id} key={node.id} >{node.name}</option>
                   )
                 )}
               </select>
             </label>
-          <label for="description" class="block">
+          <label for="description" className="block">
             <span className="text-gray-700">Description</span>
             <textarea id="description" rows="4" {...register('description', { required: true })} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Description du paiement" name="description"></textarea>
           </label>
@@ -196,8 +196,8 @@ const EditPayment = ({ payment }: InferGetServerSidePropsType<typeof getServerSi
               <span className="text-gray-700">Filière de l&apos;étudiant</span>
               <select id="filieres" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="filiereId" {...register('filiereId', { required: true })} required>
                 <option value="" disabled>Filière</option>
-                { allFilieres?.filieres.edges.map(({ node }: { node: Node }) => (
-                    <option value={node.id} >{node.name}</option>
+                { filieres.map((node: any) => (
+                    <option value={node.id} key={node.id} >{node.name}</option>
                   )
                 )}
               </select>
@@ -337,6 +337,26 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       props: {},
     };
   }
+
+  const motifs = await prisma.motif.findMany({
+    select: {
+      id: true,
+      name: true,
+      description: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const filieres = await prisma.filiere.findMany({
+    select: {
+      id: true,
+      sigle: true,
+      name: true,
+      description: true,
+    },
+    orderBy: { sigle: "asc" },
+  });
+
 
   return {
     props: {
