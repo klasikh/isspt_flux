@@ -42,7 +42,7 @@ const Dashboard = ({ user, paymentVar, depenseVar }: InferGetServerSidePropsType
     {
       color: "green",
       icon: PresentationChartLineIcon,
-      title: "GRADES",
+      title: "PROFILS",
       role: "ADMIN",
       path: "/grades/list",
       value: "",

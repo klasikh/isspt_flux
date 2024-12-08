@@ -2,6 +2,7 @@
 import { builder } from "../builder";
 import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
+import prisma from '../../lib/prisma';
 
 builder.prismaObject('Module', {
   name: 'Module',

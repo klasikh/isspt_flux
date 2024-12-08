@@ -47,7 +47,6 @@ const UsersList = ({ users }: InferGetServerSidePropsType<typeof getServerSidePr
     const [openDeletionModal, setOpenDeletionModal] = useState(false)
     const [userToDel, setUserToDel] = useState()
 
-    const cancelRejectButtonRef = useRef(null)
     const cancelDeletionButtonRef = useRef(null)
 
     const [loading, setLoading] = useState(false);
@@ -122,7 +121,7 @@ const UsersList = ({ users }: InferGetServerSidePropsType<typeof getServerSidePr
               <table className="w-full min-w-[640px] table-auto">
                 <thead>
                   <tr>
-                    {["photo", "nom", "username", "grade", "role", "action",].map(
+                    {["photo", "nom", "username", "profil", "role", "action",].map(
                       (el) => (
                         <th
                           key={el}

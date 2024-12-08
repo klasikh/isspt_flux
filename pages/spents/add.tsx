@@ -134,7 +134,7 @@ const SpentAdd = () => {
               type="text" required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             /> */}
-	<select id="nature" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="nature" {...register('nature', { required: true })} required>
+          <select id="nature" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="nature" {...register('nature', { required: true })} required>
               <option value="" selected disabled>Nature de la dépense</option>
 		<option value="Dépense directe">Dépense directe</option>
 		<option value="Dépense indirecte">Dépense indirecte</option>

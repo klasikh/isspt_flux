@@ -5,7 +5,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from 'react-hot-toast'
-import type { GetServerSideProps } from 'next'
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { getSession } from "next-auth/react"
 import prisma from '../../lib/prisma'
 
@@ -47,7 +47,7 @@ const CreateUserMutation = gql`
   }
 `
 
-const UserAdd = () => {
+const UserAdd = ({ grades }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
 
   const { data: allGrades } = useQuery(AllGradesQuery);
@@ -110,10 +110,10 @@ const UserAdd = () => {
             />
           </label>
           <label className="block">
-            <span className="text-gray-700">Attribuer un grade</span>
+            <span className="text-gray-700">Attribuer un profil</span>
             <select id="grades" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="gradeId" {...register('gradeId', { required: true })} required>
-              <option value="" selected disabled>Grade</option>
-              { allGrades?.grades.edges.map(({ node }: { node: Node }) => (
+              <option value="" selected disabled>Profil</option>
+              { grades.map((node: any) => (
                 <option value={node.id}>{node.name}</option>
                 )
               )}
@@ -193,6 +193,15 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     }
   });
 
+  const grades = await prisma.grade.findMany({
+    select: {
+      id: true,
+      name: true,
+      description: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
   if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
     return {
       redirect: {
@@ -204,6 +213,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   }
 
   return {
-    props: {},
+    props: {
+      grades,
+    },
   };
 };

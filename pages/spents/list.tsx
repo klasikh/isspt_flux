@@ -40,16 +40,18 @@ const DeleteSpentMutation = gql`
 const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
 
+  const {data:session}=useSession();
+  const theUserSession = session;
+
+  const [isValidateLoading, setIsValidateLoading] = useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
   const [openDeletionModal, setOpenDeletionModal] = useState(false)
+  const [spentToDel, setSpentToDel] = useState()
 
   const cancelDeletionButtonRef = useRef(null)
 
   const [deleteSpent, { data: dataDelSpent, loading: loadDelSpent, error: errorDelSpent }] = useMutation(DeleteSpentMutation)
-
-  const {data:session}=useSession();
-  const theUserSession = session;
 
  //  const [allSpents, setAllSpents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -259,7 +261,8 @@ const SpentsList = ({ spents }: InferGetServerSidePropsType<typeof getServerSide
 //     fetchTheDatas();
 //   }
   
-  const deleteClickSpent = () => {
+  const deleteClickSpent = (theSpent: any) => {
+    setSpentToDel(theSpent)
     setOpenDeletionModal(true)
   }
 

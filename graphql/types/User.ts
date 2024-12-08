@@ -3,6 +3,7 @@ import { builder } from "../builder";
 import type { GetServerSideProps } from 'next'
 import { getSession } from "next-auth/react"
 import bcrypt from "bcryptjs";
+import prisma from '../../lib/prisma';
 
 const Role = builder.enumType('Role', {
   values: ['USER', 'ADMIN'] as const,
