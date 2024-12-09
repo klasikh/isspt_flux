@@ -10,6 +10,14 @@ import { ApolloProvider } from '@apollo/client'
 import type { AppProps } from 'next/app'
 import apolloClient from '../lib/apollo'
 
+// export function ApolloClientProvider({ children }: { children: React.ReactNode }) {
+//   return (
+//     <ApolloProvider client={client}>
+//       {children}
+//     </ApolloProvider>
+//   )
+// }
+
 function MyApp({
   Component,
   pageProps: { session, ...pageProps },
